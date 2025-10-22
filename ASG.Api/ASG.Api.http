@@ -1,0 +1,6 @@
+@ASG.Api_HostAddress = http://localhost:5250
+
+GET {{ASG.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
