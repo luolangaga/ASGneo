@@ -11,5 +11,12 @@ namespace ASG.Api.Repositories
         Task<User> UpdateAsync(User user);
         Task DeleteAsync(string id);
         Task<bool> ExistsAsync(string id);
+        
+        // 角色管理相关方法
+        Task<IEnumerable<User>> GetUsersByRoleAsync(UserRole role);
+        Task<bool> UpdateUserRoleAsync(string userId, UserRole role);
+        Task<int> GetUserCountByRoleAsync(UserRole role);
+        Task<IEnumerable<User>> GetUsersWithPaginationAsync(int pageNumber, int pageSize);
+        Task<int> GetTotalUserCountAsync();
     }
 }

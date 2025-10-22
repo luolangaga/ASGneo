@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ASG.Api.DTOs;
 using ASG.Api.Repositories;
+using ASG.Api.Authorization;
 using System.Security.Claims;
 
 namespace ASG.Api.Controllers
@@ -45,7 +46,12 @@ namespace ASG.Api.Controllers
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                FullName = user.FullName,
+                Role = user.Role,
+                RoleDisplayName = user.RoleDisplayName,
+                RoleName = user.RoleName,
                 CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt,
                 IsActive = user.IsActive
             };
 
@@ -57,6 +63,7 @@ namespace ASG.Api.Controllers
         /// </summary>
         /// <returns>List of all users</returns>
         [HttpGet]
+        [Authorize(Policy = AuthorizationPolicies.CanManageUsers)]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _userRepository.GetAllAsync();
@@ -66,7 +73,12 @@ namespace ASG.Api.Controllers
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                FullName = user.FullName,
+                Role = user.Role,
+                RoleDisplayName = user.RoleDisplayName,
+                RoleName = user.RoleName,
                 CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt,
                 IsActive = user.IsActive
             });
 
@@ -93,7 +105,12 @@ namespace ASG.Api.Controllers
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                FullName = user.FullName,
+                Role = user.Role,
+                RoleDisplayName = user.RoleDisplayName,
+                RoleName = user.RoleName,
                 CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt,
                 IsActive = user.IsActive
             };
 
@@ -106,15 +123,9 @@ namespace ASG.Api.Controllers
         /// <param name="id">User ID</param>
         /// <returns>Success message</returns>
         [HttpDelete("{id}")]
+        [Authorize(Policy = AuthorizationPolicies.CanDeleteUsers)]
         public async Task<IActionResult> DeleteUser(string id)
         {
-            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (currentUserId != id)
-            {
-                // In a real application, you might want to check for admin role here
-                return Forbid("You can only delete your own account.");
-            }
-
             var exists = await _userRepository.ExistsAsync(id);
             if (!exists)
             {

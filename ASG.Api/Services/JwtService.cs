@@ -26,8 +26,12 @@ namespace ASG.Api.Services
                 new(ClaimTypes.NameIdentifier, user.Id),
                 new(ClaimTypes.Email, user.Email ?? ""),
                 new(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
+                new(ClaimTypes.Role, user.Role.ToString()),
                 new("firstName", user.FirstName),
-                new("lastName", user.LastName)
+                new("lastName", user.LastName),
+                new("role", user.Role.ToString()),
+                new("roleDisplayName", user.RoleDisplayName),
+                new("roleName", user.RoleName)
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor

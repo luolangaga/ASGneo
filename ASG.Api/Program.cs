@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -10,6 +11,7 @@ using ASG.Api.Models;
 using ASG.Api.Services;
 using ASG.Api.Repositories;
 using ASG.Api.Middleware;
+using ASG.Api.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,6 +71,14 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
+
+// Register authorization handlers
+builder.Services.AddScoped<IAuthorizationHandler, RoleAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+
+// Configure authorization policies
+AuthorizationPolicies.ConfigurePolicies(builder.Services);
 
 // Configure Swagger
 builder.Services.AddEndpointsApiExplorer();

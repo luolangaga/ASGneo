@@ -34,6 +34,7 @@ namespace ASG.Api.Services
                 Email = registrationDto.Email,
                 FirstName = registrationDto.FirstName,
                 LastName = registrationDto.LastName,
+                Role = registrationDto.Role,
                 CreatedAt = DateTime.UtcNow,
                 IsActive = true
             };
@@ -56,6 +57,10 @@ namespace ASG.Api.Services
                     Email = user.Email,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
+                    FullName = user.FullName,
+                    Role = user.Role,
+                    RoleDisplayName = user.RoleDisplayName,
+                    RoleName = user.RoleName,
                     CreatedAt = user.CreatedAt,
                     IsActive = user.IsActive
                 }
@@ -88,7 +93,12 @@ namespace ASG.Api.Services
                     Email = user.Email,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
+                    FullName = user.FullName,
+                    Role = user.Role,
+                    RoleDisplayName = user.RoleDisplayName,
+                    RoleName = user.RoleName,
                     CreatedAt = user.CreatedAt,
+                    UpdatedAt = user.UpdatedAt,
                     IsActive = user.IsActive
                 }
             };

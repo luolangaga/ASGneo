@@ -25,7 +25,15 @@ namespace ASG.Api.Data
                     .IsRequired()
                     .HasMaxLength(50);
 
+                entity.Property(e => e.Role)
+                    .HasConversion<string>()
+                    .HasDefaultValue(UserRole.User)
+                    .IsRequired();
+
                 entity.Property(e => e.CreatedAt)
+                    .HasDefaultValueSql("datetime('now')");
+
+                entity.Property(e => e.UpdatedAt)
                     .HasDefaultValueSql("datetime('now')");
 
                 entity.Property(e => e.IsActive)

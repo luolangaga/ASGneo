@@ -58,5 +58,47 @@ namespace ASG.Api.Repositories
         {
             return await _context.Users.AnyAsync(u => u.Id == id && u.IsActive);
         }
+
+        // 角色管理相关方法实现
+        public async Task<IEnumerable<User>> GetUsersByRoleAsync(UserRole role)
+        {
+            return await _context.Users
+                .Where(u => u.IsActive && u.Role == role)
+                .OrderBy(u => u.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<bool> UpdateUserRoleAsync(string userId, UserRole role)
+        {
+            var user = await GetByIdAsync(userId);
+            if (user == null || !user.IsActive)
+                return false;
+
+            user.Role = role;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<int> GetUserCountByRoleAsync(UserRole role)
+        {
+            return await _context.Users
+                .CountAsync(u => u.IsActive && u.Role == role);
+        }
+
+        public async Task<IEnumerable<User>> GetUsersWithPaginationAsync(int pageNumber, int pageSize)
+        {
+            return await _context.Users
+                .Where(u => u.IsActive)
+                .OrderBy(u => u.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetTotalUserCountAsync()
+        {
+            return await _context.Users.CountAsync(u => u.IsActive);
+        }
     }
 }
