@@ -69,9 +69,11 @@ builder.Services.AddAuthentication(options =>
 
 // Register services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ITeamRepository, TeamRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<ITeamService, TeamService>();
 
 // Register authorization handlers
 builder.Services.AddScoped<IAuthorizationHandler, RoleAuthorizationHandler>();

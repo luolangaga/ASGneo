@@ -134,3 +134,4 @@ ORDER BY "MigrationId";
 2025-10-22 21:32:19.070 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5250/@vite/client - 404 0 null 35.9204ms
 2025-10-22 21:32:19.077 +08:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5250/@vite/client, Response status code: 404
 2025-10-22 21:32:19.205 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5250/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 171.2871ms
+2025-10-22 23:02:39.214 +08:00 [INF] Application is shutting down...
