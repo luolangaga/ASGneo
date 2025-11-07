@@ -18,7 +18,7 @@ namespace ASG.Api.Controllers
         }
 
         /// <summary>
-        /// Register a new user
+        /// 注册用户
         /// </summary>
         /// <param name="registrationDto">User registration data</param>
         /// <returns>Authentication response with JWT token</returns>
@@ -30,18 +30,21 @@ namespace ASG.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            var result = await _authService.RegisterAsync(registrationDto);
-            if (result == null)
+            try
             {
-                return BadRequest(new { message = "User registration failed. Email may already be in use." });
+                var result = await _authService.RegisterAsync(registrationDto);
+                _logger.LogInformation("User registered successfully: {Email}", registrationDto.Email);
+                return Ok(result);
             }
-
-            _logger.LogInformation("User registered successfully: {Email}", registrationDto.Email);
-            return Ok(result);
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "User registration failed: {Email}", registrationDto.Email);
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         /// <summary>
-        /// Login user
+        /// 登录用户
         /// </summary>
         /// <param name="loginDto">User login credentials</param>
         /// <returns>Authentication response with JWT token</returns>
@@ -64,15 +67,15 @@ namespace ASG.Api.Controllers
         }
 
         /// <summary>
-        /// Logout user (client-side token removal)
+        /// 退出登录(client-side token removal)
         /// </summary>
         /// <returns>Success message</returns>
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            // In JWT implementation, logout is typically handled client-side
+           
             await Task.CompletedTask;
-            return Ok(new { message = "Logged out successfully. Please remove the token from client storage." });
+            return Ok(new { message = "这个Api暂无实质性作用，请客户端清除Token以注销" });
         }
     }
 }

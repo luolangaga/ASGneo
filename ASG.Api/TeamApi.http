@@ -1,0 +1,254 @@
+### Team API 测试文件
+### 基础URL
+@baseUrl = http://localhost:5250
+@contentType = application/json
+
+### 变量定义
+@teamId = 1e138601-f416-4328-8e4b-e4064c665d2a
+@token = your_jwt_token_here
+
+###############################################
+### 1. 用户登录 (获取Token)
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@example.com",
+  "password": "Admin123!"
+}
+
+###############################################
+### 2. 团队报名 (需要登录)
+POST {{baseUrl}}/api/teams/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "测试战队",
+  "password": "team123456",
+  "description": "这是一个测试战队",
+  "players": [
+    {
+      "name": "张三",
+      "gameId": "zhangsan001",
+      "gameRank": "黄金",
+      "description": "主力输出"
+    },
+    {
+      "name": "李四",
+      "gameId": "lisi002",
+      "gameRank": "白金",
+      "description": "辅助"
+    },
+    {
+      "name": "王五",
+      "gameId": "wangwu003",
+      "gameRank": "钻石",
+      "description": "队长"
+    }
+  ]
+}
+
+###############################################
+### 3. 获取所有团队
+GET {{baseUrl}}/api/teams
+Content-Type: {{contentType}}
+
+###############################################
+### 4. 获取特定团队详情
+GET {{baseUrl}}/api/teams/{{teamId}}
+Content-Type: {{contentType}}
+
+###############################################
+### 5. 绑定团队到用户账户 (需要登录)
+POST {{baseUrl}}/api/teams/bind
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "teamName": "测试战队",
+  "password": "team123456"
+}
+
+###############################################
+### 6. 验证团队所有权 (需要登录)
+GET {{baseUrl}}/api/teams/{{teamId}}/verify-ownership
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+###############################################
+### 7. 更新团队信息 (需要登录和所有权)
+PUT {{baseUrl}}/api/teams/{{teamId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "更新后的战队名称",
+  "description": "更新后的战队描述",
+  "players": [
+    {
+      "id": "existing-player-id-1",
+      "name": "张三(更新)",
+      "gameId": "zhangsan001_new",
+      "gameRank": "钻石",
+      "description": "主力输出(更新)"
+    },
+    {
+      "name": "新队员",
+      "gameId": "newplayer004",
+      "gameRank": "白金",
+      "description": "新加入的队员"
+    }
+  ]
+}
+
+###############################################
+### 8. 修改团队密码 (需要登录和所有权)
+PUT {{baseUrl}}/api/teams/{{teamId}}/password
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "newPassword": "newteam123456"
+}
+
+###############################################
+### 9. 删除团队 (需要登录，所有者或管理员权限)
+DELETE {{baseUrl}}/api/teams/{{teamId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+###############################################
+### 测试场景示例
+
+### 场景1: 完整的团队报名流程 (需要先登录)
+POST {{baseUrl}}/api/teams/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "龙之队",
+  "password": "dragon2024",
+  "description": "专业电竞战队",
+  "players": [
+    {
+      "name": "龙王",
+      "gameId": "dragonking001",
+      "gameRank": "王者",
+      "description": "队长兼主力"
+    },
+    {
+      "name": "火龙",
+      "gameId": "firedragon002",
+      "gameRank": "钻石",
+      "description": "副队长"
+    }
+  ]
+}
+
+### 场景2: 另一个团队报名
+POST {{baseUrl}}/api/teams/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "凤凰队",
+  "password": "phoenix2024",
+  "description": "新兴战队",
+  "players": [
+    {
+      "name": "凤凰",
+      "gameId": "phoenix001",
+      "gameRank": "白金",
+      "description": "队长"
+    }
+  ]
+}
+
+### 场景3: 错误测试 - 重复团队名称
+POST {{baseUrl}}/api/teams/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "龙之队",
+  "password": "duplicate123",
+  "description": "重复名称测试",
+  "players": [
+    {
+      "name": "测试员",
+      "gameId": "test001",
+      "gameRank": "青铜",
+      "description": "测试用"
+    }
+  ]
+}
+
+### 场景4: 错误测试 - 无效数据
+POST {{baseUrl}}/api/teams/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "",
+  "password": "123",
+  "description": "",
+  "players": []
+}
+
+###############################################
+### 管理员操作测试
+
+### 创建管理员用户 (如果需要)
+POST {{baseUrl}}/api/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@test.com",
+  "password": "Admin123!",
+  "confirmPassword": "Admin123!",
+  "firstName": "Admin",
+  "lastName": "User"
+}
+
+### 管理员登录
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@test.com",
+  "password": "Admin123!"
+}
+
+### 管理员删除任意团队
+DELETE {{baseUrl}}/api/teams/2
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+###############################################
+### 数据验证测试
+
+### 测试邮箱格式验证 (已移除邮箱字段)
+### 注意：Player模型已不再包含邮箱字段
+
+### 测试手机号格式验证 (已移除手机号字段)
+### 注意：Player模型已不再包含手机号字段
+
+### 测试密码长度验证
+POST {{baseUrl}}/api/teams/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "密码测试队",
+  "password": "123",
+  "description": "测试密码长度验证",
+  "players": [
+    {
+      "name": "测试员",
+      "gameId": "test002",
+      "gameRank": "青铜",
+      "description": "密码测试"
+    }
+  ]
+}

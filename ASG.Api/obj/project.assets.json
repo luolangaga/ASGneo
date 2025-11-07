@@ -93,7 +93,7 @@
           }
         }
       },
-      "Microsoft.AspNetCore.OpenApi/8.0.0": {
+      "Microsoft.AspNetCore.OpenApi/8.0.10": {
         "type": "package",
         "dependencies": {
           "Microsoft.OpenApi": "1.4.3"
@@ -943,6 +943,22 @@
           "lib/netstandard2.0/Mono.TextTemplating.dll": {}
         }
       },
+      "Scalar.AspNetCore/2.10.1": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/Scalar.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Scalar.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
       "Serilog/3.1.1": {
         "type": "package",
         "compile": {
@@ -1726,10 +1742,10 @@
         "microsoft.aspnetcore.identity.entityframeworkcore.nuspec"
       ]
     },
-    "Microsoft.AspNetCore.OpenApi/8.0.0": {
-      "sha512": "T4mwMvPSOYAp+KeQ4xO8H2rxpiOMJ9W/7yBBkUTMp96AHtGlPN4s7hbax2tM61LxTY775JKL4fiv5grn41EHXw==",
+    "Microsoft.AspNetCore.OpenApi/8.0.10": {
+      "sha512": "kzYiW/IbSN0xittjplA8eN1wrNcRi3DMalYRrEuF2xyf2Y5u7cGCfgN1oNZ+g3aBQzMKTQwYsY1PeNmC+P0WnA==",
       "type": "package",
-      "path": "microsoft.aspnetcore.openapi/8.0.0",
+      "path": "microsoft.aspnetcore.openapi/8.0.10",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1737,7 +1753,7 @@
         "THIRD-PARTY-NOTICES.TXT",
         "lib/net8.0/Microsoft.AspNetCore.OpenApi.dll",
         "lib/net8.0/Microsoft.AspNetCore.OpenApi.xml",
-        "microsoft.aspnetcore.openapi.8.0.0.nupkg.sha512",
+        "microsoft.aspnetcore.openapi.8.0.10.nupkg.sha512",
         "microsoft.aspnetcore.openapi.nuspec"
       ]
     },
@@ -3240,6 +3256,25 @@
         "mono.texttemplating.nuspec"
       ]
     },
+    "Scalar.AspNetCore/2.10.1": {
+      "sha512": "G0lG8iDaxhGa5+m5BsG6oW+6VV1XOZPQmHTpRriYZEQpzg9gQMBzR5sFKxiun8BUEdpYzf9NRv9Y/0NOjb+iZQ==",
+      "type": "package",
+      "path": "scalar.aspnetcore/2.10.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "icon.png",
+        "lib/net10.0/Scalar.AspNetCore.dll",
+        "lib/net10.0/Scalar.AspNetCore.xml",
+        "lib/net8.0/Scalar.AspNetCore.dll",
+        "lib/net8.0/Scalar.AspNetCore.xml",
+        "lib/net9.0/Scalar.AspNetCore.dll",
+        "lib/net9.0/Scalar.AspNetCore.xml",
+        "scalar.aspnetcore.2.10.1.nupkg.sha512",
+        "scalar.aspnetcore.nuspec"
+      ]
+    },
     "Serilog/3.1.1": {
       "sha512": "P6G4/4Kt9bT635bhuwdXlJ2SCqqn2nhh4gqFqQueCOr9bK/e7W9ll/IoX1Ter948cV2Z/5+5v8pAfJYUISY03A==",
       "type": "package",
@@ -4143,10 +4178,11 @@
       "BCrypt.Net-Next >= 4.0.3",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 8.0.0",
       "Microsoft.AspNetCore.Identity.EntityFrameworkCore >= 8.0.0",
-      "Microsoft.AspNetCore.OpenApi >= 8.0.0",
+      "Microsoft.AspNetCore.OpenApi >= 8.0.10",
       "Microsoft.EntityFrameworkCore >= 8.0.0",
       "Microsoft.EntityFrameworkCore.Design >= 8.0.0",
       "Microsoft.EntityFrameworkCore.Sqlite >= 8.0.0",
+      "Scalar.AspNetCore >= 2.10.1",
       "Serilog.AspNetCore >= 8.0.0",
       "Serilog.Sinks.Console >= 5.0.0",
       "Serilog.Sinks.File >= 5.0.0",
@@ -4220,7 +4256,7 @@
           },
           "Microsoft.AspNetCore.OpenApi": {
             "target": "Package",
-            "version": "[8.0.0, )"
+            "version": "[8.0.10, )"
           },
           "Microsoft.EntityFrameworkCore": {
             "target": "Package",
@@ -4233,6 +4269,10 @@
           "Microsoft.EntityFrameworkCore.Sqlite": {
             "target": "Package",
             "version": "[8.0.0, )"
+          },
+          "Scalar.AspNetCore": {
+            "target": "Package",
+            "version": "[2.10.1, )"
           },
           "Serilog.AspNetCore": {
             "target": "Package",

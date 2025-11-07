@@ -1,9 +1,12 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Scalar.AspNetCore;
+using Microsoft.AspNetCore.OpenApi;
 using Serilog;
 using System.Text;
 using ASG.Api.Data;
@@ -70,10 +73,12 @@ builder.Services.AddAuthentication(options =>
 // Register services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
+builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.AddScoped<IEventService, EventService>();
 
 // Register authorization handlers
 builder.Services.AddScoped<IAuthorizationHandler, RoleAuthorizationHandler>();
@@ -82,13 +87,19 @@ builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler
 // Configure authorization policies
 AuthorizationPolicies.ConfigurePolicies(builder.Services);
 
-// Configure Swagger
+// Configure Swagger (for OpenAPI JSON) + Scalar UI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "ASG API Framework", Version = "v1" });
-    
-    // Add JWT authentication to Swagger
+
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
+
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
@@ -97,7 +108,7 @@ builder.Services.AddSwaggerGen(c =>
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
-    
+
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -109,7 +120,7 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            Array.Empty<string>()
         }
     });
 });
@@ -119,8 +130,16 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // Serve OpenAPI JSON via Swagger and render UI with Scalar
+    app.UseSwagger(options =>
+    {
+        options.RouteTemplate = "openapi/{documentName}.json";
+    });
+    app.MapScalarApiReference(options =>
+    {
+        options.Title = "ASG API Framework";
+        options.WithOpenApiRoutePattern("/openapi/{documentName}.json");
+    });
 }
 
 // Custom middleware

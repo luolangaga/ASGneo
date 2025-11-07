@@ -1,0 +1,772 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ASG.Api</name>
+    </assembly>
+    <members>
+        <member name="M:ASG.Api.Controllers.AuthController.Register(ASG.Api.DTOs.UserRegistrationDto)">
+            <summary>
+            注册用户
+            </summary>
+            <param name="registrationDto">User registration data</param>
+            <returns>Authentication response with JWT token</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.AuthController.Login(ASG.Api.DTOs.UserLoginDto)">
+            <summary>
+            登录用户
+            </summary>
+            <param name="loginDto">User login credentials</param>
+            <returns>Authentication response with JWT token</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.AuthController.Logout">
+            <summary>
+            退出登录(client-side token removal)
+            </summary>
+            <returns>Success message</returns>
+        </member>
+        <member name="T:ASG.Api.Controllers.EventsController">
+            <summary>
+            赛事管理控制器
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.EventsController.GetAllEvents">
+            <summary>
+            获取所有赛事
+            </summary>
+            <returns>赛事列表</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.EventsController.GetEvent(System.Guid)">
+            <summary>
+            根据ID获取赛事
+            </summary>
+            <param name="id">赛事ID</param>
+            <returns>赛事信息</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.EventsController.CreateEvent(ASG.Api.DTOs.CreateEventDto)">
+            <summary>
+            创建赛事（需要登录）
+            </summary>
+            <param name="createEventDto">创建赛事DTO</param>
+            <returns>创建的赛事信息</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.EventsController.UpdateEvent(System.Guid,ASG.Api.DTOs.UpdateEventDto)">
+            <summary>
+            更新赛事（需要登录且为赛事创建者或管理员）
+            </summary>
+            <param name="id">赛事ID</param>
+            <param name="updateEventDto">更新赛事DTO</param>
+            <returns>更新的赛事信息</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.EventsController.DeleteEvent(System.Guid)">
+            <summary>
+            删除赛事（需要登录且为赛事创建者或管理员）
+            </summary>
+            <param name="id">赛事ID</param>
+            <returns>删除结果</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.EventsController.RegisterTeamToEvent(System.Guid,ASG.Api.DTOs.RegisterTeamToEventDto)">
+            <summary>
+            团队报名赛事（需要登录）
+            </summary>
+            <param name="id">赛事ID</param>
+            <param name="registerDto">报名DTO</param>
+            <returns>报名信息</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.EventsController.UnregisterTeamFromEvent(System.Guid,System.Guid)">
+            <summary>
+            取消团队报名（需要登录）
+            </summary>
+            <param name="id">赛事ID</param>
+            <param name="teamId">团队ID</param>
+            <returns>取消结果</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.EventsController.UpdateTeamRegistrationStatus(System.Guid,System.Guid,ASG.Api.DTOs.UpdateTeamRegistrationDto)">
+            <summary>
+            更新团队报名状态（需要登录且为赛事创建者或管理员）
+            </summary>
+            <param name="id">赛事ID</param>
+            <param name="teamId">团队ID</param>
+            <param name="updateDto">更新DTO</param>
+            <returns>更新的报名信息</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.EventsController.GetEventRegistrations(System.Guid)">
+            <summary>
+            获取赛事的报名团队
+            </summary>
+            <param name="id">赛事ID</param>
+            <returns>报名团队列表</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.EventsController.GetTeamRegistrations(System.Guid)">
+            <summary>
+            获取团队的报名赛事
+            </summary>
+            <param name="teamId">团队ID</param>
+            <returns>报名赛事列表</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.EventsController.GetMyEvents">
+            <summary>
+            获取用户创建的赛事（需要登录）
+            </summary>
+            <returns>用户创建的赛事列表</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.EventsController.GetActiveRegistrationEvents">
+            <summary>
+            获取正在报名的赛事
+            </summary>
+            <returns>正在报名的赛事列表</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.EventsController.GetUpcomingEvents">
+            <summary>
+            获取即将开始的赛事
+            </summary>
+            <returns>即将开始的赛事列表</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.RoleController.GetAllRoles">
+            <summary>
+            获取所有可用角色信息
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.RoleController.UpdateUserRole(ASG.Api.DTOs.UpdateUserRoleDto)">
+            <summary>
+            更新用户角色（仅管理员可操作）
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.RoleController.GetUsersByRole(ASG.Api.Models.UserRole)">
+            <summary>
+            根据角色获取用户列表（仅管理员可查看）
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.RoleController.GetUsersWithPagination(System.Int32,System.Int32)">
+            <summary>
+            分页获取用户列表（仅管理员可查看）
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.RoleController.GetRoleStatistics">
+            <summary>
+            获取角色统计信息（仅超级管理员可查看）
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.RoleController.CheckPermission(System.String)">
+            <summary>
+            检查当前用户是否有特定权限
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.RoleController.GetMyRole">
+            <summary>
+            获取当前用户的角色信息
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.TeamsController.GetAllTeams">
+            <summary>
+            获取所有团队列表
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.TeamsController.GetTeam(System.Guid)">
+            <summary>
+            根据ID获取团队详情
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.TeamsController.RegisterTeam(ASG.Api.DTOs.CreateTeamDto)">
+            <summary>
+            创建新团队（需要登录，自动绑定到当前用户）
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.TeamsController.UpdateTeam(System.Guid,ASG.Api.DTOs.UpdateTeamDto)">
+            <summary>
+            更新团队信息（需要登录且为团队拥有者）
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.TeamsController.DeleteTeam(System.Guid)">
+            <summary>
+            删除团队（需要登录且为团队拥有者或管理员）
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.TeamsController.BindTeam(ASG.Api.DTOs.TeamBindDto)">
+            <summary>
+            绑定团队（需要登录）
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.TeamsController.ChangeTeamPassword(System.Guid,ASG.Api.DTOs.ChangeTeamPasswordDto)">
+            <summary>
+            修改团队密码（需要登录且为团队拥有者）
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.TeamsController.VerifyTeamOwnership(System.Guid)">
+            <summary>
+            验证团队所有权（需要登录）
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.UsersController.GetProfile">
+            <summary>
+            获取自己的信息
+            </summary>
+            <returns>Current user information</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.UsersController.GetAllUsers">
+            <summary>
+            Get all users (Admin only - for demonstration)
+            </summary>
+            <returns>List of all users</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.UsersController.GetUser(System.String)">
+            <summary>
+            Get user by ID
+            </summary>
+            <param name="id">User ID</param>
+            <returns>User information</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.UsersController.DeleteUser(System.String)">
+            <summary>
+            删除用户
+            </summary>
+            <param name="id">User ID</param>
+            <returns>Success message</returns>
+        </member>
+        <member name="T:ASG.Api.DTOs.EventDto">
+            <summary>
+            赛事展示DTO
+            </summary>
+        </member>
+        <member name="T:ASG.Api.DTOs.CreateEventDto">
+            <summary>
+            创建赛事DTO
+            </summary>
+        </member>
+        <member name="T:ASG.Api.DTOs.UpdateEventDto">
+            <summary>
+            更新赛事DTO
+            </summary>
+        </member>
+        <member name="T:ASG.Api.DTOs.TeamEventDto">
+            <summary>
+            团队赛事关联DTO
+            </summary>
+        </member>
+        <member name="T:ASG.Api.DTOs.RegisterTeamToEventDto">
+            <summary>
+            团队报名赛事DTO
+            </summary>
+        </member>
+        <member name="T:ASG.Api.DTOs.UpdateTeamRegistrationDto">
+            <summary>
+            更新团队报名状态DTO
+            </summary>
+        </member>
+        <member name="T:ASG.Api.Migrations.AddUserRoleSupport">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.AddUserRoleSupport.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.AddUserRoleSupport.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.AddUserRoleSupport.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ASG.Api.Migrations.one">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.one.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.one.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.one.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ASG.Api.Migrations.AddTeamPlayerGameRoleCustomFields">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.AddTeamPlayerGameRoleCustomFields.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.AddTeamPlayerGameRoleCustomFields.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.AddTeamPlayerGameRoleCustomFields.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ASG.Api.Migrations.SimplifyCustomFieldsToGameRole">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.SimplifyCustomFieldsToGameRole.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.SimplifyCustomFieldsToGameRole.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.SimplifyCustomFieldsToGameRole.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ASG.Api.Migrations.AddEventAndTeamEventTables">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.AddEventAndTeamEventTables.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.AddEventAndTeamEventTables.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.AddEventAndTeamEventTables.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ASG.Api.Migrations.FixUserRoleDefaultValue">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.FixUserRoleDefaultValue.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.FixUserRoleDefaultValue.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.FixUserRoleDefaultValue.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ASG.Api.Migrations.AddUserRoleNoneValue">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.AddUserRoleNoneValue.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.AddUserRoleNoneValue.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ASG.Api.Migrations.AddUserRoleNoneValue.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:ASG.Api.Models.Event">
+            <summary>
+            赛事实体
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.Event.Id">
+            <summary>
+            赛事唯一标识符
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.Event.Name">
+            <summary>
+            赛事名称
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.Event.Description">
+            <summary>
+            赛事描述
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.Event.RegistrationStartTime">
+            <summary>
+            开始报名时间
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.Event.RegistrationEndTime">
+            <summary>
+            结束报名时间
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.Event.CompetitionStartTime">
+            <summary>
+            比赛开始时间
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.Event.CompetitionEndTime">
+            <summary>
+            比赛结束时间
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.Event.MaxTeams">
+            <summary>
+            最大参赛队伍数量
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.Event.Status">
+            <summary>
+            赛事状态
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.Event.CreatedAt">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.Event.UpdatedAt">
+            <summary>
+            更新时间
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.Event.CreatedByUserId">
+            <summary>
+            创建者用户ID
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.Event.TeamEvents">
+            <summary>
+            参赛队伍关联
+            </summary>
+        </member>
+        <member name="T:ASG.Api.Models.EventStatus">
+            <summary>
+            赛事状态枚举
+            </summary>
+        </member>
+        <member name="F:ASG.Api.Models.EventStatus.Draft">
+            <summary>
+            草稿状态
+            </summary>
+        </member>
+        <member name="F:ASG.Api.Models.EventStatus.RegistrationOpen">
+            <summary>
+            报名中
+            </summary>
+        </member>
+        <member name="F:ASG.Api.Models.EventStatus.RegistrationClosed">
+            <summary>
+            报名已结束
+            </summary>
+        </member>
+        <member name="F:ASG.Api.Models.EventStatus.InProgress">
+            <summary>
+            比赛进行中
+            </summary>
+        </member>
+        <member name="F:ASG.Api.Models.EventStatus.Completed">
+            <summary>
+            比赛已结束
+            </summary>
+        </member>
+        <member name="F:ASG.Api.Models.EventStatus.Cancelled">
+            <summary>
+            已取消
+            </summary>
+        </member>
+        <member name="T:ASG.Api.Models.GameRole">
+            <summary>
+            游戏角色实体 - 用于存储游戏相关的角色信息
+            </summary>
+        </member>
+        <member name="T:ASG.Api.Models.TeamEvent">
+            <summary>
+            团队赛事关联表（多对多关系）
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.TeamEvent.TeamId">
+            <summary>
+            团队ID
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.TeamEvent.EventId">
+            <summary>
+            赛事ID
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.TeamEvent.RegistrationTime">
+            <summary>
+            报名时间
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.TeamEvent.Status">
+            <summary>
+            报名状态
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.TeamEvent.Notes">
+            <summary>
+            备注信息
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.TeamEvent.RegisteredByUserId">
+            <summary>
+            报名用户ID（哪个用户为团队报名的）
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.TeamEvent.Team">
+            <summary>
+            团队导航属性
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.TeamEvent.Event">
+            <summary>
+            赛事导航属性
+            </summary>
+        </member>
+        <member name="T:ASG.Api.Models.RegistrationStatus">
+            <summary>
+            报名状态枚举
+            </summary>
+        </member>
+        <member name="F:ASG.Api.Models.RegistrationStatus.Pending">
+            <summary>
+            待审核
+            </summary>
+        </member>
+        <member name="F:ASG.Api.Models.RegistrationStatus.Registered">
+            <summary>
+            已报名
+            </summary>
+        </member>
+        <member name="F:ASG.Api.Models.RegistrationStatus.Confirmed">
+            <summary>
+            已确认/已批准
+            </summary>
+        </member>
+        <member name="F:ASG.Api.Models.RegistrationStatus.Approved">
+            <summary>
+            已批准
+            </summary>
+        </member>
+        <member name="F:ASG.Api.Models.RegistrationStatus.Cancelled">
+            <summary>
+            已取消
+            </summary>
+        </member>
+        <member name="F:ASG.Api.Models.RegistrationStatus.Rejected">
+            <summary>
+            被拒绝
+            </summary>
+        </member>
+        <member name="T:ASG.Api.Repositories.EventRepository">
+            <summary>
+            赛事数据访问实现
+            </summary>
+        </member>
+        <member name="T:ASG.Api.Repositories.IEventRepository">
+            <summary>
+            赛事数据访问接口
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.GetAllEventsAsync">
+            <summary>
+            获取所有赛事
+            </summary>
+            <returns>赛事列表</returns>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.GetEventByIdAsync(System.Guid)">
+            <summary>
+            根据ID获取赛事
+            </summary>
+            <param name="id">赛事ID</param>
+            <returns>赛事信息</returns>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.GetEventByNameAsync(System.String)">
+            <summary>
+            根据名称获取赛事
+            </summary>
+            <param name="name">赛事名称</param>
+            <returns>赛事信息</returns>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.CreateEventAsync(ASG.Api.Models.Event)">
+            <summary>
+            创建赛事
+            </summary>
+            <param name="eventEntity">赛事信息</param>
+            <returns>创建的赛事</returns>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.UpdateEventAsync(ASG.Api.Models.Event)">
+            <summary>
+            更新赛事
+            </summary>
+            <param name="eventEntity">赛事信息</param>
+            <returns>更新的赛事</returns>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.DeleteEventAsync(System.Guid)">
+            <summary>
+            删除赛事
+            </summary>
+            <param name="id">赛事ID</param>
+            <returns>是否删除成功</returns>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.GetEventRegistrationsAsync(System.Guid)">
+            <summary>
+            获取赛事的报名团队
+            </summary>
+            <param name="eventId">赛事ID</param>
+            <returns>报名团队列表</returns>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.RegisterTeamToEventAsync(ASG.Api.Models.TeamEvent)">
+            <summary>
+            团队报名赛事
+            </summary>
+            <param name="teamEvent">团队赛事关联信息</param>
+            <returns>报名信息</returns>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.UnregisterTeamFromEventAsync(System.Guid,System.Guid)">
+            <summary>
+            取消团队报名
+            </summary>
+            <param name="teamId">团队ID</param>
+            <param name="eventId">赛事ID</param>
+            <returns>是否取消成功</returns>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.UpdateTeamRegistrationStatusAsync(System.Guid,System.Guid,ASG.Api.Models.RegistrationStatus,System.String)">
+            <summary>
+            更新团队报名状态
+            </summary>
+            <param name="teamId">团队ID</param>
+            <param name="eventId">赛事ID</param>
+            <param name="status">新状态</param>
+            <param name="notes">备注</param>
+            <returns>更新的报名信息</returns>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.IsTeamRegisteredAsync(System.Guid,System.Guid)">
+            <summary>
+            检查团队是否已报名赛事
+            </summary>
+            <param name="teamId">团队ID</param>
+            <param name="eventId">赛事ID</param>
+            <returns>是否已报名</returns>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.GetTeamRegistrationsAsync(System.Guid)">
+            <summary>
+            获取团队的报名赛事
+            </summary>
+            <param name="teamId">团队ID</param>
+            <returns>报名赛事列表</returns>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.GetEventsByCreatorAsync(System.String)">
+            <summary>
+            获取用户创建的赛事
+            </summary>
+            <param name="userId">用户ID</param>
+            <returns>赛事列表</returns>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.GetActiveRegistrationEventsAsync">
+            <summary>
+            获取正在报名的赛事
+            </summary>
+            <returns>正在报名的赛事列表</returns>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.GetUpcomingEventsAsync">
+            <summary>
+            获取即将开始的赛事
+            </summary>
+            <returns>即将开始的赛事列表</returns>
+        </member>
+        <member name="T:ASG.Api.Services.EventService">
+            <summary>
+            赛事业务逻辑实现
+            </summary>
+        </member>
+        <member name="T:ASG.Api.Services.IEventService">
+            <summary>
+            赛事业务逻辑接口
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.GetAllEventsAsync">
+            <summary>
+            获取所有赛事
+            </summary>
+            <returns>赛事DTO列表</returns>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.GetEventByIdAsync(System.Guid)">
+            <summary>
+            根据ID获取赛事
+            </summary>
+            <param name="id">赛事ID</param>
+            <returns>赛事DTO</returns>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.CreateEventAsync(ASG.Api.DTOs.CreateEventDto,System.String)">
+            <summary>
+            创建赛事
+            </summary>
+            <param name="createEventDto">创建赛事DTO</param>
+            <param name="creatorUserId">创建者用户ID</param>
+            <returns>创建的赛事DTO</returns>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.UpdateEventAsync(System.Guid,ASG.Api.DTOs.UpdateEventDto,System.String)">
+            <summary>
+            更新赛事
+            </summary>
+            <param name="id">赛事ID</param>
+            <param name="updateEventDto">更新赛事DTO</param>
+            <param name="userId">操作用户ID</param>
+            <returns>更新的赛事DTO</returns>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.DeleteEventAsync(System.Guid,System.String)">
+            <summary>
+            删除赛事
+            </summary>
+            <param name="id">赛事ID</param>
+            <param name="userId">操作用户ID</param>
+            <returns>是否删除成功</returns>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.RegisterTeamToEventAsync(System.Guid,ASG.Api.DTOs.RegisterTeamToEventDto,System.String)">
+            <summary>
+            团队报名赛事
+            </summary>
+            <param name="eventId">赛事ID</param>
+            <param name="registerDto">报名DTO</param>
+            <param name="userId">操作用户ID</param>
+            <returns>报名信息DTO</returns>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.UnregisterTeamFromEventAsync(System.Guid,System.Guid,System.String)">
+            <summary>
+            取消团队报名
+            </summary>
+            <param name="eventId">赛事ID</param>
+            <param name="teamId">团队ID</param>
+            <param name="userId">操作用户ID</param>
+            <returns>是否取消成功</returns>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.UpdateTeamRegistrationStatusAsync(System.Guid,System.Guid,ASG.Api.DTOs.UpdateTeamRegistrationDto,System.String)">
+            <summary>
+            更新团队报名状态
+            </summary>
+            <param name="eventId">赛事ID</param>
+            <param name="teamId">团队ID</param>
+            <param name="updateDto">更新DTO</param>
+            <param name="userId">操作用户ID</param>
+            <returns>更新的报名信息DTO</returns>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.GetEventRegistrationsAsync(System.Guid)">
+            <summary>
+            获取赛事的报名团队
+            </summary>
+            <param name="eventId">赛事ID</param>
+            <returns>报名团队DTO列表</returns>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.GetTeamRegistrationsAsync(System.Guid)">
+            <summary>
+            获取团队的报名赛事
+            </summary>
+            <param name="teamId">团队ID</param>
+            <returns>报名赛事DTO列表</returns>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.GetEventsByCreatorAsync(System.String)">
+            <summary>
+            获取用户创建的赛事
+            </summary>
+            <param name="userId">用户ID</param>
+            <returns>赛事DTO列表</returns>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.GetActiveRegistrationEventsAsync">
+            <summary>
+            获取正在报名的赛事
+            </summary>
+            <returns>正在报名的赛事DTO列表</returns>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.GetUpcomingEventsAsync">
+            <summary>
+            获取即将开始的赛事
+            </summary>
+            <returns>即将开始的赛事DTO列表</returns>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.CanUserManageEventAsync(System.Guid,System.String)">
+            <summary>
+            验证用户是否有权限操作赛事
+            </summary>
+            <param name="eventId">赛事ID</param>
+            <param name="userId">用户ID</param>
+            <returns>是否有权限</returns>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.CanUserManageTeamRegistrationAsync(System.Guid,System.String)">
+            <summary>
+            验证用户是否有权限操作团队报名
+            </summary>
+            <param name="teamId">团队ID</param>
+            <param name="userId">用户ID</param>
+            <returns>是否有权限</returns>
+        </member>
+    </members>
+</doc>

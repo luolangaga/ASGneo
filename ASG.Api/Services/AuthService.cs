@@ -22,16 +22,19 @@ namespace ASG.Api.Services
 
         public async Task<AuthResponseDto?> RegisterAsync(UserRegistrationDto registrationDto)
         {
-            var existingUser = await _userManager.FindByEmailAsync(registrationDto.Email);
+            // 规范化邮箱，避免因空格或大小写导致误判
+            var email = (registrationDto.Email ?? string.Empty).Trim();
+
+            var existingUser = await _userManager.FindByEmailAsync(email);
             if (existingUser != null)
             {
-                return null; // User already exists
+                throw new InvalidOperationException("邮箱已被使用。");
             }
 
             var user = new User
             {
-                UserName = registrationDto.Email,
-                Email = registrationDto.Email,
+                UserName = email,
+                Email = email,
                 FirstName = registrationDto.FirstName,
                 LastName = registrationDto.LastName,
                 Role = registrationDto.Role,
@@ -42,15 +45,16 @@ namespace ASG.Api.Services
             var result = await _userManager.CreateAsync(user, registrationDto.Password);
             if (!result.Succeeded)
             {
-                return null;
+                var errorMessage = string.Join("; ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"注册失败: {errorMessage}");
             }
 
             var token = _jwtService.GenerateToken(user);
-            
+
             return new AuthResponseDto
             {
                 Token = token,
-                Expires = DateTime.UtcNow.AddMinutes(60), // Should match JWT settings
+                Expires = DateTime.UtcNow.AddMinutes(60), // 应与 JWT 设置匹配
                 User = new UserResponseDto
                 {
                     Id = user.Id,
@@ -106,9 +110,7 @@ namespace ASG.Api.Services
 
         public async Task<bool> LogoutAsync(string userId)
         {
-            // In JWT implementation, logout is typically handled client-side
-            // by removing the token. Server-side logout would require token blacklisting
-            // which is not implemented in this basic version.
+           
             await Task.CompletedTask;
             return true;
         }

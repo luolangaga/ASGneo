@@ -1,0 +1,297 @@
+### Event API 测试文件
+### 基础URL
+@baseUrl = http://localhost:5250
+@contentType = application/json
+
+### 变量定义
+@eventId = 550e8400-e29b-41d4-a716-446655440000
+@teamId = 1e138601-f416-4328-8e4b-e4064c665d2a
+@token = your_jwt_token_here
+
+###############################################
+### 1. 用户登录 (获取Token)
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@example.com",
+  "password": "Admin123!"
+}
+
+###############################################
+### 2. 创建赛事 (需要登录)
+POST {{baseUrl}}/api/events
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "2024春季电竞锦标赛",
+  "description": "一年一度的春季电竞比赛，欢迎各路高手参加",
+  "registrationStartTime": "2024-03-01T00:00:00Z",
+  "registrationEndTime": "2024-03-15T23:59:59Z",
+  "competitionStartTime": "2024-03-20T09:00:00Z",
+  "competitionEndTime": "2024-03-25T18:00:00Z",
+  "maxTeams": 32
+}
+
+###############################################
+### 3. 获取所有赛事
+GET {{baseUrl}}/api/events
+Content-Type: {{contentType}}
+
+###############################################
+### 4. 获取特定赛事详情
+GET {{baseUrl}}/api/events/{{eventId}}
+Content-Type: {{contentType}}
+
+###############################################
+### 5. 更新赛事信息 (需要登录和创建者权限)
+PUT {{baseUrl}}/api/events/{{eventId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "2024春季电竞锦标赛(更新版)",
+  "description": "更新后的赛事描述，增加了更多奖励",
+  "registrationStartTime": "2024-03-01T00:00:00Z",
+  "registrationEndTime": "2024-03-18T23:59:59Z",
+  "competitionStartTime": "2024-03-22T09:00:00Z",
+  "competitionEndTime": "2024-03-27T18:00:00Z",
+  "maxTeams": 64
+}
+
+###############################################
+### 6. 团队报名参加赛事 (需要登录)
+POST {{baseUrl}}/api/events/{{eventId}}/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "teamId": "{{teamId}}",
+  "notes": "我们团队非常期待参加这次比赛"
+}
+
+###############################################
+### 7. 获取赛事报名情况
+GET {{baseUrl}}/api/events/{{eventId}}/registrations
+Content-Type: {{contentType}}
+
+###############################################
+### 8. 更新团队报名状态 (需要登录和赛事创建者权限)
+PUT {{baseUrl}}/api/events/{{eventId}}/registrations/{{teamId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "status": "Approved",
+  "notes": "团队资格审核通过"
+}
+
+###############################################
+### 9. 取消团队报名 (需要登录)
+DELETE {{baseUrl}}/api/events/{{eventId}}/register/{{teamId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+###############################################
+### 10. 获取用户创建的赛事
+GET {{baseUrl}}/api/events/my-events
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+###############################################
+### 11. 获取团队的报名记录
+GET {{baseUrl}}/api/events/team-registrations/{{teamId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+###############################################
+### 12. 获取正在报名的赛事
+GET {{baseUrl}}/api/events/active-registration
+Content-Type: {{contentType}}
+
+###############################################
+### 13. 获取即将开始的赛事
+GET {{baseUrl}}/api/events/upcoming
+Content-Type: {{contentType}}
+
+###############################################
+### 14. 删除赛事 (需要登录和创建者权限)
+DELETE {{baseUrl}}/api/events/{{eventId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+###############################################
+### 测试场景示例
+
+### 场景1: 完整的赛事创建和管理流程
+
+### 1.1 创建第一个赛事
+POST {{baseUrl}}/api/events
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "新手友谊赛",
+  "description": "面向新手玩家的友谊比赛",
+  "registrationStartTime": "2024-04-01T00:00:00Z",
+  "registrationEndTime": "2024-04-10T23:59:59Z",
+  "competitionStartTime": "2024-04-15T14:00:00Z",
+  "competitionEndTime": "2024-04-15T18:00:00Z",
+  "maxTeams": 16
+}
+
+### 1.2 创建第二个赛事
+POST {{baseUrl}}/api/events
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "职业联赛预选赛",
+  "description": "职业联赛的预选赛阶段",
+  "registrationStartTime": "2024-05-01T00:00:00Z",
+  "registrationEndTime": "2024-05-20T23:59:59Z",
+  "competitionStartTime": "2024-06-01T09:00:00Z",
+  "competitionEndTime": "2024-06-03T18:00:00Z",
+  "maxTeams": 64
+}
+
+###############################################
+### 场景2: 团队报名流程测试
+
+### 2.1 先创建一个团队
+POST {{baseUrl}}/api/teams/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "测试战队Alpha",
+  "password": "alpha123456",
+  "description": "用于测试赛事报名的战队",
+  "players": [
+    {
+      "name": "队长Alpha",
+      "gameId": "alpha001",
+      "gameRank": "钻石",
+      "description": "队长"
+    },
+    {
+      "name": "队员Beta",
+      "gameId": "beta002",
+      "gameRank": "白金",
+      "description": "主力队员"
+    }
+  ]
+}
+
+### 2.2 团队报名参加赛事
+POST {{baseUrl}}/api/events/{{eventId}}/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "teamId": "{{teamId}}",
+  "notes": "Alpha战队申请参加比赛"
+}
+
+###############################################
+### 场景3: 错误测试
+
+### 3.1 创建赛事时间冲突测试
+POST {{baseUrl}}/api/events
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "时间错误测试赛事",
+  "description": "测试时间验证",
+  "registrationStartTime": "2024-03-15T00:00:00Z",
+  "registrationEndTime": "2024-03-10T23:59:59Z",
+  "competitionStartTime": "2024-03-05T09:00:00Z",
+  "competitionEndTime": "2024-03-25T18:00:00Z",
+  "maxTeams": 32
+}
+
+### 3.2 重复报名测试
+POST {{baseUrl}}/api/events/{{eventId}}/register
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "teamId": "{{teamId}}",
+  "notes": "重复报名测试"
+}
+
+### 3.3 无权限操作测试 (不提供token)
+PUT {{baseUrl}}/api/events/{{eventId}}
+Content-Type: {{contentType}}
+
+{
+  "name": "无权限更新测试",
+  "description": "测试无权限更新"
+}
+
+###############################################
+### 场景4: 数据验证测试
+
+### 4.1 测试必填字段验证
+POST {{baseUrl}}/api/events
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "",
+  "description": "",
+  "registrationStartTime": "",
+  "registrationEndTime": "",
+  "competitionStartTime": "",
+  "maxTeams": -1
+}
+
+### 4.2 测试最大团队数量验证
+POST {{baseUrl}}/api/events
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "name": "团队数量测试赛事",
+  "description": "测试最大团队数量限制",
+  "registrationStartTime": "2024-06-01T00:00:00Z",
+  "registrationEndTime": "2024-06-10T23:59:59Z",
+  "competitionStartTime": "2024-06-15T09:00:00Z",
+  "competitionEndTime": "2024-06-15T18:00:00Z",
+  "maxTeams": 0
+}
+
+###############################################
+### 场景5: 状态管理测试
+
+### 5.1 审批团队报名
+PUT {{baseUrl}}/api/events/{{eventId}}/registrations/{{teamId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "status": "Approved",
+  "notes": "团队实力符合要求，批准参赛"
+}
+
+### 5.2 拒绝团队报名
+PUT {{baseUrl}}/api/events/{{eventId}}/registrations/{{teamId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "status": "Rejected",
+  "notes": "团队成员不足，暂不符合参赛要求"
+}
+
+### 5.3 确认团队报名
+PUT {{baseUrl}}/api/events/{{eventId}}/registrations/{{teamId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "status": "Confirmed",
+  "notes": "团队报名确认，请准时参赛"
+}

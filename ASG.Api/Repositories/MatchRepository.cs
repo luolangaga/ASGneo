@@ -1,0 +1,95 @@
+using ASG.Api.Data;
+using ASG.Api.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace ASG.Api.Repositories
+{
+    /// <summary>
+    /// 赛程数据访问实现
+    /// </summary>
+    public class MatchRepository : IMatchRepository
+    {
+        private readonly ApplicationDbContext _context;
+
+        public MatchRepository(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<IEnumerable<Match>> GetAllMatchesAsync(Guid? eventId = null, int page = 1, int pageSize = 10)
+        {
+            var query = _context.Matches
+                .Include(m => m.HomeTeam)
+                .Include(m => m.AwayTeam)
+                .Include(m => m.Event)
+                .AsQueryable();
+
+            if (eventId.HasValue)
+            {
+                query = query.Where(m => m.EventId == eventId.Value);
+            }
+
+            return await query
+                .OrderByDescending(m => m.MatchTime)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetMatchCountAsync(Guid? eventId = null)
+        {
+            var query = _context.Matches.AsQueryable();
+
+            if (eventId.HasValue)
+            {
+                query = query.Where(m => m.EventId == eventId.Value);
+            }
+
+            return await query.CountAsync();
+        }
+
+        public async Task<Match?> GetMatchByIdAsync(Guid id)
+        {
+            return await _context.Matches
+                .Include(m => m.HomeTeam)
+                .Include(m => m.AwayTeam)
+                .Include(m => m.Event)
+                .FirstOrDefaultAsync(m => m.Id == id);
+        }
+
+        public async Task<Match> CreateMatchAsync(Match match)
+        {
+            _context.Matches.Add(match);
+            await _context.SaveChangesAsync();
+            return match;
+        }
+
+        public async Task<Match> UpdateMatchAsync(Match match)
+        {
+            match.UpdatedAt = DateTime.UtcNow;
+            _context.Matches.Update(match);
+            await _context.SaveChangesAsync();
+            return match;
+        }
+
+        public async Task<bool> DeleteMatchAsync(Guid id)
+        {
+            var match = await _context.Matches.FindAsync(id);
+            if (match == null) return false;
+
+            _context.Matches.Remove(match);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<int> LikeMatchAsync(Guid id)
+        {
+            var match = await _context.Matches.FindAsync(id);
+            if (match == null) throw new Exception("赛程未找到");
+
+            match.Likes++;
+            await _context.SaveChangesAsync();
+            return match.Likes;
+        }
+    }
+}

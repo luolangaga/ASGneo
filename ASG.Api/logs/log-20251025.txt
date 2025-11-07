@@ -1,0 +1,46 @@
+2025-10-25 21:59:56.394 +08:00 [INF] Application is shutting down...
+2025-10-25 22:00:13.500 +08:00 [WRN] The 'UserRole' property 'Role' on entity type 'User' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value '0', since this is the CLR default for the 'UserRole' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2025-10-25 22:00:13.744 +08:00 [INF] Executed DbCommand (11ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+2025-10-25 22:00:13.755 +08:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+2025-10-25 22:00:13.767 +08:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+2025-10-25 22:00:13.784 +08:00 [INF] No migrations were applied. The database is already up to date.
+2025-10-25 22:00:13.822 +08:00 [INF] User profile is available. Using 'C:\Users\luolan\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-10-25 22:00:13.883 +08:00 [INF] Now listening on: http://localhost:5250
+2025-10-25 22:00:13.885 +08:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-25 22:00:13.887 +08:00 [INF] Hosting environment: Development
+2025-10-25 22:00:13.888 +08:00 [INF] Content root path: C:\Users\luolan\ASG\ASG.Api
+2025-10-25 22:00:15.438 +08:00 [INF] Application is shutting down...
+2025-10-25 22:00:26.974 +08:00 [WRN] The 'UserRole' property 'Role' on entity type 'User' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value '0', since this is the CLR default for the 'UserRole' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2025-10-25 22:00:27.211 +08:00 [INF] Executed DbCommand (14ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+2025-10-25 22:00:27.224 +08:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+2025-10-25 22:00:27.236 +08:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+2025-10-25 22:00:27.257 +08:00 [INF] No migrations were applied. The database is already up to date.
+2025-10-25 22:00:27.306 +08:00 [INF] User profile is available. Using 'C:\Users\luolan\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-10-25 22:00:27.432 +08:00 [INF] Now listening on: http://localhost:5250
+2025-10-25 22:00:27.435 +08:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-10-25 22:00:27.437 +08:00 [INF] Hosting environment: Development
+2025-10-25 22:00:27.439 +08:00 [INF] Content root path: C:\Users\luolan\ASG\ASG.Api
+2025-10-25 22:00:30.621 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5250/ - null null
+2025-10-25 22:00:30.698 +08:00 [WRN] Failed to determine the https port for redirect.
+2025-10-25 22:00:30.877 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5250/ - 404 0 null 257.6705ms
+2025-10-25 22:00:30.891 +08:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5250/, Response status code: 404
+2025-10-25 22:00:33.077 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5250/ - null null
+2025-10-25 22:00:33.086 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5250/ - 404 0 null 8.6783ms
+2025-10-25 22:00:33.092 +08:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5250/, Response status code: 404
+2025-10-25 22:00:34.011 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5250/ - null null
+2025-10-25 22:00:34.018 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5250/ - 404 0 null 7.0123ms
+2025-10-25 22:00:34.025 +08:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5250/, Response status code: 404
+2025-10-25 22:00:50.944 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5250/swagger/index.html - null null
+2025-10-25 22:00:51.050 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5250/swagger/index.html - 200 null text/html;charset=utf-8 105.9988ms
+2025-10-25 22:00:51.328 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5250/swagger/v1/swagger.json - null null
+2025-10-25 22:00:51.630 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5250/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 301.6483ms

@@ -22,7 +22,7 @@ namespace ASG.Api.Controllers
         }
 
         /// <summary>
-        /// Get current user profile
+        /// 获取自己的信息
         /// </summary>
         /// <returns>Current user information</returns>
         [HttpGet("profile")]
@@ -118,7 +118,7 @@ namespace ASG.Api.Controllers
         }
 
         /// <summary>
-        /// Delete user (soft delete)
+        /// 删除用户
         /// </summary>
         /// <param name="id">User ID</param>
         /// <returns>Success message</returns>

@@ -17,6 +17,58 @@ namespace ASG.Api.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
 
+            modelBuilder.Entity("ASG.Api.Models.Event", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CompetitionEndTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CompetitionStartTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("datetime('now')");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("MaxTeams")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("RegistrationEndTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("RegistrationStartTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("datetime('now')");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Events", (string)null);
+                });
+
             modelBuilder.Entity("ASG.Api.Models.GameRole", b =>
                 {
                     b.Property<Guid>("Id")
@@ -81,6 +133,72 @@ namespace ASG.Api.Migrations
                     b.ToTable("GameRoles", (string)null);
                 });
 
+            modelBuilder.Entity("ASG.Api.Models.Match", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AwayTeamId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Commentator")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("datetime('now')");
+
+                    b.Property<string>("CustomData")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("{}");
+
+                    b.Property<string>("Director")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("HomeTeamId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Likes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("LiveLink")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("MatchTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Referee")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("datetime('now')");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AwayTeamId");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("HomeTeamId");
+
+                    b.ToTable("Matches", (string)null);
+                });
+
             modelBuilder.Entity("ASG.Api.Models.Player", b =>
                 {
                     b.Property<Guid>("Id")
@@ -117,6 +235,9 @@ namespace ASG.Api.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("datetime('now')");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TeamId");
@@ -139,9 +260,15 @@ namespace ASG.Api.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Likes")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OwnerId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Password")
@@ -154,9 +281,43 @@ namespace ASG.Api.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("datetime('now')");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.ToTable("Teams", (string)null);
+                });
+
+            modelBuilder.Entity("ASG.Api.Models.TeamEvent", b =>
+                {
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RegisteredByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("RegistrationTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("datetime('now')");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("TeamId", "EventId");
+
+                    b.HasIndex("EventId");
+
+                    b.ToTable("TeamEvents", (string)null);
                 });
 
             modelBuilder.Entity("ASG.Api.Models.User", b =>
@@ -388,6 +549,33 @@ namespace ASG.Api.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("ASG.Api.Models.Match", b =>
+                {
+                    b.HasOne("ASG.Api.Models.Team", "AwayTeam")
+                        .WithMany()
+                        .HasForeignKey("AwayTeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ASG.Api.Models.Event", "Event")
+                        .WithMany("Matches")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ASG.Api.Models.Team", "HomeTeam")
+                        .WithMany()
+                        .HasForeignKey("HomeTeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AwayTeam");
+
+                    b.Navigation("Event");
+
+                    b.Navigation("HomeTeam");
+                });
+
             modelBuilder.Entity("ASG.Api.Models.Player", b =>
                 {
                     b.HasOne("ASG.Api.Models.Team", "Team")
@@ -395,6 +583,25 @@ namespace ASG.Api.Migrations
                         .HasForeignKey("TeamId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("ASG.Api.Models.TeamEvent", b =>
+                {
+                    b.HasOne("ASG.Api.Models.Event", "Event")
+                        .WithMany("TeamEvents")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ASG.Api.Models.Team", "Team")
+                        .WithMany("TeamEvents")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
 
                     b.Navigation("Team");
                 });
@@ -460,11 +667,20 @@ namespace ASG.Api.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ASG.Api.Models.Event", b =>
+                {
+                    b.Navigation("Matches");
+
+                    b.Navigation("TeamEvents");
+                });
+
             modelBuilder.Entity("ASG.Api.Models.Team", b =>
                 {
                     b.Navigation("Owner");
 
                     b.Navigation("Players");
+
+                    b.Navigation("TeamEvents");
                 });
 #pragma warning restore 612, 618
         }
