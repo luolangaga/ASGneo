@@ -155,3 +155,4 @@ C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\test-register-new.json
 C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\ASG.Api.xml
 C:\Users\luolan\ASG\ASG.Api\obj\Debug\net8.0\ASG.Api.xml
 C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\Scalar.AspNetCore.dll
+C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\ASG.Api.staticwebassets.runtime.json

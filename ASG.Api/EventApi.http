@@ -61,14 +61,14 @@ Authorization: Bearer {{token}}
 }
 
 ###############################################
-### 6. 团队报名参加赛事 (需要登录)
+### 6. 战队报名参加赛事 (需要登录)
 POST {{baseUrl}}/api/events/{{eventId}}/register
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
 
 {
   "teamId": "{{teamId}}",
-  "notes": "我们团队非常期待参加这次比赛"
+  "notes": "我们战队非常期待参加这次比赛"
 }
 
 ###############################################
@@ -77,18 +77,18 @@ GET {{baseUrl}}/api/events/{{eventId}}/registrations
 Content-Type: {{contentType}}
 
 ###############################################
-### 8. 更新团队报名状态 (需要登录和赛事创建者权限)
+### 8. 更新战队报名状态 (需要登录和赛事创建者权限)
 PUT {{baseUrl}}/api/events/{{eventId}}/registrations/{{teamId}}
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
 
 {
   "status": "Approved",
-  "notes": "团队资格审核通过"
+  "notes": "战队资格审核通过"
 }
 
 ###############################################
-### 9. 取消团队报名 (需要登录)
+### 9. 取消战队报名 (需要登录)
 DELETE {{baseUrl}}/api/events/{{eventId}}/register/{{teamId}}
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
@@ -100,7 +100,7 @@ Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
 
 ###############################################
-### 11. 获取团队的报名记录
+### 11. 获取战队的报名记录
 GET {{baseUrl}}/api/events/team-registrations/{{teamId}}
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
@@ -157,9 +157,9 @@ Authorization: Bearer {{token}}
 }
 
 ###############################################
-### 场景2: 团队报名流程测试
+### 场景2: 战队报名流程测试
 
-### 2.1 先创建一个团队
+### 2.1 先创建一个战队
 POST {{baseUrl}}/api/teams/register
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
@@ -184,7 +184,7 @@ Authorization: Bearer {{token}}
   ]
 }
 
-### 2.2 团队报名参加赛事
+### 2.2 战队报名参加赛事
 POST {{baseUrl}}/api/events/{{eventId}}/register
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
@@ -248,14 +248,14 @@ Authorization: Bearer {{token}}
   "maxTeams": -1
 }
 
-### 4.2 测试最大团队数量验证
+### 4.2 测试最大战队数量验证
 POST {{baseUrl}}/api/events
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
 
 {
-  "name": "团队数量测试赛事",
-  "description": "测试最大团队数量限制",
+  "name": "战队数量测试赛事",
+  "description": "测试最大战队数量限制",
   "registrationStartTime": "2024-06-01T00:00:00Z",
   "registrationEndTime": "2024-06-10T23:59:59Z",
   "competitionStartTime": "2024-06-15T09:00:00Z",
@@ -266,32 +266,32 @@ Authorization: Bearer {{token}}
 ###############################################
 ### 场景5: 状态管理测试
 
-### 5.1 审批团队报名
+### 5.1 审批战队报名
 PUT {{baseUrl}}/api/events/{{eventId}}/registrations/{{teamId}}
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
 
 {
   "status": "Approved",
-  "notes": "团队实力符合要求，批准参赛"
+  "notes": "战队实力符合要求，批准参赛"
 }
 
-### 5.2 拒绝团队报名
+### 5.2 拒绝战队报名
 PUT {{baseUrl}}/api/events/{{eventId}}/registrations/{{teamId}}
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
 
 {
   "status": "Rejected",
-  "notes": "团队成员不足，暂不符合参赛要求"
+  "notes": "战队成员不足，暂不符合参赛要求"
 }
 
-### 5.3 确认团队报名
+### 5.3 确认战队报名
 PUT {{baseUrl}}/api/events/{{eventId}}/registrations/{{teamId}}
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
 
 {
   "status": "Confirmed",
-  "notes": "团队报名确认，请准时参赛"
+  "notes": "战队报名确认，请准时参赛"
 }

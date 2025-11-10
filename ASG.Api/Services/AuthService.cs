@@ -66,7 +66,8 @@ namespace ASG.Api.Services
                     RoleDisplayName = user.RoleDisplayName,
                     RoleName = user.RoleName,
                     CreatedAt = user.CreatedAt,
-                    IsActive = user.IsActive
+                    IsActive = user.IsActive,
+                    TeamId = user.TeamId
                 }
             };
         }
@@ -103,7 +104,8 @@ namespace ASG.Api.Services
                     RoleName = user.RoleName,
                     CreatedAt = user.CreatedAt,
                     UpdatedAt = user.UpdatedAt,
-                    IsActive = user.IsActive
+                    IsActive = user.IsActive,
+                    TeamId = user.TeamId
                 }
             };
         }

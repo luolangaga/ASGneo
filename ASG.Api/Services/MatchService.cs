@@ -13,12 +13,14 @@ namespace ASG.Api.Services
         private readonly IMatchRepository _matchRepository;
         private readonly IEventRepository _eventRepository;
         private readonly ITeamRepository _teamRepository;
+        private readonly IUserRepository _userRepository;
 
-        public MatchService(IMatchRepository matchRepository, IEventRepository eventRepository, ITeamRepository teamRepository)
+        public MatchService(IMatchRepository matchRepository, IEventRepository eventRepository, ITeamRepository teamRepository, IUserRepository userRepository)
         {
             _matchRepository = matchRepository;
             _eventRepository = eventRepository;
             _teamRepository = teamRepository;
+            _userRepository = userRepository;
         }
 
         public async Task<IEnumerable<MatchDto>> GetAllMatchesAsync(Guid? eventId = null, int page = 1, int pageSize = 10)
@@ -45,6 +47,10 @@ namespace ASG.Api.Services
             if (eventEntity == null)
                 throw new InvalidOperationException("赛事不存在");
 
+            // 权限校验：赛事创建者或管理员
+            if (!await CanUserManageEventAsync(createDto.EventId, userId))
+                throw new UnauthorizedAccessException("您没有权限为该赛事创建赛程");
+
             // 验证主客队存在
             var homeTeam = await _teamRepository.GetTeamByIdAsync(createDto.HomeTeamId);
             if (homeTeam == null)
@@ -62,7 +68,7 @@ namespace ASG.Api.Services
             {
                 HomeTeamId = createDto.HomeTeamId,
                 AwayTeamId = createDto.AwayTeamId,
-                MatchTime = createDto.MatchTime.UtcDateTime,
+                MatchTime = createDto.MatchTime,
                 EventId = createDto.EventId,
                 LiveLink = createDto.LiveLink,
                 CustomData = createDto.CustomData,
@@ -83,8 +89,12 @@ namespace ASG.Api.Services
             if (match == null)
                 return null;
 
+            // 权限校验：赛事创建者或管理员
+            if (!await CanUserManageEventAsync(match.EventId, userId))
+                throw new UnauthorizedAccessException("您没有权限修改此赛程");
+
             // 更新字段
-            if (updateDto.MatchTime.HasValue) match.MatchTime = updateDto.MatchTime.Value.UtcDateTime;
+            if (updateDto.MatchTime.HasValue) match.MatchTime = updateDto.MatchTime.Value;
             if (updateDto.LiveLink != null) match.LiveLink = updateDto.LiveLink;
             if (updateDto.CustomData != null) match.CustomData = updateDto.CustomData;
             if (updateDto.Commentator != null) match.Commentator = updateDto.Commentator;
@@ -97,6 +107,14 @@ namespace ASG.Api.Services
 
         public async Task<bool> DeleteMatchAsync(Guid id, string userId)
         {
+            var match = await _matchRepository.GetMatchByIdAsync(id);
+            if (match == null)
+                return false;
+
+            // 权限校验：赛事创建者或管理员
+            if (!await CanUserManageEventAsync(match.EventId, userId))
+                throw new UnauthorizedAccessException("您没有权限删除此赛程");
+
             return await _matchRepository.DeleteMatchAsync(id);
         }
 
@@ -114,7 +132,7 @@ namespace ASG.Api.Services
                 HomeTeamName = match.HomeTeam?.Name ?? string.Empty,
                 AwayTeamId = match.AwayTeamId,
                 AwayTeamName = match.AwayTeam?.Name ?? string.Empty,
-                MatchTime = new DateTimeOffset(DateTime.SpecifyKind(match.MatchTime, DateTimeKind.Utc)),
+                MatchTime = match.MatchTime,
                 EventId = match.EventId,
                 EventName = match.Event?.Name ?? string.Empty,
                 LiveLink = match.LiveLink,
@@ -123,9 +141,27 @@ namespace ASG.Api.Services
                 Director = match.Director,
                 Referee = match.Referee,
                 Likes = match.Likes,
-                CreatedAt = new DateTimeOffset(DateTime.SpecifyKind(match.CreatedAt, DateTimeKind.Utc)),
-                UpdatedAt = new DateTimeOffset(DateTime.SpecifyKind(match.UpdatedAt, DateTimeKind.Utc))
+                CreatedAt = match.CreatedAt,
+                UpdatedAt = match.UpdatedAt
             };
+        }
+
+        private async Task<bool> CanUserManageEventAsync(Guid eventId, string userId)
+        {
+            var eventEntity = await _eventRepository.GetEventByIdAsync(eventId);
+            if (eventEntity == null)
+                return false;
+
+            // 赛事创建者可以管理
+            if (eventEntity.CreatedByUserId == userId)
+                return true;
+
+            // 管理员可以管理
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user != null && (user.Role == UserRole.Admin || user.Role == UserRole.SuperAdmin))
+                return true;
+
+            return false;
         }
     }
 }

@@ -27,6 +27,29 @@ namespace ASG.Api.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Team>> SearchTeamsByNameAsync(string name, int page = 1, int pageSize = 10)
+        {
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+
+            var query = _context.Teams
+                .Include(t => t.Players)
+                .Include(t => t.Owner)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                // 使用 LIKE 以支持模糊匹配，并让数据库决定大小写规则
+                query = query.Where(t => EF.Functions.Like(t.Name, "%" + name + "%"));
+            }
+
+            return await query
+                .OrderBy(t => t.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
         public async Task<Team?> GetTeamByIdAsync(Guid id)
         {
             return await _context.Teams
@@ -121,6 +144,16 @@ namespace ASG.Api.Repositories
         public async Task<int> GetTeamCountAsync()
         {
             return await _context.Teams.CountAsync();
+        }
+
+        public async Task<int> GetSearchTeamCountAsync(string name)
+        {
+            var query = _context.Teams.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                query = query.Where(t => EF.Functions.Like(t.Name, "%" + name + "%"));
+            }
+            return await query.CountAsync();
         }
 
         public async Task<int> LikeTeamAsync(Guid id)

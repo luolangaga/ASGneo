@@ -11,15 +11,18 @@ namespace ASG.Api.DTOs
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
-        public DateTimeOffset RegistrationStartTime { get; set; }
-        public DateTimeOffset RegistrationEndTime { get; set; }
-        public DateTimeOffset CompetitionStartTime { get; set; }
-        public DateTimeOffset? CompetitionEndTime { get; set; }
+        public DateTime RegistrationStartTime { get; set; }
+        public DateTime RegistrationEndTime { get; set; }
+        public DateTime CompetitionStartTime { get; set; }
+        public DateTime? CompetitionEndTime { get; set; }
         public int? MaxTeams { get; set; }
         public EventStatus Status { get; set; }
-        public DateTimeOffset CreatedAt { get; set; }
-        public DateTimeOffset UpdatedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
         public string? CreatedByUserId { get; set; }
+        public string? LogoUrl { get; set; }
+        public Guid? ChampionTeamId { get; set; }
+        public string? ChampionTeamName { get; set; }
         public int RegisteredTeamsCount { get; set; }
         public List<TeamEventDto>? RegisteredTeams { get; set; }
     }
@@ -37,15 +40,15 @@ namespace ASG.Api.DTOs
         public string? Description { get; set; }
 
         [Required(ErrorMessage = "报名开始时间不能为空")]
-        public DateTimeOffset RegistrationStartTime { get; set; }
+        public DateTime RegistrationStartTime { get; set; }
 
         [Required(ErrorMessage = "报名结束时间不能为空")]
-        public DateTimeOffset RegistrationEndTime { get; set; }
+        public DateTime RegistrationEndTime { get; set; }
 
         [Required(ErrorMessage = "比赛开始时间不能为空")]
-        public DateTimeOffset CompetitionStartTime { get; set; }
+        public DateTime CompetitionStartTime { get; set; }
 
-        public DateTimeOffset? CompetitionEndTime { get; set; }
+        public DateTime? CompetitionEndTime { get; set; }
 
         [Range(1, 1000, ErrorMessage = "最大参赛队伍数量必须在1-1000之间")]
         public int? MaxTeams { get; set; }
@@ -64,15 +67,15 @@ namespace ASG.Api.DTOs
         public string? Description { get; set; }
 
         [Required(ErrorMessage = "报名开始时间不能为空")]
-        public DateTimeOffset RegistrationStartTime { get; set; }
+        public DateTime RegistrationStartTime { get; set; }
 
         [Required(ErrorMessage = "报名结束时间不能为空")]
-        public DateTimeOffset RegistrationEndTime { get; set; }
+        public DateTime RegistrationEndTime { get; set; }
 
         [Required(ErrorMessage = "比赛开始时间不能为空")]
-        public DateTimeOffset CompetitionStartTime { get; set; }
+        public DateTime CompetitionStartTime { get; set; }
 
-        public DateTimeOffset? CompetitionEndTime { get; set; }
+        public DateTime? CompetitionEndTime { get; set; }
 
         [Range(1, 1000, ErrorMessage = "最大参赛队伍数量必须在1-1000之间")]
         public int? MaxTeams { get; set; }
@@ -81,7 +84,7 @@ namespace ASG.Api.DTOs
     }
 
     /// <summary>
-    /// 团队赛事关联DTO
+    /// 战队赛事关联DTO
     /// </summary>
     public class TeamEventDto
     {
@@ -89,18 +92,18 @@ namespace ASG.Api.DTOs
         public Guid EventId { get; set; }
         public string TeamName { get; set; } = string.Empty;
         public string? EventName { get; set; }
-        public DateTimeOffset RegistrationTime { get; set; }
+        public DateTime RegistrationTime { get; set; }
         public RegistrationStatus Status { get; set; }
         public string? Notes { get; set; }
         public string? RegisteredByUserId { get; set; }
     }
 
     /// <summary>
-    /// 团队报名赛事DTO
+    /// 战队报名赛事DTO
     /// </summary>
     public class RegisterTeamToEventDto
     {
-        [Required(ErrorMessage = "团队ID不能为空")]
+        [Required(ErrorMessage = "战队ID不能为空")]
         public Guid TeamId { get; set; }
 
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
@@ -108,7 +111,7 @@ namespace ASG.Api.DTOs
     }
 
     /// <summary>
-    /// 更新团队报名状态DTO
+    /// 更新战队报名状态DTO
     /// </summary>
     public class UpdateTeamRegistrationDto
     {
@@ -117,5 +120,13 @@ namespace ASG.Api.DTOs
 
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Notes { get; set; }
+    }
+
+    /// <summary>
+    /// 设置赛事冠军DTO（传null清除冠军）
+    /// </summary>
+    public class SetChampionDto
+    {
+        public Guid? TeamId { get; set; }
     }
 }

@@ -17,6 +17,8 @@ namespace ASG.Api.Data
     public DbSet<Event> Events { get; set; }
     public DbSet<TeamEvent> TeamEvents { get; set; }
     public DbSet<Match> Matches { get; set; }
+    public DbSet<Article> Articles { get; set; }
+    public DbSet<Comment> Comments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -180,6 +182,12 @@ namespace ASG.Api.Data
                 entity.Property(e => e.UpdatedAt)
                     .HasDefaultValueSql("datetime('now')");
 
+                // 冠军战队关系（可为空；冠军删除或战队删除时不影响赛事）
+                entity.HasOne(e => e.ChampionTeam)
+                    .WithMany()
+                    .HasForeignKey(e => e.ChampionTeamId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
                 entity.ToTable("Events");
             });
 
@@ -262,6 +270,62 @@ namespace ASG.Api.Data
                     .OnDelete(DeleteBehavior.Cascade);
 
                 entity.ToTable("TeamEvents");
+            });
+
+            // Configure Article entity
+            builder.Entity<Article>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Title)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(e => e.ContentMarkdown)
+                    .IsRequired();
+
+                entity.Property(e => e.CreatedAt)
+                    .HasDefaultValueSql("datetime('now')");
+
+                entity.Property(e => e.UpdatedAt)
+                    .HasDefaultValueSql("datetime('now')");
+
+                entity.Property(e => e.Likes)
+                    .HasDefaultValue(0);
+
+                entity.Property(e => e.Views)
+                    .HasDefaultValue(0);
+
+                entity.HasOne(e => e.Author)
+                    .WithMany()
+                    .HasForeignKey(e => e.AuthorUserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(e => e.Comments)
+                    .WithOne(c => c.Article)
+                    .HasForeignKey(c => c.ArticleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.ToTable("Articles");
+            });
+
+            // Configure Comment entity
+            builder.Entity<Comment>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Content)
+                    .IsRequired();
+
+                entity.Property(e => e.CreatedAt)
+                    .HasDefaultValueSql("datetime('now')");
+
+                entity.HasOne(e => e.Author)
+                    .WithMany()
+                    .HasForeignKey(e => e.AuthorUserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.ToTable("Comments");
             });
         }
     }

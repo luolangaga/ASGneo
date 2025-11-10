@@ -49,31 +49,31 @@ namespace ASG.Api.Repositories
         Task<bool> DeleteEventAsync(Guid id);
 
         /// <summary>
-        /// 获取赛事的报名团队
+        /// 获取赛事的报名战队
         /// </summary>
         /// <param name="eventId">赛事ID</param>
-        /// <returns>报名团队列表</returns>
+        /// <returns>报名战队列表</returns>
         Task<IEnumerable<TeamEvent>> GetEventRegistrationsAsync(Guid eventId);
 
         /// <summary>
-        /// 团队报名赛事
+        /// 战队报名赛事
         /// </summary>
-        /// <param name="teamEvent">团队赛事关联信息</param>
+        /// <param name="teamEvent">战队赛事关联信息</param>
         /// <returns>报名信息</returns>
         Task<TeamEvent> RegisterTeamToEventAsync(TeamEvent teamEvent);
 
         /// <summary>
-        /// 取消团队报名
+        /// 取消战队报名
         /// </summary>
-        /// <param name="teamId">团队ID</param>
+        /// <param name="teamId">战队ID</param>
         /// <param name="eventId">赛事ID</param>
         /// <returns>是否取消成功</returns>
         Task<bool> UnregisterTeamFromEventAsync(Guid teamId, Guid eventId);
 
         /// <summary>
-        /// 更新团队报名状态
+        /// 更新战队报名状态
         /// </summary>
-        /// <param name="teamId">团队ID</param>
+        /// <param name="teamId">战队ID</param>
         /// <param name="eventId">赛事ID</param>
         /// <param name="status">新状态</param>
         /// <param name="notes">备注</param>
@@ -81,17 +81,17 @@ namespace ASG.Api.Repositories
         Task<TeamEvent?> UpdateTeamRegistrationStatusAsync(Guid teamId, Guid eventId, RegistrationStatus status, string? notes = null);
 
         /// <summary>
-        /// 检查团队是否已报名赛事
+        /// 检查战队是否已报名赛事
         /// </summary>
-        /// <param name="teamId">团队ID</param>
+        /// <param name="teamId">战队ID</param>
         /// <param name="eventId">赛事ID</param>
         /// <returns>是否已报名</returns>
         Task<bool> IsTeamRegisteredAsync(Guid teamId, Guid eventId);
 
         /// <summary>
-        /// 获取团队的报名赛事
+        /// 获取战队的报名赛事
         /// </summary>
-        /// <param name="teamId">团队ID</param>
+        /// <param name="teamId">战队ID</param>
         /// <returns>报名赛事列表</returns>
         Task<IEnumerable<TeamEvent>> GetTeamRegistrationsAsync(Guid teamId);
 
@@ -109,9 +109,44 @@ namespace ASG.Api.Repositories
         Task<IEnumerable<Event>> GetActiveRegistrationEventsAsync();
 
         /// <summary>
+        /// 分页获取正在报名的赛事
+        /// </summary>
+        /// <param name="page">页码（从1开始）</param>
+        /// <param name="pageSize">每页数量</param>
+        /// <returns>正在报名的赛事列表（当前页）</returns>
+        Task<IEnumerable<Event>> GetActiveRegistrationEventsAsync(int page, int pageSize);
+
+        /// <summary>
+        /// 获取正在报名的赛事总数
+        /// </summary>
+        /// <returns>总数</returns>
+        Task<int> GetActiveRegistrationEventsCountAsync();
+
+        /// <summary>
         /// 获取即将开始的赛事
         /// </summary>
         /// <returns>即将开始的赛事列表</returns>
         Task<IEnumerable<Event>> GetUpcomingEventsAsync();
+
+        /// <summary>
+        /// 分页获取即将开始的赛事
+        /// </summary>
+        /// <param name="page">页码（从1开始）</param>
+        /// <param name="pageSize">每页数量</param>
+        /// <returns>即将开始的赛事列表（当前页）</returns>
+        Task<IEnumerable<Event>> GetUpcomingEventsAsync(int page, int pageSize);
+
+        /// <summary>
+        /// 获取即将开始的赛事总数
+        /// </summary>
+        /// <returns>总数</returns>
+        Task<int> GetUpcomingEventsCountAsync();
+
+        /// <summary>
+        /// 获取指定战队获得冠军的赛事列表
+        /// </summary>
+        /// <param name="teamId">战队ID</param>
+        /// <returns>该战队作为冠军的赛事列表</returns>
+        Task<IEnumerable<Event>> GetChampionEventsByTeamAsync(Guid teamId);
     }
 }

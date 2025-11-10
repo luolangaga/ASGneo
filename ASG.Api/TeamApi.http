@@ -18,7 +18,7 @@ Content-Type: {{contentType}}
 }
 
 ###############################################
-### 2. 团队报名 (需要登录)
+### 2. 战队报名 (需要登录)
 POST {{baseUrl}}/api/teams/register
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
@@ -50,17 +50,17 @@ Authorization: Bearer {{token}}
 }
 
 ###############################################
-### 3. 获取所有团队
+### 3. 获取所有战队
 GET {{baseUrl}}/api/teams
 Content-Type: {{contentType}}
 
 ###############################################
-### 4. 获取特定团队详情
+### 4. 获取特定战队详情
 GET {{baseUrl}}/api/teams/{{teamId}}
 Content-Type: {{contentType}}
 
 ###############################################
-### 5. 绑定团队到用户账户 (需要登录)
+### 5. 绑定战队到用户账户 (需要登录)
 POST {{baseUrl}}/api/teams/bind
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
@@ -71,13 +71,13 @@ Authorization: Bearer {{token}}
 }
 
 ###############################################
-### 6. 验证团队所有权 (需要登录)
+### 6. 验证战队所有权 (需要登录)
 GET {{baseUrl}}/api/teams/{{teamId}}/verify-ownership
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
 
 ###############################################
-### 7. 更新团队信息 (需要登录和所有权)
+### 7. 更新战队信息 (需要登录和所有权)
 PUT {{baseUrl}}/api/teams/{{teamId}}
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
@@ -103,7 +103,7 @@ Authorization: Bearer {{token}}
 }
 
 ###############################################
-### 8. 修改团队密码 (需要登录和所有权)
+### 8. 修改战队密码 (需要登录和所有权)
 PUT {{baseUrl}}/api/teams/{{teamId}}/password
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
@@ -113,7 +113,7 @@ Authorization: Bearer {{token}}
 }
 
 ###############################################
-### 9. 删除团队 (需要登录，所有者或管理员权限)
+### 9. 删除战队 (需要登录，所有者或管理员权限)
 DELETE {{baseUrl}}/api/teams/{{teamId}}
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
@@ -121,7 +121,7 @@ Authorization: Bearer {{token}}
 ###############################################
 ### 测试场景示例
 
-### 场景1: 完整的团队报名流程 (需要先登录)
+### 场景1: 完整的战队报名流程 (需要先登录)
 POST {{baseUrl}}/api/teams/register
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
@@ -146,7 +146,7 @@ Authorization: Bearer {{token}}
   ]
 }
 
-### 场景2: 另一个团队报名
+### 场景2: 另一个战队报名
 POST {{baseUrl}}/api/teams/register
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
@@ -165,7 +165,7 @@ Authorization: Bearer {{token}}
   ]
 }
 
-### 场景3: 错误测试 - 重复团队名称
+### 场景3: 错误测试 - 重复战队名称
 POST {{baseUrl}}/api/teams/register
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
@@ -220,7 +220,7 @@ Content-Type: {{contentType}}
   "password": "Admin123!"
 }
 
-### 管理员删除任意团队
+### 管理员删除任意战队
 DELETE {{baseUrl}}/api/teams/2
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}

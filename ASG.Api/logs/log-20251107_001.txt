@@ -244,3 +244,53 @@ ORDER BY "t0"."Id", "t0"."Id0"
 2025-11-07 22:37:32.174 +08:00 [INF] Executed action ASG.Api.Controllers.TeamsController.RegisterTeam (ASG.Api) in 389.734ms
 2025-11-07 22:37:32.176 +08:00 [INF] Executed endpoint 'ASG.Api.Controllers.TeamsController.RegisterTeam (ASG.Api)'
 2025-11-07 22:37:32.177 +08:00 [INF] Request finished HTTP/1.1 POST http://localhost:5250/api/Teams/register - 201 null application/json; charset=utf-8 400.5672ms
+2025-11-07 23:09:58.444 +08:00 [INF] Executed DbCommand (10ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+2025-11-07 23:09:58.492 +08:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+2025-11-07 23:09:58.504 +08:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+2025-11-07 23:09:58.522 +08:00 [INF] No migrations were applied. The database is already up to date.
+2025-11-07 23:09:58.541 +08:00 [INF] User profile is available. Using 'C:\Users\luolan\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-11-07 23:09:58.586 +08:00 [INF] Now listening on: http://localhost:5250
+2025-11-07 23:09:58.590 +08:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-11-07 23:09:58.592 +08:00 [INF] Hosting environment: Development
+2025-11-07 23:09:58.595 +08:00 [INF] Content root path: C:\Users\luolan\ASG\ASG.Api
+2025-11-07 23:10:18.149 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5250/ - null null
+2025-11-07 23:10:18.237 +08:00 [WRN] Failed to determine the https port for redirect.
+2025-11-07 23:10:18.261 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5250/ - 404 0 null 116.0745ms
+2025-11-07 23:10:18.272 +08:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5250/, Response status code: 404
+2025-11-07 23:10:27.349 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5250/ - null null
+2025-11-07 23:10:27.357 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5250/ - 404 0 null 8.0422ms
+2025-11-07 23:10:27.365 +08:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5250/, Response status code: 404
+2025-11-07 23:10:31.966 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5250/swagger/index.html - null null
+2025-11-07 23:10:31.977 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5250/swagger/index.html - 404 0 null 10.8294ms
+2025-11-07 23:10:31.986 +08:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5250/swagger/index.html, Response status code: 404
+2025-11-07 23:10:33.009 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5250/swagger/index.html - null null
+2025-11-07 23:10:33.016 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5250/swagger/index.html - 404 0 null 7.0395ms
+2025-11-07 23:10:33.027 +08:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5250/swagger/index.html, Response status code: 404
+2025-11-07 23:12:42.840 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5250/scalar/ - null null
+2025-11-07 23:12:42.849 +08:00 [INF] Executing endpoint 'HTTP: GET /scalar/{documentName?}'
+2025-11-07 23:12:42.976 +08:00 [INF] Write content with HTTP Response ContentType of text/html
+2025-11-07 23:12:42.980 +08:00 [INF] Executed endpoint 'HTTP: GET /scalar/{documentName?}'
+2025-11-07 23:12:42.982 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5250/scalar/ - 200 615 text/html 142.3369ms
+2025-11-07 23:12:43.043 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5250/scalar/scalar.js - null null
+2025-11-07 23:12:43.044 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5250/scalar/scalar.aspnetcore.js - null null
+2025-11-07 23:12:43.049 +08:00 [INF] Executing endpoint 'HTTP: GET /scalar/scalar.js'
+2025-11-07 23:12:43.055 +08:00 [INF] Executing endpoint 'HTTP: GET /scalar/scalar.aspnetcore.js'
+2025-11-07 23:12:43.062 +08:00 [INF] Sending file with download name ''.
+2025-11-07 23:12:43.062 +08:00 [INF] Sending file with download name ''.
+2025-11-07 23:12:43.068 +08:00 [INF] Executed endpoint 'HTTP: GET /scalar/scalar.aspnetcore.js'
+2025-11-07 23:12:43.072 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5250/scalar/scalar.aspnetcore.js - 200 1046 text/javascript 27.8805ms
+2025-11-07 23:12:43.092 +08:00 [INF] Executed endpoint 'HTTP: GET /scalar/scalar.js'
+2025-11-07 23:12:43.098 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5250/scalar/scalar.js - 200 926338 text/javascript 55.2789ms
+2025-11-07 23:12:43.296 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5250/openapi/v1.json - null null
+2025-11-07 23:12:43.560 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5250/openapi/v1.json - 200 null application/json;charset=utf-8 264.3841ms
+2025-11-07 23:12:43.938 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5250/scalar/favicon.svg - null null
+2025-11-07 23:12:43.945 +08:00 [INF] Executing endpoint 'HTTP: GET /scalar/favicon.svg'
+2025-11-07 23:12:43.949 +08:00 [INF] Sending file with download name ''.
+2025-11-07 23:12:43.951 +08:00 [INF] Executed endpoint 'HTTP: GET /scalar/favicon.svg'
+2025-11-07 23:12:43.954 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5250/scalar/favicon.svg - 200 533 image/svg+xml 16.207ms
+2025-11-07 23:29:11.647 +08:00 [INF] Application is shutting down...

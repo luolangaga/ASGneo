@@ -19,6 +19,7 @@ namespace ASG.Api.Repositories
         public async Task<IEnumerable<Event>> GetAllEventsAsync()
         {
             return await _context.Events
+                .Include(e => e.ChampionTeam)
                 .Include(e => e.TeamEvents)
                     .ThenInclude(te => te.Team)
                 .OrderByDescending(e => e.CreatedAt)
@@ -28,6 +29,7 @@ namespace ASG.Api.Repositories
         public async Task<Event?> GetEventByIdAsync(Guid id)
         {
             return await _context.Events
+                .Include(e => e.ChampionTeam)
                 .Include(e => e.TeamEvents)
                     .ThenInclude(te => te.Team)
                 .FirstOrDefaultAsync(e => e.Id == id);
@@ -78,7 +80,15 @@ namespace ASG.Api.Repositories
         public async Task<TeamEvent> RegisterTeamToEventAsync(TeamEvent teamEvent)
         {
             _context.TeamEvents.Add(teamEvent);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                // 将数据库更新异常转换为业务层可理解的异常，避免返回500
+                throw new InvalidOperationException("保存报名数据失败，请确认战队与赛事存在且未重复报名。", ex);
+            }
             return teamEvent;
         }
 
@@ -150,6 +160,31 @@ namespace ASG.Api.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Event>> GetActiveRegistrationEventsAsync(int page, int pageSize)
+        {
+            var now = DateTime.UtcNow;
+            return await _context.Events
+                .Include(e => e.TeamEvents)
+                    .ThenInclude(te => te.Team)
+                .Where(e => e.Status == EventStatus.RegistrationOpen &&
+                            e.RegistrationStartTime <= now &&
+                            e.RegistrationEndTime >= now)
+                .OrderBy(e => e.RegistrationEndTime)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetActiveRegistrationEventsCountAsync()
+        {
+            var now = DateTime.UtcNow;
+            return await _context.Events
+                .Where(e => e.Status == EventStatus.RegistrationOpen &&
+                            e.RegistrationStartTime <= now &&
+                            e.RegistrationEndTime >= now)
+                .CountAsync();
+        }
+
         public async Task<IEnumerable<Event>> GetUpcomingEventsAsync()
         {
             var now = DateTime.UtcNow;
@@ -158,6 +193,37 @@ namespace ASG.Api.Repositories
                     .ThenInclude(te => te.Team)
                 .Where(e => e.CompetitionStartTime > now)
                 .OrderBy(e => e.CompetitionStartTime)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Event>> GetUpcomingEventsAsync(int page, int pageSize)
+        {
+            var now = DateTime.UtcNow;
+            return await _context.Events
+                .Include(e => e.TeamEvents)
+                    .ThenInclude(te => te.Team)
+                .Where(e => e.CompetitionStartTime > now)
+                .OrderBy(e => e.CompetitionStartTime)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetUpcomingEventsCountAsync()
+        {
+            var now = DateTime.UtcNow;
+            return await _context.Events
+                .Where(e => e.CompetitionStartTime > now)
+                .CountAsync();
+        }
+
+        public async Task<IEnumerable<Event>> GetChampionEventsByTeamAsync(Guid teamId)
+        {
+            return await _context.Events
+                .Include(e => e.ChampionTeam)
+                .Include(e => e.TeamEvents)
+                .Where(e => e.ChampionTeamId == teamId)
+                .OrderByDescending(e => e.CompetitionEndTime ?? e.CompetitionStartTime)
                 .ToListAsync();
         }
     }

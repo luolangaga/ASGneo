@@ -10,13 +10,14 @@ namespace ASG.Api.DTOs
         public int Likes { get; set; } = 0;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public string? LogoUrl { get; set; }
         public List<PlayerDto> Players { get; set; } = new List<PlayerDto>();
     }
 
     public class CreateTeamDto
     {
-        [Required(ErrorMessage = "团队名称不能为空")]
-        [StringLength(100, ErrorMessage = "团队名称不能超过100个字符")]
+        [Required(ErrorMessage = "战队名称不能为空")]
+        [StringLength(100, ErrorMessage = "战队名称不能超过100个字符")]
         public string Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "密码不能为空")]
@@ -33,8 +34,8 @@ namespace ASG.Api.DTOs
 
     public class UpdateTeamDto
     {
-        [Required(ErrorMessage = "团队名称不能为空")]
-        [StringLength(100, ErrorMessage = "团队名称不能超过100个字符")]
+        [Required(ErrorMessage = "战队名称不能为空")]
+        [StringLength(100, ErrorMessage = "战队名称不能超过100个字符")]
         public string Name { get; set; } = string.Empty;
 
         [StringLength(500, ErrorMessage = "描述不能超过500个字符")]
@@ -45,8 +46,18 @@ namespace ASG.Api.DTOs
 
     public class TeamBindDto
     {
-        [Required(ErrorMessage = "团队ID不能为空")]
+        [Required(ErrorMessage = "战队ID不能为空")]
         public Guid TeamId { get; set; }
+
+        [Required(ErrorMessage = "密码不能为空")]
+        public string Password { get; set; } = string.Empty;
+    }
+
+    public class TeamBindByNameDto
+    {
+        [Required(ErrorMessage = "战队名称不能为空")]
+        [StringLength(100, ErrorMessage = "战队名称不能超过100个字符")]
+        public string Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "密码不能为空")]
         public string Password { get; set; } = string.Empty;

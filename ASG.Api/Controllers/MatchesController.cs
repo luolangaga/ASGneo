@@ -69,12 +69,12 @@ namespace ASG.Api.Controllers
         }
 
         /// <summary>
-        /// 创建赛程（需要登录）
+        /// 创建赛程（需要登录；赛事创建者或管理员）
         /// </summary>
         /// <param name="createDto">创建赛程DTO</param>
         /// <returns>创建的赛程信息</returns>
         [HttpPost]
-        [Authorize(Policy = AuthorizationPolicies.RequireAdminRole)]
+        [Authorize]
         public async Task<ActionResult<MatchDto>> CreateMatch([FromBody] CreateMatchDto createDto)
         {
             try
@@ -99,13 +99,13 @@ namespace ASG.Api.Controllers
         }
 
         /// <summary>
-        /// 更新赛程（需要登录且有权限）
+        /// 更新赛程（需要登录；赛事创建者或管理员）
         /// </summary>
         /// <param name="id">赛程ID</param>
         /// <param name="updateDto">更新赛程DTO</param>
         /// <returns>更新的赛程信息</returns>
         [HttpPut("{id}")]
-        [Authorize(Policy = AuthorizationPolicies.RequireAdminRole)]
+        [Authorize]
         public async Task<ActionResult<MatchDto>> UpdateMatch(Guid id, [FromBody] UpdateMatchDto updateDto)
         {
             try
@@ -139,12 +139,12 @@ namespace ASG.Api.Controllers
         }
 
         /// <summary>
-        /// 删除赛程（需要登录且有权限）
+        /// 删除赛程（需要登录；赛事创建者或管理员）
         /// </summary>
         /// <param name="id">赛程ID</param>
         /// <returns>删除结果</returns>
         [HttpDelete("{id}")]
-        [Authorize(Policy = AuthorizationPolicies.RequireAdminRole)]
+        [Authorize]
         public async Task<ActionResult> DeleteMatch(Guid id)
         {
             try

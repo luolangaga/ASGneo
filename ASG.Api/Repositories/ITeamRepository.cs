@@ -6,6 +6,8 @@ namespace ASG.Api.Repositories
     {
         Task<IEnumerable<Team>> GetAllTeamsAsync(int page = 1, int pageSize = 10);
         Task<int> GetTeamCountAsync();
+        Task<IEnumerable<Team>> SearchTeamsByNameAsync(string name, int page = 1, int pageSize = 10);
+        Task<int> GetSearchTeamCountAsync(string name);
         Task<Team?> GetTeamByIdAsync(Guid id);
         Task<Team?> GetTeamByIdWithPlayersAsync(Guid id);
         Task<Team?> GetTeamByNameAsync(string name);

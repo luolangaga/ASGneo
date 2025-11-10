@@ -76,6 +76,16 @@ namespace ASG.Api.Models
         public string? CreatedByUserId { get; set; }
 
         /// <summary>
+        /// 冠军战队ID（可为空，表示尚未设置）
+        /// </summary>
+        public Guid? ChampionTeamId { get; set; }
+
+        /// <summary>
+        /// 冠军战队导航属性
+        /// </summary>
+        public virtual Team? ChampionTeam { get; set; }
+
+        /// <summary>
         /// 参赛队伍关联
         /// </summary>
         public virtual ICollection<TeamEvent> TeamEvents { get; set; } = new List<TeamEvent>();

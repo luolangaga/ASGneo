@@ -12,16 +12,20 @@ namespace ASG.Api.Controllers
     public class TeamsController : ControllerBase
     {
         private readonly ITeamService _teamService;
+        private readonly IEventService _eventService;
         private readonly ILogger<TeamsController> _logger;
+        private readonly IWebHostEnvironment _env;
 
-        public TeamsController(ITeamService teamService, ILogger<TeamsController> logger)
+        public TeamsController(ITeamService teamService, IEventService eventService, ILogger<TeamsController> logger, IWebHostEnvironment env)
         {
             _teamService = teamService;
+            _eventService = eventService;
             _logger = logger;
+            _env = env;
         }
 
         /// <summary>
-        /// 获取所有团队列表（分页）
+        /// 获取所有战队列表（分页）
         /// </summary>
         [HttpGet]
         public async Task<ActionResult<PagedResult<TeamDto>>> GetAllTeams([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
@@ -33,13 +37,82 @@ namespace ASG.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取团队列表时发生错误");
-                return StatusCode(500, "获取团队列表失败");
+                _logger.LogError(ex, "获取战队列表时发生错误");
+                return StatusCode(500, "获取战队列表失败");
             }
         }
 
         /// <summary>
-        /// 根据ID获取团队详情
+        /// 获取战队荣誉（该战队获得冠军的赛事列表）
+        /// </summary>
+        /// <param name="id">战队ID</param>
+        /// <returns>赛事DTO列表</returns>
+        [HttpGet("{id}/honors")]
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetTeamHonors(Guid id)
+        {
+            try
+            {
+                var events = await _eventService.GetChampionEventsByTeamAsync(id);
+                foreach (var e in events)
+                {
+                    e.LogoUrl = GetEventLogoUrl(e.Id);
+                }
+                return Ok(events);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取战队荣誉失败，战队ID: {TeamId}", id);
+                return StatusCode(500, new { message = "获取战队荣誉失败", error = ex.Message });
+            }
+        }
+
+        private string? GetEventLogoUrl(Guid eventId)
+        {
+            var root = _env.WebRootPath;
+            if (string.IsNullOrEmpty(root))
+            {
+                root = Path.Combine(_env.ContentRootPath, "wwwroot");
+            }
+            var eventDir = Path.Combine(root, "event-logos", eventId.ToString());
+            if (!Directory.Exists(eventDir)) return null;
+            var files = Directory.GetFiles(eventDir, "logo.*");
+            if (files.Length == 0) return null;
+            var fileName = Path.GetFileName(files[0]);
+            var relativePath = $"/event-logos/{eventId}/{fileName}";
+            var scheme = Request.Scheme;
+            var host = Request.Host.HasValue ? Request.Host.Value : string.Empty;
+            if (!string.IsNullOrEmpty(host))
+            {
+                return $"{scheme}://{host}{relativePath}";
+            }
+            return relativePath;
+        }
+
+        /// <summary>
+        /// 通过名称搜索战队（模糊匹配，分页）
+        /// </summary>
+        [HttpGet("search")]
+        public async Task<ActionResult<PagedResult<TeamDto>>> SearchTeamsByName([FromQuery] string name, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var result = await _teamService.SearchTeamsByNameAsync(name, page, pageSize);
+                // 为每个结果设置徽标URL（如果存在）
+                foreach (var item in result.Items)
+                {
+                    item.LogoUrl = GetTeamLogoUrl(item.Id);
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "搜索战队时发生错误，关键词: {Keyword}", name);
+                return StatusCode(500, "搜索战队失败");
+            }
+        }
+
+        /// <summary>
+        /// 根据ID获取战队详情
         /// </summary>
         [HttpGet("{id}")]
         public async Task<ActionResult<TeamDto>> GetTeam(Guid id)
@@ -49,19 +122,20 @@ namespace ASG.Api.Controllers
                 var team = await _teamService.GetTeamByIdAsync(id);
                 if (team == null)
                 {
-                    return NotFound("团队不存在");
+                    return NotFound("战队不存在");
                 }
+                team.LogoUrl = GetTeamLogoUrl(id);
                 return Ok(team);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取团队详情时发生错误，团队ID: {TeamId}", id);
-                return StatusCode(500, "获取团队详情失败");
+                _logger.LogError(ex, "获取战队详情时发生错误，战队ID: {TeamId}", id);
+                return StatusCode(500, "获取战队详情失败");
             }
         }
 
         /// <summary>
-        /// 创建新团队（需要登录，自动绑定到当前用户）
+        /// 创建新战队（需要登录，自动绑定到当前用户）
         /// </summary>
         [HttpPost("register")]
         [Authorize]
@@ -82,6 +156,7 @@ namespace ASG.Api.Controllers
                 }
 
                 var team = await _teamService.CreateTeamAsync(createTeamDto, userId);
+                team.LogoUrl = GetTeamLogoUrl(team.Id);
                 return CreatedAtAction(nameof(GetTeam), new { id = team.Id }, team);
             }
             catch (InvalidOperationException ex)
@@ -90,13 +165,13 @@ namespace ASG.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "创建团队时发生错误");
-                return StatusCode(500, "创建团队失败");
+                _logger.LogError(ex, "创建战队时发生错误");
+                return StatusCode(500, "创建战队失败");
             }
         }
 
         /// <summary>
-        /// 更新团队信息（需要登录且为团队拥有者）
+        /// 更新战队信息（需要登录且为战队拥有者）
         /// </summary>
         [HttpPut("{id}")]
         [Authorize]
@@ -116,6 +191,7 @@ namespace ASG.Api.Controllers
                 }
 
                 var team = await _teamService.UpdateTeamAsync(id, updateTeamDto, userId);
+                team.LogoUrl = GetTeamLogoUrl(team.Id);
                 return Ok(team);
             }
             catch (InvalidOperationException ex)
@@ -128,13 +204,13 @@ namespace ASG.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新团队时发生错误，团队ID: {TeamId}", id);
-                return StatusCode(500, "更新团队失败");
+                _logger.LogError(ex, "更新战队时发生错误，战队ID: {TeamId}", id);
+                return StatusCode(500, "更新战队失败");
             }
         }
 
         /// <summary>
-        /// 删除团队（需要登录且为团队拥有者或管理员）
+        /// 删除战队（需要登录且为战队拥有者或管理员）
         /// </summary>
         [HttpDelete("{id}")]
         [Authorize]
@@ -155,7 +231,7 @@ namespace ASG.Api.Controllers
                 var result = await _teamService.DeleteTeamAsync(id, userId, isAdmin);
                 if (!result)
                 {
-                    return NotFound("团队不存在");
+                    return NotFound("战队不存在");
                 }
 
                 return NoContent();
@@ -166,13 +242,13 @@ namespace ASG.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "删除团队时发生错误，团队ID: {TeamId}", id);
-                return StatusCode(500, "删除团队失败");
+                _logger.LogError(ex, "删除战队时发生错误，战队ID: {TeamId}", id);
+                return StatusCode(500, "删除战队失败");
             }
         }
 
         /// <summary>
-        /// 绑定团队（需要登录）
+        /// 绑定战队（需要登录）
         /// </summary>
         [HttpPost("bind")]
         [Authorize]
@@ -194,20 +270,85 @@ namespace ASG.Api.Controllers
                 var result = await _teamService.BindTeamAsync(bindDto.TeamId, bindDto.Password, userId);
                 if (!result)
                 {
-                    return BadRequest("团队不存在或密码错误");
+                    return BadRequest("战队不存在或密码错误");
                 }
 
-                return Ok(new { message = "团队绑定成功" });
+                return Ok(new { message = "战队绑定成功" });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "绑定团队时发生错误，团队ID: {TeamId}", bindDto.TeamId);
-                return StatusCode(500, "绑定团队失败");
+                _logger.LogError(ex, "绑定战队时发生错误，战队ID: {TeamId}", bindDto.TeamId);
+                return StatusCode(500, "绑定战队失败");
             }
         }
 
         /// <summary>
-        /// 修改团队密码（需要登录且为团队拥有者）
+        /// 通过战队名称绑定（需要登录）
+        /// </summary>
+        [HttpPost("bind-by-name")]
+        [Authorize]
+        public async Task<ActionResult> BindTeamByName([FromBody] TeamBindByNameDto bindByNameDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized("用户未登录");
+                }
+
+                var result = await _teamService.BindTeamByNameAsync(bindByNameDto.Name, bindByNameDto.Password, userId);
+                if (!result)
+                {
+                    return BadRequest("战队不存在或密码错误");
+                }
+
+                return Ok(new { message = "战队绑定成功" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "通过名称绑定战队时发生错误，战队名称: {Name}", bindByNameDto.Name);
+                return StatusCode(500, "绑定战队失败");
+            }
+        }
+
+        /// <summary>
+        /// 解绑战队（需要登录）
+        /// </summary>
+        [HttpPost("unbind")]
+        [Authorize]
+        public async Task<ActionResult> UnbindTeam()
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized("用户未登录");
+                }
+
+                var result = await _teamService.UnbindTeamAsync(userId);
+                if (!result)
+                {
+                    return BadRequest("当前用户尚未绑定战队或用户不存在");
+                }
+
+                return Ok(new { message = "战队解绑成功" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "解绑战队时发生错误");
+                return StatusCode(500, "解绑战队失败");
+            }
+        }
+
+        /// <summary>
+        /// 修改战队密码（需要登录且为战队拥有者）
         /// </summary>
         [HttpPost("{id}/change-password")]
         [Authorize]
@@ -229,7 +370,7 @@ namespace ASG.Api.Controllers
                 var result = await _teamService.ChangeTeamPasswordAsync(id, changePasswordDto, userId);
                 if (!result)
                 {
-                    return NotFound("团队不存在");
+                    return NotFound("战队不存在");
                 }
 
                 return Ok(new { message = "密码修改成功" });
@@ -244,13 +385,13 @@ namespace ASG.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "修改团队密码时发生错误，团队ID: {TeamId}", id);
+                _logger.LogError(ex, "修改战队密码时发生错误，战队ID: {TeamId}", id);
                 return StatusCode(500, "修改密码失败");
             }
         }
 
         /// <summary>
-        /// 验证团队所有权（需要登录）
+        /// 验证战队所有权（需要登录）
         /// </summary>
         [HttpGet("{id}/verify-ownership")]
         [Authorize]
@@ -269,13 +410,13 @@ namespace ASG.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证团队所有权时发生错误，团队ID: {TeamId}", id);
+                _logger.LogError(ex, "验证战队所有权时发生错误，战队ID: {TeamId}", id);
                 return StatusCode(500, "验证失败");
             }
         }
 
         /// <summary>
-        /// 给团队点赞
+        /// 给战队点赞
         /// </summary>
         [HttpPost("{id}/like")]
         public async Task<ActionResult> LikeTeam(Guid id)
@@ -291,9 +432,101 @@ namespace ASG.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "给团队点赞时发生错误，团队ID: {TeamId}", id);
+                _logger.LogError(ex, "给战队点赞时发生错误，战队ID: {TeamId}", id);
                 return StatusCode(500, "点赞失败");
             }
+        }
+
+        /// <summary>
+        /// 上传战队徽标（需要登录且为战队拥有者）
+        /// </summary>
+        [HttpPost("{id}/logo")]
+        [Authorize]
+        public async Task<IActionResult> UploadTeamLogo(Guid id, [FromForm] IFormFile? logo)
+        {
+            try
+            {
+                if (logo == null || logo.Length == 0)
+                {
+                    return BadRequest(new { message = "请选择要上传的徽标文件" });
+                }
+
+                var allowedExts = new[] { ".png", ".jpg", ".jpeg", ".webp" };
+                var ext = Path.GetExtension(logo.FileName).ToLowerInvariant();
+                if (!allowedExts.Contains(ext))
+                {
+                    return BadRequest(new { message = "仅支持 png/jpg/jpeg/webp 格式" });
+                }
+
+                const long maxSize = 5 * 1024 * 1024; // 5MB
+                if (logo.Length > maxSize)
+                {
+                    return BadRequest(new { message = "文件大小不能超过 5MB" });
+                }
+
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized("用户未登录");
+                }
+
+                // 验证所有权
+                var isOwner = await _teamService.VerifyTeamOwnershipAsync(id, userId);
+                if (!isOwner)
+                {
+                    return Forbid("您没有权限上传该战队的徽标");
+                }
+
+                var root = _env.WebRootPath;
+                if (string.IsNullOrEmpty(root))
+                {
+                    root = Path.Combine(_env.ContentRootPath, "wwwroot");
+                }
+
+                var teamDir = Path.Combine(root, "team-logos", id.ToString());
+                Directory.CreateDirectory(teamDir);
+
+                foreach (var file in Directory.GetFiles(teamDir, "logo.*"))
+                {
+                    try { System.IO.File.Delete(file); } catch { /* ignore */ }
+                }
+
+                var filePath = Path.Combine(teamDir, $"logo{ext}");
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await logo.CopyToAsync(stream);
+                }
+
+                var url = GetTeamLogoUrl(id);
+                return Ok(new { logoUrl = url });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "上传战队徽标时发生错误，战队ID: {TeamId}", id);
+                return StatusCode(500, new { message = "上传徽标失败", error = ex.Message });
+            }
+        }
+
+        private string? GetTeamLogoUrl(Guid teamId)
+        {
+            var root = _env.WebRootPath;
+            if (string.IsNullOrEmpty(root))
+            {
+                root = Path.Combine(_env.ContentRootPath, "wwwroot");
+            }
+            var teamDir = Path.Combine(root, "team-logos", teamId.ToString());
+            if (!Directory.Exists(teamDir)) return null;
+            var files = Directory.GetFiles(teamDir, "logo.*");
+            if (files.Length == 0) return null;
+            var fileName = Path.GetFileName(files[0]);
+            var relativePath = $"/team-logos/{teamId}/{fileName}";
+            var scheme = Request.Scheme;
+            var host = Request.Host.HasValue ? Request.Host.Value : string.Empty;
+            if (!string.IsNullOrEmpty(host))
+            {
+                return $"{scheme}://{host}{relativePath}";
+            }
+            return relativePath;
         }
     }
 }

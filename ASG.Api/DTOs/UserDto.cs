@@ -47,6 +47,8 @@ namespace ASG.Api.DTOs
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool IsActive { get; set; }
+        public string? AvatarUrl { get; set; }
+        public Guid? TeamId { get; set; }
     }
 
     public class AuthResponseDto
@@ -54,6 +56,17 @@ namespace ASG.Api.DTOs
         public string Token { get; set; } = string.Empty;
         public DateTime Expires { get; set; }
         public UserResponseDto User { get; set; } = new();
+    }
+
+    public class UpdateProfileDto
+    {
+        [Required(ErrorMessage = "名字是必填项")]
+        [StringLength(100, ErrorMessage = "名字不能超过100个字符")]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "姓氏是必填项")]
+        [StringLength(100, ErrorMessage = "姓氏不能超过100个字符")]
+        public string LastName { get; set; } = string.Empty;
     }
 
     public class UpdateUserRoleDto

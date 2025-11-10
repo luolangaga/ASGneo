@@ -19,10 +19,10 @@ namespace ASG.Api.Models
         public bool IsActive { get; set; } = true;
         public UserRole Role { get; set; } = UserRole.User;
 
-        // 团队关系 - 一个用户可以拥有一个团队
+        // 战队关系 - 一个用户可以拥有一个战队
         public Guid? TeamId { get; set; }
 
-        // 导航属性 - 拥有的团队
+        // 导航属性 - 拥有的战队
         [ForeignKey("TeamId")]
         public virtual Team? OwnedTeam { get; set; }
 

@@ -3,12 +3,12 @@ using System.ComponentModel.DataAnnotations;
 namespace ASG.Api.Models
 {
     /// <summary>
-    /// 团队赛事关联表（多对多关系）
+    /// 战队赛事关联表（多对多关系）
     /// </summary>
     public class TeamEvent
     {
         /// <summary>
-        /// 团队ID
+        /// 战队ID
         /// </summary>
         [Required]
         public Guid TeamId { get; set; }
@@ -37,12 +37,12 @@ namespace ASG.Api.Models
         public string? Notes { get; set; }
 
         /// <summary>
-        /// 报名用户ID（哪个用户为团队报名的）
+        /// 报名用户ID（哪个用户为战队报名的）
         /// </summary>
         public string? RegisteredByUserId { get; set; }
 
         /// <summary>
-        /// 团队导航属性
+        /// 战队导航属性
         /// </summary>
         public virtual Team Team { get; set; } = null!;
 

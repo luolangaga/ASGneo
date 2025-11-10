@@ -30,6 +30,20 @@ namespace ASG.Api.Services
             };
         }
 
+        public async Task<PagedResult<TeamDto>> SearchTeamsByNameAsync(string name, int page = 1, int pageSize = 10)
+        {
+            var teams = await _teamRepository.SearchTeamsByNameAsync(name, page, pageSize);
+            var totalCount = await _teamRepository.GetSearchTeamCountAsync(name);
+
+            return new PagedResult<TeamDto>
+            {
+                Items = teams.Select(MapToTeamDto),
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+
         public async Task<TeamDto?> GetTeamByIdAsync(Guid id)
         {
             var team = await _teamRepository.GetTeamByIdWithPlayersAsync(id);
@@ -38,10 +52,10 @@ namespace ASG.Api.Services
 
         public async Task<TeamDto> CreateTeamAsync(CreateTeamDto createTeamDto, string? userId = null)
         {
-            // 检查团队名称是否已存在
+            // 检查战队名称是否已存在
             if (await _teamRepository.TeamNameExistsAsync(createTeamDto.Name))
             {
-                throw new InvalidOperationException("团队名称已存在");
+                throw new InvalidOperationException("战队名称已存在");
             }
 
             var team = new Team
@@ -50,7 +64,9 @@ namespace ASG.Api.Services
                 Name = createTeamDto.Name,
                 Password = BCrypt.Net.BCrypt.HashPassword(createTeamDto.Password),
                 Description = createTeamDto.Description,
-                UserId = userId, // 自动绑定到当前用户
+                // 记录创建者（兼容旧字段）
+                UserId = userId,
+                OwnerId = userId,
                 Players = createTeamDto.Players.Select(p => new Player
                 {
                     Id = Guid.NewGuid(),
@@ -62,6 +78,18 @@ namespace ASG.Api.Services
             };
 
             var createdTeam = await _teamRepository.CreateTeamAsync(team);
+
+            // 自动将用户绑定到新创建的战队（建立 User.TeamId -> Team.Id 的一对一关系）
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var user = await _userRepository.GetByIdAsync(userId);
+                if (user != null && user.TeamId != createdTeam.Id)
+                {
+                    user.TeamId = createdTeam.Id;
+                    await _userRepository.UpdateAsync(user);
+                }
+            }
+
             return MapToTeamDto(createdTeam);
         }
 
@@ -70,22 +98,22 @@ namespace ASG.Api.Services
             var team = await _teamRepository.GetTeamByIdWithPlayersAsync(id);
             if (team == null)
             {
-                throw new InvalidOperationException("团队不存在");
+                throw new InvalidOperationException("战队不存在");
             }
 
-            // 如果提供了用户ID，验证用户是否为团队拥有者
+            // 如果提供了用户ID，验证用户是否为战队拥有者
             if (!string.IsNullOrEmpty(userId))
             {
                 if (!await VerifyTeamOwnershipAsync(id, userId))
                 {
-                    throw new UnauthorizedAccessException("您没有权限修改此团队");
+                    throw new UnauthorizedAccessException("您没有权限修改此战队");
                 }
             }
 
-            // 检查团队名称是否已被其他团队使用
+            // 检查战队名称是否已被其他战队使用
             if (await _teamRepository.TeamNameExistsAsync(updateTeamDto.Name, id))
             {
-                throw new InvalidOperationException("团队名称已存在");
+                throw new InvalidOperationException("战队名称已存在");
             }
 
             team.Name = updateTeamDto.Name;
@@ -106,12 +134,12 @@ namespace ASG.Api.Services
                 return false;
             }
 
-            // 如果不是管理员且提供了用户ID，验证用户是否为团队拥有者
+            // 如果不是管理员且提供了用户ID，验证用户是否为战队拥有者
             if (!isAdmin && !string.IsNullOrEmpty(userId))
             {
                 if (!await VerifyTeamOwnershipAsync(id, userId))
                 {
-                    throw new UnauthorizedAccessException("您没有权限删除此团队");
+                    throw new UnauthorizedAccessException("您没有权限删除此战队");
                 }
             }
 
@@ -120,7 +148,7 @@ namespace ASG.Api.Services
 
         public async Task<bool> BindTeamAsync(Guid teamId, string password, string userId)
         {
-            // 验证团队密码
+            // 验证战队密码
             if (!await _teamRepository.VerifyTeamPasswordAsync(teamId, password))
             {
                 return false;
@@ -133,19 +161,49 @@ namespace ASG.Api.Services
                 return false;
             }
 
-            // 绑定团队
+            // 绑定战队
             user.TeamId = teamId;
             await _userRepository.UpdateAsync(user);
 
             return true;
         }
 
+        public async Task<bool> BindTeamByNameAsync(string name, string password, string userId)
+        {
+            var team = await _teamRepository.GetTeamByNameAsync(name);
+            if (team == null) return false;
+
+            // 验证密码
+            if (!BCrypt.Net.BCrypt.Verify(password, team.Password))
+            {
+                return false;
+            }
+
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) return false;
+
+            user.TeamId = team.Id;
+            await _userRepository.UpdateAsync(user);
+            return true;
+        }
+
+        public async Task<bool> UnbindTeamAsync(string userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null) return false;
+            if (user.TeamId == null) return false;
+
+            user.TeamId = null;
+            await _userRepository.UpdateAsync(user);
+            return true;
+        }
+
         public async Task<bool> ChangeTeamPasswordAsync(Guid teamId, ChangeTeamPasswordDto changePasswordDto, string userId)
         {
-            // 验证用户是否为团队拥有者
+            // 验证用户是否为战队拥有者
             if (!await VerifyTeamOwnershipAsync(teamId, userId))
             {
-                throw new UnauthorizedAccessException("您没有权限修改此团队密码");
+                throw new UnauthorizedAccessException("您没有权限修改此战队密码");
             }
 
             var team = await _teamRepository.GetTeamByIdAsync(teamId);
