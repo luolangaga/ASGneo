@@ -14,6 +14,7 @@ const totalCount = ref(0)
 const page = ref(1)
 const pageSize = ref(10)
 const authorMap = ref({})
+const keyword = ref('')
 
 const heroTitle = computed(() => '社区文章')
 const loggedIn = computed(() => isAuthenticated.value)
@@ -22,7 +23,8 @@ async function load() {
   loading.value = true
   errorMsg.value = ''
   try {
-    const res = await getArticles({ page: page.value, pageSize: pageSize.value })
+    const q = keyword.value.trim()
+    const res = await getArticles({ query: q, page: page.value, pageSize: pageSize.value })
     // 兼容后端返回的属性命名
     const itemsArr = res.items || res.Items || []
     items.value = itemsArr
@@ -46,6 +48,11 @@ async function load() {
   } finally {
     loading.value = false
   }
+}
+
+function onSearch() {
+  page.value = 1
+  load()
 }
 
 function goCreate() {
@@ -96,6 +103,20 @@ async function onLike(a) {
 
   <v-container class="py-6">
     <v-alert v-if="errorMsg" type="error" :text="errorMsg" class="mb-4" />
+    <v-card class="mb-4">
+      <v-card-title class="d-flex align-center">
+        <v-text-field
+          v-model="keyword"
+          class="flex-grow-1"
+          label="搜索文章关键字"
+          prepend-inner-icon="search"
+          clearable
+          hide-details
+          @keyup.enter="onSearch"
+        />
+        <v-btn class="ml-2" color="primary" variant="elevated" @click="onSearch" prepend-icon="search">搜索</v-btn>
+      </v-card-title>
+    </v-card>
     <v-row v-if="loading" class="mb-4" dense>
       <v-col v-for="n in 6" :key="n" cols="12" sm="6" md="4" lg="3">
         <v-skeleton-loader type="card" />
@@ -106,7 +127,7 @@ async function onLike(a) {
       <v-col v-for="a in items" :key="a.id || a.Id" cols="12" sm="6" md="4" lg="3">
         <v-card>
           <v-card-item class="pa-3">
-            <div class="text-h6 mb-2">{{ a.title || a.Title }}</div>
+            <router-link :to="`/articles/${a.id || a.Id}`" class="text-h6 mb-2 d-inline-block text-decoration-none">{{ a.title || a.Title }}</router-link>
             <div class="d-flex align-center">
               <v-avatar size="28" class="mr-2">
                 <template v-if="authorMap[a.authorUserId || a.AuthorUserId]?.avatarUrl || authorMap[a.authorUserId || a.AuthorUserId]?.AvatarUrl">
@@ -119,7 +140,11 @@ async function onLike(a) {
               <div class="flex-grow-1">
                 <div class="text-caption">{{ a.authorName || a.AuthorName || '未知' }}</div>
                 <div class="text-caption text-medium-emphasis">
-                  战队：{{ a.authorTeamName || a.AuthorTeamName || '无' }}
+                  战队：
+                  <template v-if="a.authorTeamName || a.AuthorTeamName">
+                    <router-link :to="{ name: 'team-search', query: { q: a.authorTeamName || a.AuthorTeamName } }" class="text-decoration-none">{{ a.authorTeamName || a.AuthorTeamName }}</router-link>
+                  </template>
+                  <template v-else>无</template>
                 </div>
               </div>
             </div>

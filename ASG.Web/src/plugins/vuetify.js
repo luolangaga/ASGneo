@@ -79,9 +79,12 @@ const defaults = {
 
 export const vuetify = createVuetify({
   icons: {
-    // Use Material Symbols Outlined as the default icon set
+    // 默认使用 Google Material Symbols Outlined（通过 index.html 引入字体）
     defaultSet: 'ms',
-    aliases: mdAliases,
+    // 使用 Material 的标准别名集合，覆盖常见的 close/delete 等名称
+    aliases: {
+      ...mdAliases,
+    },
     sets: {
       ms: {
         // Render Material Symbols via font glyphs

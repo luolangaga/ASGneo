@@ -47,6 +47,27 @@ namespace ASG.Api.Controllers
         }
 
         /// <summary>
+        /// 搜索赛事（按名称或描述，分页）
+        /// </summary>
+        [HttpGet("search")]
+        public async Task<ActionResult<PagedResult<EventDto>>> SearchEvents([FromQuery] string query, [FromQuery] int page = 1, [FromQuery] int pageSize = 12)
+        {
+            try
+            {
+                var result = await _eventService.SearchEventsAsync(query, page, pageSize);
+                foreach (var e in result.Items)
+                {
+                    e.LogoUrl = GetEventLogoUrl(e.Id);
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "搜索赛事失败", error = ex.Message });
+            }
+        }
+
+        /// <summary>
         /// 根据ID获取赛事
         /// </summary>
         /// <param name="id">赛事ID</param>

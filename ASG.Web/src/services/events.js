@@ -48,6 +48,12 @@ export async function updateEvent(id, dto) {
   })
 }
 
+export async function deleteEvent(id) {
+  return apiFetch(`/Events/${id}`, {
+    method: 'DELETE',
+  })
+}
+
 export async function registerTeamToEvent(eventId, { teamId, notes }) {
   const payload = { teamId, notes }
   return apiFetch(`/Events/${eventId}/register`, {
@@ -115,6 +121,7 @@ export default {
   getEvent,
   createEvent,
   updateEvent,
+  deleteEvent,
   registerTeamToEvent,
   unregisterTeamFromEvent,
   getEventRegistrations,

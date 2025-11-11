@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getEvent, updateEvent } from '../services/events'
+import { getEvent, updateEvent, deleteEvent } from '../services/events'
 import MarkdownEditor from '../components/MarkdownEditor.vue'
 
 const route = useRoute()
@@ -10,6 +10,7 @@ const id = route.params.id
 
 const loading = ref(false)
 const saving = ref(false)
+const deleting = ref(false)
 const errorMsg = ref('')
 
 const name = ref('')
@@ -95,6 +96,21 @@ async function onSave() {
 function onCancel() {
   router.push('/events/manage')
 }
+
+async function onDelete() {
+  const ok = window.confirm(`确定要删除此赛事吗？此操作不可恢复。`)
+  if (!ok) return
+  deleting.value = true
+  errorMsg.value = ''
+  try {
+    await deleteEvent(id)
+    router.push('/events/manage')
+  } catch (err) {
+    errorMsg.value = err?.payload?.message || err?.message || '删除失败'
+  } finally {
+    deleting.value = false
+  }
+}
 </script>
 
 <template>
@@ -140,6 +156,7 @@ function onCancel() {
       <v-card-actions>
         <v-spacer />
         <v-btn variant="text" @click="onCancel">取消</v-btn>
+        <v-btn color="error" variant="text" :loading="deleting" @click="onDelete" prepend-icon="delete">删除</v-btn>
         <v-btn color="primary" :loading="saving" @click="onSave" prepend-icon="save">保存</v-btn>
       </v-card-actions>
     </v-card>

@@ -160,8 +160,9 @@ namespace ASG.Api.Services
                 throw new InvalidOperationException("赛事未开放报名");
             }
 
-            var eventRegStartUtc = EnsureUtc(eventEntity.RegistrationStartTime);
-            var eventRegEndUtc = EnsureUtc(eventEntity.RegistrationEndTime);
+            // 注意：数据库读取的时间Kind可能为Unspecified，这里的报名时间应视为UTC存储，避免二次偏移
+            var eventRegStartUtc = AssumeUtc(eventEntity.RegistrationStartTime);
+            var eventRegEndUtc = AssumeUtc(eventEntity.RegistrationEndTime);
 
             if (now < eventRegStartUtc || now > eventRegEndUtc)
             {
@@ -276,6 +277,19 @@ namespace ASG.Api.Services
         {
             var events = await _eventRepository.GetUpcomingEventsAsync(page, pageSize);
             var totalCount = await _eventRepository.GetUpcomingEventsCountAsync();
+            return new PagedResult<EventDto>
+            {
+                Items = events.Select(MapToEventDto),
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+
+        public async Task<PagedResult<EventDto>> SearchEventsAsync(string query, int page = 1, int pageSize = 12)
+        {
+            var events = await _eventRepository.SearchEventsAsync(query, page, pageSize);
+            var totalCount = await _eventRepository.GetSearchEventsCountAsync(query);
             return new PagedResult<EventDto>
             {
                 Items = events.Select(MapToEventDto),
@@ -449,6 +463,19 @@ namespace ASG.Api.Services
             return assumedLocal.ToUniversalTime();
         }
 
+        /// <summary>
+        /// 标注 DateTime 为 UTC 而不改变具体的时刻值。
+        /// - 若为 Utc，直接返回；
+        /// - 若为 Local，转换为 Utc；
+        /// - 若为 Unspecified，直接指定为 Utc（避免序列化丢失 "Z" 标识）。
+        /// </summary>
+        private static DateTime AssumeUtc(DateTime dt)
+        {
+            if (dt.Kind == DateTimeKind.Utc) return dt;
+            if (dt.Kind == DateTimeKind.Local) return dt.ToUniversalTime();
+            return DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+        }
+
         private static void ValidateEventTimes(DateTime registrationStart, DateTime registrationEnd,
                                                DateTime competitionStart, DateTime? competitionEnd)
         {
@@ -475,14 +502,14 @@ namespace ASG.Api.Services
                 Id = eventEntity.Id,
                 Name = eventEntity.Name,
                 Description = eventEntity.Description,
-                RegistrationStartTime = eventEntity.RegistrationStartTime,
-                RegistrationEndTime = eventEntity.RegistrationEndTime,
-                CompetitionStartTime = eventEntity.CompetitionStartTime,
-                CompetitionEndTime = eventEntity.CompetitionEndTime,
+                RegistrationStartTime = AssumeUtc(eventEntity.RegistrationStartTime),
+                RegistrationEndTime = AssumeUtc(eventEntity.RegistrationEndTime),
+                CompetitionStartTime = AssumeUtc(eventEntity.CompetitionStartTime),
+                CompetitionEndTime = eventEntity.CompetitionEndTime.HasValue ? AssumeUtc(eventEntity.CompetitionEndTime.Value) : (DateTime?)null,
                 MaxTeams = eventEntity.MaxTeams,
                 Status = eventEntity.Status,
-                CreatedAt = eventEntity.CreatedAt,
-                UpdatedAt = eventEntity.UpdatedAt,
+                CreatedAt = AssumeUtc(eventEntity.CreatedAt),
+                UpdatedAt = AssumeUtc(eventEntity.UpdatedAt),
                 CreatedByUserId = eventEntity.CreatedByUserId,
                 ChampionTeamId = eventEntity.ChampionTeamId,
                 ChampionTeamName = eventEntity.ChampionTeam?.Name,
@@ -499,7 +526,7 @@ namespace ASG.Api.Services
                 EventId = teamEvent.EventId,
                 TeamName = teamName,
                 EventName = eventName,
-                RegistrationTime = teamEvent.RegistrationTime,
+                RegistrationTime = AssumeUtc(teamEvent.RegistrationTime),
                 Status = teamEvent.Status,
                 Notes = teamEvent.Notes,
                 RegisteredByUserId = teamEvent.RegisteredByUserId

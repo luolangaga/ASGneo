@@ -60,4 +60,10 @@ export async function uploadTeamLogo(id, file) {
   })
 }
 
-export default { registerTeam, updateTeam, bindTeam, bindTeamByName, unbindTeam, getTeam, getTeamHonors, searchTeamsByName, likeTeam, uploadTeamLogo }
+export async function deleteTeam(id) {
+  return apiFetch(`/Teams/${id}`, {
+    method: 'DELETE',
+  })
+}
+
+export default { registerTeam, updateTeam, bindTeam, bindTeamByName, unbindTeam, getTeam, getTeamHonors, searchTeamsByName, likeTeam, uploadTeamLogo, deleteTeam }

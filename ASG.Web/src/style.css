@@ -87,6 +87,20 @@ body {
   margin: 0.8em 0;
 }
 
+/* Markdown 图片响应式（正文与预览）*/
+.md-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0.5em auto; /* 轻微上下留白并居中 */
+}
+.md-preview img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0.5em auto;
+}
+
 @media (prefers-color-scheme: dark) {
   .md-content :not(pre) > code { background: rgba(255,255,255,0.08); }
   .md-content pre { background: rgba(255,255,255,0.08); }

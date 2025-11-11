@@ -4,9 +4,14 @@
         <name>ASG.Api</name>
     </assembly>
     <members>
-        <member name="M:ASG.Api.Controllers.ArticlesController.GetArticles(System.Int32,System.Int32,System.String,System.Boolean)">
+        <member name="M:ASG.Api.Controllers.ArticlesController.GetArticles(System.Int32,System.Int32,System.String,System.Boolean,System.String)">
             <summary>
-            获取文章列表（分页，支持排序：views/createdAt/likes）
+            获取文章列表（分页，支持排序：views/createdAt/likes；支持 query 触发搜索）
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.ArticlesController.SearchArticles(System.String,System.Int32,System.Int32,System.String,System.Boolean)">
+            <summary>
+            搜索文章（按标题或内容，分页并支持排序）
             </summary>
         </member>
         <member name="M:ASG.Api.Controllers.ArticlesController.GetArticleById(System.Guid)">
@@ -77,6 +82,11 @@
             获取所有赛事
             </summary>
             <returns>赛事列表</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.EventsController.SearchEvents(System.String,System.Int32,System.Int32)">
+            <summary>
+            搜索赛事（按名称或描述，分页）
+            </summary>
         </member>
         <member name="M:ASG.Api.Controllers.EventsController.GetEvent(System.Guid)">
             <summary>
@@ -200,6 +210,12 @@
             上传赛事徽标（需要登录且为赛事创建者或管理员）
             </summary>
         </member>
+        <member name="M:ASG.Api.Controllers.FilesController.UploadImage(Microsoft.AspNetCore.Http.IFormFile,System.String)">
+            <summary>
+            上传图片并返回可访问的URL（默认存储到 /wwwroot/uploads/markdown）。
+            仅允许图片文件：png/jpeg/jpg/webp/gif。
+            </summary>
+        </member>
         <member name="T:ASG.Api.Controllers.MatchesController">
             <summary>
             赛程管理控制器
@@ -283,6 +299,11 @@
         <member name="M:ASG.Api.Controllers.RoleController.GetMyRole">
             <summary>
             获取当前用户的角色信息
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.SearchController.Search(System.String,System.String,System.Int32,System.Int32)">
+            <summary>
+            综合搜索：type=teams/events/articles/all，支持分页
             </summary>
         </member>
         <member name="M:ASG.Api.Controllers.TeamsController.GetAllTeams(System.Int32,System.Int32)">
@@ -426,6 +447,11 @@
         <member name="T:ASG.Api.DTOs.SetChampionDto">
             <summary>
             设置赛事冠军DTO（传null清除冠军）
+            </summary>
+        </member>
+        <member name="T:ASG.Api.DTOs.SearchAggregateDto">
+            <summary>
+            综合搜索返回结果（可选包含：战队、赛事、文章）
             </summary>
         </member>
         <member name="T:ASG.Api.Migrations.AddUserRoleSupport">
@@ -776,6 +802,16 @@
             赛事数据访问实现
             </summary>
         </member>
+        <member name="M:ASG.Api.Repositories.IArticleRepository.SearchArticlesAsync(System.String,System.Int32,System.Int32,System.String,System.Boolean)">
+            <summary>
+            搜索文章（按标题或内容，分页并支持排序）
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Repositories.IArticleRepository.GetSearchArticlesCountAsync(System.String)">
+            <summary>
+            搜索文章总数（按标题或内容）
+            </summary>
+        </member>
         <member name="T:ASG.Api.Repositories.IEventRepository">
             <summary>
             赛事数据访问接口
@@ -786,6 +822,22 @@
             获取所有赛事
             </summary>
             <returns>赛事列表</returns>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.SearchEventsAsync(System.String,System.Int32,System.Int32)">
+            <summary>
+            搜索赛事（按名称或描述，分页）
+            </summary>
+            <param name="query">搜索关键字</param>
+            <param name="page">页码（从1开始）</param>
+            <param name="pageSize">每页数量</param>
+            <returns>赛事列表（当前页）</returns>
+        </member>
+        <member name="M:ASG.Api.Repositories.IEventRepository.GetSearchEventsCountAsync(System.String)">
+            <summary>
+            搜索赛事的总数（按名称或描述）
+            </summary>
+            <param name="query">搜索关键字</param>
+            <returns>总数</returns>
         </member>
         <member name="M:ASG.Api.Repositories.IEventRepository.GetEventByIdAsync(System.Guid)">
             <summary>
@@ -997,6 +1049,14 @@
             - 若为 Unspecified，按本地时间解释后转换为 Utc（避免遗漏时区信息导致的误判）。
             </summary>
         </member>
+        <member name="M:ASG.Api.Services.EventService.AssumeUtc(System.DateTime)">
+            <summary>
+            标注 DateTime 为 UTC 而不改变具体的时刻值。
+            - 若为 Utc，直接返回；
+            - 若为 Local，转换为 Utc；
+            - 若为 Unspecified，直接指定为 Utc（避免序列化丢失 "Z" 标识）。
+            </summary>
+        </member>
         <member name="T:ASG.Api.Services.IEventService">
             <summary>
             赛事业务逻辑接口
@@ -1113,6 +1173,15 @@
             <summary>
             分页获取即将开始的赛事
             </summary>
+            <param name="page">页码（默认1）</param>
+            <param name="pageSize">每页数量（默认12）</param>
+            <returns>分页结果</returns>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.SearchEventsAsync(System.String,System.Int32,System.Int32)">
+            <summary>
+            搜索赛事（按名称或描述，分页）
+            </summary>
+            <param name="query">搜索关键字</param>
             <param name="page">页码（默认1）</param>
             <param name="pageSize">每页数量（默认12）</param>
             <returns>分页结果</returns>

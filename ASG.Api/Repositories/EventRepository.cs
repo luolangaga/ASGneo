@@ -26,6 +26,48 @@ namespace ASG.Api.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Event>> SearchEventsAsync(string query, int page = 1, int pageSize = 12)
+        {
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 12;
+
+            var q = (query ?? string.Empty).Trim();
+            var eventsQuery = _context.Events
+                .Include(e => e.ChampionTeam)
+                .Include(e => e.TeamEvents)
+                    .ThenInclude(te => te.Team)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                // 名称或描述模糊匹配
+                eventsQuery = eventsQuery.Where(e =>
+                    EF.Functions.Like(e.Name, "%" + q + "%") ||
+                    (e.Description != null && EF.Functions.Like(e.Description, "%" + q + "%"))
+                );
+            }
+
+            return await eventsQuery
+                .OrderByDescending(e => e.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetSearchEventsCountAsync(string query)
+        {
+            var q = (query ?? string.Empty).Trim();
+            var eventsQuery = _context.Events.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                eventsQuery = eventsQuery.Where(e =>
+                    EF.Functions.Like(e.Name, "%" + q + "%") ||
+                    (e.Description != null && EF.Functions.Like(e.Description, "%" + q + "%"))
+                );
+            }
+            return await eventsQuery.CountAsync();
+        }
+
         public async Task<Event?> GetEventByIdAsync(Guid id)
         {
             return await _context.Events

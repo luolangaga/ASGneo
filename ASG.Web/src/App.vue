@@ -20,12 +20,15 @@ const drawer = ref(false)
   <v-app>
     <v-app-bar app color="surface" flat :density="smAndDown ? 'compact' : 'comfortable'">
       <v-toolbar-title class="app-title">
+           <router-link to="/">
         <img src="/logo.svg" alt="平台Logo" class="app-logo" />
-        <span>第五人格统一赛事平台</span>
+          <span>第五人格统一赛事平台</span>
+         </router-link>
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <!-- 移动端：常用功能快捷入口（赛事、文章） -->
+      <!-- 移动端：常用功能快捷入口（首页、赛事、文章） -->
       <div class="d-sm-none d-flex align-center mr-1">
+        <v-btn icon="home" variant="text" :to="'/'" aria-label="首页" />
         <v-btn icon="grid_view" variant="text" :to="'/events'" aria-label="赛事看板" />
         <v-btn icon="list_alt" variant="text" :to="'/articles'" aria-label="文章列表" />
         <v-btn icon="group" variant="text" :to="'/teams/search'" aria-label="搜索战队" />
@@ -41,7 +44,7 @@ const drawer = ref(false)
       <!-- 桌面端：顶部菜单 -->
       <div class="d-none d-sm-flex align-center">
         <v-btn to="/" variant="text">首页</v-btn>
-        <v-btn to="/about" variant="text" prepend-icon="info">关于</v-btn>
+        <!-- 关于页面已移除 -->
         <v-menu>
           <template #activator="{ props }">
             <v-btn v-bind="props" variant="text" prepend-icon="group">参赛者</v-btn>
@@ -99,7 +102,7 @@ const drawer = ref(false)
       <v-divider />
       <v-list density="comfortable">
         <v-list-item link :to="'/'" prepend-icon="home" title="首页" @click="drawer=false" />
-        <v-list-item link :to="'/about'" prepend-icon="info" title="关于" @click="drawer=false" />
+        <!-- 关于页面已移除 -->
         <v-list-subheader>参赛者</v-list-subheader>
         <v-list-item link :to="'/events'" prepend-icon="grid_view" title="赛事看板" @click="drawer=false" />
         <v-list-item link :to="'/teams/create'" prepend-icon="person_add" title="创建战队" @click="drawer=false" />
@@ -118,7 +121,7 @@ const drawer = ref(false)
           <v-list-item link :to="'/events/create'" prepend-icon="add" title="创建赛事" @click="drawer=false" />
           <v-list-item link :to="'/events/manage'" prepend-icon="settings" title="我的赛事" @click="drawer=false" />
           <v-divider class="my-2" />
-          <v-list-item prepend-icon="logout" title="退出登录" @click="onLogout; drawer=false" />
+          <v-list-item prepend-icon="logout" title="退出登录" @click="onLogout(); drawer=false" />
         </template>
         <template v-else>
           <v-divider class="my-2" />

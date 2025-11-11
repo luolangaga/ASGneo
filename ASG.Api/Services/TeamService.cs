@@ -236,25 +236,19 @@ namespace ASG.Api.Services
             return await _teamRepository.TeamExistsAsync(id);
         }
 
-        private async Task UpdatePlayersAsync(Team team, List<UpdatePlayerDto> updatePlayerDtos)
+        private async Task UpdatePlayersAsync(Team team, List<UpdatePlayerDto>? updatePlayerDtos)
         {
-            // 获取现有玩家ID列表
-            var existingPlayerIds = team.Players.Select(p => p.Id).ToList();
-            var updatePlayerIds = updatePlayerDtos.Where(p => p.Id.HasValue).Select(p => p.Id!.Value).ToList();
-
-            // 删除不在更新列表中的玩家
-            var playersToRemove = team.Players.Where(p => !updatePlayerIds.Contains(p.Id)).ToList();
-            foreach (var player in playersToRemove)
+            // 空列表保护：如果未提供玩家列表，则不对现有玩家做任何修改
+            if (updatePlayerDtos == null || updatePlayerDtos.Count == 0)
             {
-                team.Players.Remove(player);
+                return;
             }
 
-            // 更新或添加玩家
+            // 仅更新或新增，不删除未出现在请求中的玩家，避免因前端未传全量列表导致误删与约束错误
             foreach (var updatePlayerDto in updatePlayerDtos)
             {
                 if (updatePlayerDto.Id.HasValue)
                 {
-                    // 更新现有玩家
                     var existingPlayer = team.Players.FirstOrDefault(p => p.Id == updatePlayerDto.Id.Value);
                     if (existingPlayer != null)
                     {
@@ -264,10 +258,26 @@ namespace ASG.Api.Services
                         existingPlayer.Description = updatePlayerDto.Description;
                         existingPlayer.UpdatedAt = DateTime.UtcNow;
                     }
+                    else
+                    {
+                        // 前端可能为新玩家生成了临时ID（或玩家已被并发删除），
+                        // 将其按“新增”处理以避免并发更新冲突
+                        var addPlayer = new Player
+                        {
+                            Id = Guid.NewGuid(),
+                            Name = updatePlayerDto.Name,
+                            GameId = updatePlayerDto.GameId,
+                            GameRank = updatePlayerDto.GameRank,
+                            Description = updatePlayerDto.Description,
+                            TeamId = team.Id,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        team.Players.Add(addPlayer);
+                    }
                 }
                 else
                 {
-                    // 添加新玩家
                     var newPlayer = new Player
                     {
                         Id = Guid.NewGuid(),

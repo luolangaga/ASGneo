@@ -1,13 +1,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getMyEvents, updateEvent } from '../services/events'
+import { getMyEvents, updateEvent, deleteEvent } from '../services/events'
 import { renderMarkdown } from '../utils/markdown'
 
 const router = useRouter()
 
 const loading = ref(false)
 const savingId = ref(null)
+const deletingId = ref(null)
 const errorMsg = ref('')
 const myEvents = ref([])
 const expandedMap = ref({})
@@ -85,6 +86,22 @@ async function setStatus(ev, newStatus) {
     savingId.value = null
   }
 }
+
+async function onDeleteEvent(ev) {
+  if (!ev?.id) return
+  const ok = window.confirm(`确定要删除赛事“${ev.name}”吗？此操作不可恢复。`)
+  if (!ok) return
+  deletingId.value = ev.id
+  errorMsg.value = ''
+  try {
+    await deleteEvent(ev.id)
+    await load()
+  } catch (err) {
+    errorMsg.value = err?.payload?.message || err?.message || '删除赛事失败'
+  } finally {
+    deletingId.value = null
+  }
+}
 </script>
 
 <template>
@@ -123,6 +140,13 @@ async function setStatus(ev, newStatus) {
             <v-btn variant="text" :to="`/events/${ev.id}`" prepend-icon="visibility">查看详情</v-btn>
             <v-btn variant="text" @click="goEditEvent(ev.id)" prepend-icon="edit">编辑</v-btn>
             <v-spacer />
+            <v-btn
+              :loading="deletingId === ev.id"
+              color="error"
+              variant="text"
+              @click="onDeleteEvent(ev)"
+              prepend-icon="delete"
+            >删除</v-btn>
             <v-btn
               v-if="ev.status !== 1"
               :loading="savingId === ev.id"

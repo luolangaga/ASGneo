@@ -68,7 +68,7 @@ namespace ASG.Api.Services
             {
                 HomeTeamId = createDto.HomeTeamId,
                 AwayTeamId = createDto.AwayTeamId,
-                MatchTime = createDto.MatchTime,
+                MatchTime = EnsureUtc(createDto.MatchTime),
                 EventId = createDto.EventId,
                 LiveLink = createDto.LiveLink,
                 CustomData = createDto.CustomData,
@@ -94,7 +94,7 @@ namespace ASG.Api.Services
                 throw new UnauthorizedAccessException("您没有权限修改此赛程");
 
             // 更新字段
-            if (updateDto.MatchTime.HasValue) match.MatchTime = updateDto.MatchTime.Value;
+            if (updateDto.MatchTime.HasValue) match.MatchTime = EnsureUtc(updateDto.MatchTime.Value);
             if (updateDto.LiveLink != null) match.LiveLink = updateDto.LiveLink;
             if (updateDto.CustomData != null) match.CustomData = updateDto.CustomData;
             if (updateDto.Commentator != null) match.Commentator = updateDto.Commentator;
@@ -132,7 +132,7 @@ namespace ASG.Api.Services
                 HomeTeamName = match.HomeTeam?.Name ?? string.Empty,
                 AwayTeamId = match.AwayTeamId,
                 AwayTeamName = match.AwayTeam?.Name ?? string.Empty,
-                MatchTime = match.MatchTime,
+                MatchTime = AssumeUtc(match.MatchTime),
                 EventId = match.EventId,
                 EventName = match.Event?.Name ?? string.Empty,
                 LiveLink = match.LiveLink,
@@ -141,8 +141,8 @@ namespace ASG.Api.Services
                 Director = match.Director,
                 Referee = match.Referee,
                 Likes = match.Likes,
-                CreatedAt = match.CreatedAt,
-                UpdatedAt = match.UpdatedAt
+                CreatedAt = AssumeUtc(match.CreatedAt),
+                UpdatedAt = AssumeUtc(match.UpdatedAt)
             };
         }
 
@@ -162,6 +162,22 @@ namespace ASG.Api.Services
                 return true;
 
             return false;
+        }
+
+        // 时间处理：统一与赛事服务保持一致
+        private static DateTime EnsureUtc(DateTime dt)
+        {
+            if (dt.Kind == DateTimeKind.Utc) return dt;
+            if (dt.Kind == DateTimeKind.Local) return dt.ToUniversalTime();
+            var assumedLocal = DateTime.SpecifyKind(dt, DateTimeKind.Local);
+            return assumedLocal.ToUniversalTime();
+        }
+
+        private static DateTime AssumeUtc(DateTime dt)
+        {
+            if (dt.Kind == DateTimeKind.Utc) return dt;
+            if (dt.Kind == DateTimeKind.Local) return dt.ToUniversalTime();
+            return DateTime.SpecifyKind(dt, DateTimeKind.Utc);
         }
     }
 }

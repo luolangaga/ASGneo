@@ -676,11 +676,13 @@ async function confirmUploadAndRegister() {
               <v-col v-for="r in registrations" :key="r.teamId" cols="12" sm="6" md="4" lg="3">
                 <v-card>
                   <v-card-title class="d-flex align-center">
-                    <v-avatar size="28" class="mr-2">
-                      <v-img v-if="teamDetails[r.teamId]?.logoUrl || teamDetails[r.teamId]?.LogoUrl" :src="teamDetails[r.teamId]?.logoUrl || teamDetails[r.teamId]?.LogoUrl" alt="team logo" cover />
-                      <v-icon v-else icon="group" size="22" />
-                    </v-avatar>
-                    <span class="text-truncate">{{ r.teamName }}</span>
+                    <router-link :to="{ name: 'team-detail', params: { id: r.teamId } }" class="d-inline-flex align-center text-decoration-none">
+                      <v-avatar size="28" class="mr-2">
+                        <v-img v-if="teamDetails[r.teamId]?.logoUrl || teamDetails[r.teamId]?.LogoUrl" :src="teamDetails[r.teamId]?.logoUrl || teamDetails[r.teamId]?.LogoUrl" alt="team logo" cover />
+                        <v-icon v-else icon="group" size="22" />
+                      </v-avatar>
+                      <span class="text-truncate">{{ r.teamName }}</span>
+                    </router-link>
                     <v-spacer />
                     <v-chip :color="statusColor(r.status)" size="small">{{ statusLabel(r.status) }}</v-chip>
                   </v-card-title>

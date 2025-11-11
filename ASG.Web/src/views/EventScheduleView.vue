@@ -540,7 +540,7 @@ onMounted(async () => {
     <template #actions>
       <v-btn class="mb-3" variant="text" @click="goBackDetail">
         <template #prepend>
-          <span class="material-symbols-outlined">chevron_left</span>
+          <v-icon icon="chevron_left" />
         </template>
         返回赛事详情
       </v-btn>
@@ -590,27 +590,35 @@ onMounted(async () => {
                           <v-chip v-if="m.liveLink || m.LiveLink" size="small" color="secondary" variant="tonal" prepend-icon="videocam">直播</v-chip>
                         </div>
                         <div class="entry-main d-flex align-center">
-                          <v-avatar size="40" class="mr-3" color="primary" variant="tonal">
-                            <template v-if="teamDetails[m.homeTeamId || m.HomeTeamId]?.logoUrl || teamDetails[m.homeTeamId || m.HomeTeamId]?.LogoUrl">
-                              <v-img :src="teamDetails[m.homeTeamId || m.HomeTeamId].logoUrl || teamDetails[m.homeTeamId || m.HomeTeamId].LogoUrl" cover />
-                            </template>
-                            <template v-else>
-                              <span class="text-subtitle-2">{{ getAvatarLetter(m.homeTeamName || m.HomeTeamName) }}</span>
-                            </template>
-                          </v-avatar>
+                          <router-link :to="{ name: 'team-detail', params: { id: m.homeTeamId || m.HomeTeamId } }" class="d-inline-flex align-center text-decoration-none mr-3">
+                            <v-avatar size="40" color="primary" variant="tonal">
+                              <template v-if="teamDetails[m.homeTeamId || m.HomeTeamId]?.logoUrl || teamDetails[m.homeTeamId || m.HomeTeamId]?.LogoUrl">
+                                <v-img :src="teamDetails[m.homeTeamId || m.HomeTeamId].logoUrl || teamDetails[m.homeTeamId || m.HomeTeamId].LogoUrl" cover />
+                              </template>
+                              <template v-else>
+                                <span class="text-subtitle-2">{{ getAvatarLetter(m.homeTeamName || m.HomeTeamName) }}</span>
+                              </template>
+                            </v-avatar>
+                          </router-link>
                           <div class="team-names">
-                            <div class="team-name">{{ m.homeTeamName || m.HomeTeamName }}</div>
+                            <router-link :to="{ name: 'team-detail', params: { id: m.homeTeamId || m.HomeTeamId } }" class="team-name-link text-decoration-none">
+                              <div class="team-name">{{ m.homeTeamName || m.HomeTeamName }}</div>
+                            </router-link>
                             <div class="vs"><v-icon icon="sports_martial_arts" /></div>
-                            <div class="team-name">{{ m.awayTeamName || m.AwayTeamName }}</div>
+                            <router-link :to="{ name: 'team-detail', params: { id: m.awayTeamId || m.AwayTeamId } }" class="team-name-link text-decoration-none">
+                              <div class="team-name">{{ m.awayTeamName || m.AwayTeamName }}</div>
+                            </router-link>
                           </div>
-                          <v-avatar size="40" class="ml-3" color="secondary" variant="tonal">
-                            <template v-if="teamDetails[m.awayTeamId || m.AwayTeamId]?.logoUrl || teamDetails[m.awayTeamId || m.AwayTeamId]?.LogoUrl">
-                              <v-img :src="teamDetails[m.awayTeamId || m.AwayTeamId].logoUrl || teamDetails[m.awayTeamId || m.AwayTeamId].LogoUrl" cover />
-                            </template>
-                            <template v-else>
-                              <span class="text-subtitle-2">{{ getAvatarLetter(m.awayTeamName || m.AwayTeamName) }}</span>
-                            </template>
-                          </v-avatar>
+                          <router-link :to="{ name: 'team-detail', params: { id: m.awayTeamId || m.AwayTeamId } }" class="d-inline-flex align-center text-decoration-none ml-3">
+                            <v-avatar size="40" color="secondary" variant="tonal">
+                              <template v-if="teamDetails[m.awayTeamId || m.AwayTeamId]?.logoUrl || teamDetails[m.awayTeamId || m.AwayTeamId]?.LogoUrl">
+                                <v-img :src="teamDetails[m.awayTeamId || m.AwayTeamId].logoUrl || teamDetails[m.awayTeamId || m.AwayTeamId].LogoUrl" cover />
+                              </template>
+                              <template v-else>
+                                <span class="text-subtitle-2">{{ getAvatarLetter(m.awayTeamName || m.AwayTeamName) }}</span>
+                              </template>
+                            </v-avatar>
+                          </router-link>
                         </div>
                         <div class="entry-meta d-flex align-center">
                           <div v-if="m.commentator || m.Commentator" class="crew-chip">

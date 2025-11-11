@@ -124,6 +124,15 @@ namespace ASG.Api.Services
         Task<PagedResult<EventDto>> GetUpcomingEventsAsync(int page = 1, int pageSize = 12);
 
         /// <summary>
+        /// 搜索赛事（按名称或描述，分页）
+        /// </summary>
+        /// <param name="query">搜索关键字</param>
+        /// <param name="page">页码（默认1）</param>
+        /// <param name="pageSize">每页数量（默认12）</param>
+        /// <returns>分页结果</returns>
+        Task<PagedResult<EventDto>> SearchEventsAsync(string query, int page = 1, int pageSize = 12);
+
+        /// <summary>
         /// 获取指定战队获得冠军的赛事（战队荣誉）
         /// </summary>
         /// <param name="teamId">战队ID</param>

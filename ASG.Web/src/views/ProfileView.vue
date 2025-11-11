@@ -286,7 +286,8 @@ function toMd(s) {
                 <v-alert type="info" text="暂无荣誉" density="compact" />
               </template>
               <v-divider class="my-4" />
-              <div class="d-flex justify-end">
+              <div class="d-flex justify-end align-center gap-2">
+                <v-btn color="primary" variant="tonal" to="/teams/edit" prepend-icon="edit">编辑信息</v-btn>
                 <v-btn color="error" variant="text" :loading="unbinding" prepend-icon="link_off" @click="onUnbindTeam">解绑战队</v-btn>
               </div>
             </v-col>

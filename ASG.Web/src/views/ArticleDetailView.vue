@@ -176,7 +176,11 @@ onMounted(async () => {
           <div class="flex-grow-1">
             <div class="text-subtitle-1 font-weight-medium">{{ authorName }}</div>
             <div class="text-caption text-medium-emphasis">
-              战队：{{ authorTeamName }}
+              战队：
+              <template v-if="authorTeamName && authorTeamName !== '无'">
+                <router-link :to="{ name: 'team-search', query: { q: authorTeamName } }" class="text-decoration-none">{{ authorTeamName }}</router-link>
+              </template>
+              <template v-else>无</template>
               <span class="mx-1">·</span>
               发布于：{{ createdAtStr }}
             </div>

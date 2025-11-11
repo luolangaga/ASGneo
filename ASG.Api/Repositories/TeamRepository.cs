@@ -94,10 +94,56 @@ namespace ASG.Api.Repositories
 
         public async Task<Team> UpdateTeamAsync(Team team)
         {
+            // 仅更新战队本身的更新时间；依赖跟踪的实体状态进行保存
+            // 注意：不要对整个实体图调用 Update，否则新添加的玩家会被错误地视为“修改”并触发并发异常
             team.UpdatedAt = DateTime.UtcNow;
 
-            _context.Teams.Update(team);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException ex)
+            {
+                // 并发修复策略：如果是 Player 处于 Modified 且数据库中已不存在该主键行，则改为 Added 并重试保存
+                var fixedAny = false;
+                foreach (var entry in ex.Entries)
+                {
+                    if (entry.Entity is Player player && entry.State == EntityState.Modified)
+                    {
+                        var exists = await _context.Players.AsNoTracking().AnyAsync(p => p.Id == player.Id);
+                        if (!exists)
+                        {
+                            // 将丢失的玩家改为新增插入，避免并发更新失败
+                            entry.State = EntityState.Added;
+                            // 保证必要字段有效
+                            if (player.Id == Guid.Empty)
+                            {
+                                player.Id = Guid.NewGuid();
+                            }
+                            player.TeamId = team.Id;
+                            player.CreatedAt = DateTime.UtcNow;
+                            player.UpdatedAt = DateTime.UtcNow;
+                            fixedAny = true;
+                        }
+                    }
+                }
+
+                if (fixedAny)
+                {
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    // 无法自动修复，抛出更明确的业务异常以便前端提示
+                    var details = string.Join("; ", ex.Entries.Select(e =>
+                    {
+                        var pkProps = e.Properties.Where(p => p.Metadata.IsPrimaryKey());
+                        var pk = string.Join(", ", pkProps.Select(p => $"{p.Metadata.Name}={p.CurrentValue}"));
+                        return $"Entity={e.Metadata.Name}, State={e.State}, PK=[{pk}]";
+                    }));
+                    throw new InvalidOperationException($"并发更新冲突：{details}. 可能的原因：要更新的玩家或战队在数据库中不存在，或被其他操作删除。", ex);
+                }
+            }
 
             return await GetTeamByIdWithPlayersAsync(team.Id) ?? team;
         }

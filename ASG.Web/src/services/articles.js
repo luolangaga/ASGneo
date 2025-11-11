@@ -1,10 +1,13 @@
 import { apiFetch } from './api'
 
-// 获取文章列表（分页）
-export async function getArticles({ page = 1, pageSize = 10 } = {}) {
+// 获取文章列表（分页，支持搜索与排序）
+export async function getArticles({ query = '', page = 1, pageSize = 10, sortBy = null, desc = true } = {}) {
   const params = new URLSearchParams()
+  if (query) params.set('query', query)
   if (page) params.set('page', page)
   if (pageSize) params.set('pageSize', pageSize)
+  if (sortBy) params.set('sortBy', sortBy)
+  if (typeof desc === 'boolean') params.set('desc', String(desc))
   const qs = params.toString()
   return apiFetch(`/Articles${qs ? `?${qs}` : ''}`)
 }

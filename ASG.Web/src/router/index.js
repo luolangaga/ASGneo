@@ -68,6 +68,11 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/teams/:id',
+    name: 'team-detail',
+    component: () => import('../views/TeamDetailView.vue'),
+  },
+  {
     path: '/teams/edit',
     name: 'team-edit',
     component: () => import('../views/TeamEditView.vue'),
@@ -89,10 +94,11 @@ const routes = [
     component: () => import('../views/ProfileView.vue'),
     meta: { requiresAuth: true },
   },
+  // 兜底 404（必须放在最后）
   {
-    path: '/about',
-    name: 'about',
-    component: () => import('../views/AboutView.vue'),
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: () => import('../views/NotFoundView.vue'),
   },
 ]
 

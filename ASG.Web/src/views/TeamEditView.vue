@@ -3,8 +3,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import PageHero from '../components/PageHero.vue'
 import MarkdownEditor from '../components/MarkdownEditor.vue'
-import { currentUser, isAuthenticated } from '../stores/auth'
-import { getTeam, updateTeam, uploadTeamLogo } from '../services/teams'
+import { currentUser, isAuthenticated, updateCurrentUser } from '../stores/auth'
+import { getTeam, updateTeam, uploadTeamLogo, deleteTeam } from '../services/teams'
+import { getProfile } from '../services/user'
 
 const router = useRouter()
 
@@ -16,6 +17,7 @@ const saving = ref(false)
 const uploadingLogo = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
+const deleting = ref(false)
 
 const name = ref('')
 const description = ref('')
@@ -129,6 +131,29 @@ onMounted(() => {
   if (!canEdit.value) return
   loadTeam()
 })
+
+async function onDeleteTeam() {
+  if (!teamId.value) return
+  const ok = window.confirm(`确定要删除战队“${name.value}”吗？此操作不可恢复。`)
+  if (!ok) return
+  deleting.value = true
+  errorMsg.value = ''
+  successMsg.value = ''
+  try {
+    await deleteTeam(teamId.value)
+    // 刷新当前用户，清空本地的 teamId
+    try {
+      const profile = await getProfile()
+      updateCurrentUser(profile)
+    } catch {}
+    router.push('/teams/create')
+  } catch (err) {
+    const msg = err?.payload?.message || err?.message || '删除战队失败'
+    errorMsg.value = msg
+  } finally {
+    deleting.value = false
+  }
+}
 </script>
 
 <template>
@@ -226,6 +251,7 @@ onMounted(() => {
               </v-row>
 
               <div class="d-flex justify-end">
+                <v-btn color="error" variant="text" :loading="deleting" @click="onDeleteTeam" prepend-icon="delete" class="mr-2">删除战队</v-btn>
                 <v-btn :loading="saving" color="primary" type="submit" prepend-icon="save">保存修改</v-btn>
               </div>
             </v-form>

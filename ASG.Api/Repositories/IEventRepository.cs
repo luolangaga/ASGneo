@@ -14,6 +14,22 @@ namespace ASG.Api.Repositories
         Task<IEnumerable<Event>> GetAllEventsAsync();
 
         /// <summary>
+        /// 搜索赛事（按名称或描述，分页）
+        /// </summary>
+        /// <param name="query">搜索关键字</param>
+        /// <param name="page">页码（从1开始）</param>
+        /// <param name="pageSize">每页数量</param>
+        /// <returns>赛事列表（当前页）</returns>
+        Task<IEnumerable<Event>> SearchEventsAsync(string query, int page = 1, int pageSize = 12);
+
+        /// <summary>
+        /// 搜索赛事的总数（按名称或描述）
+        /// </summary>
+        /// <param name="query">搜索关键字</param>
+        /// <returns>总数</returns>
+        Task<int> GetSearchEventsCountAsync(string query);
+
+        /// <summary>
         /// 根据ID获取赛事
         /// </summary>
         /// <param name="id">赛事ID</param>

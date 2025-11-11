@@ -1,5 +1,6 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { useDisplay } from 'vuetify'
 import { useRouter } from 'vue-router'
 import { isAuthenticated } from '../stores/auth'
 
@@ -21,6 +22,72 @@ function goCreateTeam() {
   }
   router.push('/teams/create')
 }
+// 合作伙伴（从关于页面迁移）
+const partners = [
+  {
+    logo: 'https://docs.bpsys.plfjy.top/images/favicon.ico',
+    name: 'neo-bpsys-wpf',
+    description: '基于 .NET WPF 开发的第五人格直播BP软件，与其共同构成第五人格赛事系统大家庭',
+    link: 'https://bpsys.plfjy.top/'
+  },
+  {
+    logo: 'https://idvasg.cn/_nuxt/asg-logo.2xBiWjrM.png',
+    name: 'ASG赛事组',
+    description: '一个第五人格A级赛事，为本项目提供技术指导。',
+    link: 'https://idvasg.cn'
+  },
+  {
+    logo: 'https://api.idvasg.cn/loge/friend-ACS%E8%B5%9B%E4%BA%8B.png',
+    name: 'ACS赛事组',
+    description: '一个有名的第五人格民间赛事',
+    link: '#'
+  },
+  {
+    logo: 'https://idvasg.cn/_nuxt/asg-logo.2xBiWjrM.png',
+    name: 'ASG赛事组',
+    description: '一个第五人格A级赛事，为本项目提供技术指导。',
+    link: 'https://idvasg.cn'
+  },
+  {
+    logo: 'https://idvasg.cn/_nuxt/asg-logo.2xBiWjrM.png',
+    name: 'ASG赛事组',
+    description: '一个第五人格A级赛事，为本项目提供技术指导。',
+    link: 'https://idvasg.cn'
+  },
+  {
+    logo: 'https://idvasg.cn/_nuxt/asg-logo.2xBiWjrM.png',
+    name: 'ASG赛事组',
+    description: '一个第五人格A级赛事，为本项目提供技术指导。',
+    link: 'https://idvasg.cn'
+  },
+  {
+    logo: 'https://idvasg.cn/_nuxt/asg-logo.2xBiWjrM.png',
+    name: 'ASG赛事组',
+    description: '一个第五人格A级赛事，为本项目提供技术指导。',
+    link: 'https://idvasg.cn'
+  },
+  {
+    logo: 'https://idvasg.cn/_nuxt/asg-logo.2xBiWjrM.png',
+    name: 'ASG赛事组',
+    description: '一个第五人格A级赛事，为本项目提供技术指导。',
+    link: 'https://idvasg.cn'
+  },
+  {
+    logo: 'https://idvasg.cn/_nuxt/asg-logo.2xBiWjrM.png',
+    name: 'ASG赛事组',
+    description: '一个第五人格A级赛事，为本项目提供技术指导。',
+    link: 'https://idvasg.cn'
+  }
+]
+
+// 折叠/展开状态与可见列表（窄屏显示2个，桌面显示6个）
+const partnersExpanded = ref(false)
+const { smAndDown } = useDisplay()
+const initialPartnerCount = computed(() => (smAndDown.value ? 2 : 6))
+const visiblePartners = computed(() =>
+  partnersExpanded.value ? partners : partners.slice(0, initialPartnerCount.value)
+)
+const hasMorePartners = computed(() => partners.length > initialPartnerCount.value)
 </script>
 
 <template>
@@ -98,6 +165,46 @@ function goCreateTeam() {
               管理赛程安排、队伍信息与通知发布，提升组织效率与参赛体验。
             </v-card-text>
           </v-card>
+        </v-col>
+      </v-row>
+      <v-divider class="my-10" />
+
+      <!-- 合作伙伴（从关于页面迁移） -->
+      <v-row class="mb-4">
+        <v-col cols="12" class="text-center">
+          <div class="text-h5 font-weight-bold mb-2">合作伙伴</div>
+          <div class="text-medium-emphasis">与我们共同构建更开放与高效的赛事生态</div>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col v-for="p in visiblePartners" :key="p.name" cols="12" sm="6" md="4">
+          <v-card class="h-100" hover>
+            <v-card-item>
+              <div class="d-flex align-center mb-2">
+                <v-img :src="p.logo" alt="logo" width="48" height="48" class="mr-3 partner-logo" />
+                <div class="text-subtitle-1 font-weight-bold">{{ p.name }}</div>
+              </div>
+              <div class="text-body-2 text-medium-emphasis">{{ p.description }}</div>
+            </v-card-item>
+            <v-card-actions>
+              <v-btn :href="p.link" target="_blank" rel="noopener" variant="tonal" prepend-icon="open_in_new">
+                访问官网
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <v-row v-if="hasMorePartners" class="mt-2">
+        <v-col cols="12" class="text-center">
+          <v-btn
+            variant="text"
+            color="primary"
+            :prepend-icon="partnersExpanded ? 'expand_less' : 'expand_more'"
+            @click="partnersExpanded = !partnersExpanded"
+          >
+            {{ partnersExpanded ? '收起' : '展开全部' }}
+          </v-btn>
         </v-col>
       </v-row>
 
@@ -270,5 +377,9 @@ function goCreateTeam() {
 }
 .feature-card {
   height: 100%;
+}
+.partner-logo {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 </style>
