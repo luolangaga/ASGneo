@@ -11,6 +11,7 @@ namespace ASG.Api.Repositories
         Task<Team?> GetTeamByIdAsync(Guid id);
         Task<Team?> GetTeamByIdWithPlayersAsync(Guid id);
         Task<Team?> GetTeamByNameAsync(string name);
+        Task<Team?> GetTeamByInviteTokenAsync(Guid token);
         Task<Team> CreateTeamAsync(Team team);
         Task<Team> UpdateTeamAsync(Team team);
         Task<bool> DeleteTeamAsync(Guid id);
@@ -18,6 +19,8 @@ namespace ASG.Api.Repositories
         Task<bool> TeamExistsAsync(Guid id);
         Task<bool> TeamNameExistsAsync(string name, Guid? excludeId = null);
         Task<IEnumerable<Player>> GetTeamPlayersAsync(Guid teamId);
+        Task<Player?> GetPlayerByUserIdAsync(string userId);
+        Task<Player> UpdatePlayerAsync(Player player);
         Task<int> LikeTeamAsync(Guid id);
     }
 }

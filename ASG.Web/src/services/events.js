@@ -62,6 +62,10 @@ export async function registerTeamToEvent(eventId, { teamId, notes }) {
   })
 }
 
+export async function exportEventTeamLogosZip(eventId) {
+  return apiFetch(`/Events/${eventId}/registrations/export-logos`, { method: 'GET' })
+}
+
 export async function unregisterTeamFromEvent(eventId, teamId) {
   return apiFetch(`/Events/${eventId}/register/${teamId}`, {
     method: 'DELETE',
@@ -97,8 +101,10 @@ export async function uploadEventLogo(eventId, file) {
 // 更新指定队伍在赛事中的报名状态
 // status 可传数字枚举：
 // 0 Pending, 1 Registered, 2 Confirmed, 3 Approved, 4 Cancelled, 5 Rejected
-export async function updateTeamRegistrationStatus(eventId, teamId, { status, notes }) {
-  const payload = { status, notes }
+export async function updateTeamRegistrationStatus(eventId, teamId, { status, notes, notifyByEmail = false }) {
+  // 在“通过(3)”或字符串 'Approved' 时，默认发送邮件通知
+  const shouldNotify = !!notifyByEmail || status === 3 || status === 'Approved'
+  const payload = { status, notes, notifyByEmail: shouldNotify }
   return apiFetch(`/Events/${eventId}/register/${teamId}`, {
     method: 'PUT',
     body: JSON.stringify(payload),
@@ -111,6 +117,35 @@ export async function setEventChampion(eventId, teamId) {
   return apiFetch(`/Events/${eventId}/champion`, {
     method: 'PUT',
     body: JSON.stringify(payload),
+  })
+}
+
+export async function getEventAdmins(eventId) {
+  return apiFetch(`/Events/${eventId}/admins`)
+}
+
+export async function addEventAdmin(eventId, userId) {
+  return apiFetch(`/Events/${eventId}/admins`, {
+    method: 'POST',
+    body: JSON.stringify({ userId }),
+  })
+}
+
+export async function removeEventAdmin(eventId, adminUserId) {
+  return apiFetch(`/Events/${eventId}/admins/${adminUserId}`, {
+    method: 'DELETE',
+  })
+}
+
+// 赛程图画布
+export async function getBracketCanvas(eventId) {
+  return apiFetch(`/Events/${eventId}/bracket`)
+}
+
+export async function saveBracketCanvas(eventId, canvas) {
+  return apiFetch(`/Events/${eventId}/bracket`, {
+    method: 'PUT',
+    body: JSON.stringify(canvas || {}),
   })
 }
 
@@ -128,9 +163,15 @@ export default {
   getTeamRegistrations,
   getMyEvents,
   exportEventRegistrationsCsv,
+  exportEventTeamLogosZip,
   uploadEventLogo,
   updateTeamRegistrationStatus,
   setEventChampion,
+  getEventAdmins,
+  addEventAdmin,
+  removeEventAdmin,
   getActiveRegistrationEventsPaged,
   getUpcomingEventsPaged,
+  getBracketCanvas,
+  saveBracketCanvas,
 }

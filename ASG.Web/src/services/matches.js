@@ -26,6 +26,13 @@ export async function updateMatch(id, dto) {
   })
 }
 
+export async function updateMatchScores(id, dto) {
+  return apiFetch(`/Matches/${id}/scores`, {
+    method: 'PUT',
+    body: JSON.stringify(dto),
+  })
+}
+
 // 删除赛程
 export async function deleteMatch(id) {
   return apiFetch(`/Matches/${id}`, {
@@ -38,4 +45,4 @@ export async function likeMatch(id) {
   return apiFetch(`/Matches/${id}/like`, { method: 'POST' })
 }
 
-export default { getMatches, createMatch, updateMatch, deleteMatch, likeMatch }
+export default { getMatches, createMatch, updateMatch, updateMatchScores, deleteMatch, likeMatch }

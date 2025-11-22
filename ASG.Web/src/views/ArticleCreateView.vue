@@ -21,11 +21,11 @@ async function onSubmit() {
       contentMarkdown: content.value?.trim() || ''
     }
     if (!payload.title) {
-      errorMsg.value = '请填写文章标题'
+      errorMsg.value = '请填写帖子标题'
       throw new Error('缺少标题')
     }
     if (!payload.contentMarkdown) {
-      errorMsg.value = '请填写文章内容'
+      errorMsg.value = '请填写帖子内容'
       throw new Error('缺少内容')
     }
     const created = await createArticle(payload)
@@ -33,7 +33,7 @@ async function onSubmit() {
     if (id) router.push(`/articles/${id}`)
     else router.push('/articles')
   } catch (err) {
-    errorMsg.value = err?.payload?.message || err?.message || '发布文章失败'
+    errorMsg.value = err?.payload?.message || err?.message || '发布帖子失败'
   } finally {
     saving.value = false
   }
@@ -41,7 +41,7 @@ async function onSubmit() {
 </script>
 
 <template>
-  <PageHero title="发布文章" subtitle="撰写 Markdown 正文，分享你的观点" icon="edit" />
+  <PageHero title="发布帖子" subtitle="撰写 Markdown 正文，分享你的观点" icon="edit" />
   <v-container class="py-6" style="max-width: 860px">
     <v-alert v-if="errorMsg" type="error" :text="errorMsg" class="mb-4" />
     <v-text-field v-model="title" label="标题" prepend-inner-icon="article" class="mb-3" />

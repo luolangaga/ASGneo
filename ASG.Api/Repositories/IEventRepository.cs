@@ -164,5 +164,10 @@ namespace ASG.Api.Repositories
         /// <param name="teamId">战队ID</param>
         /// <returns>该战队作为冠军的赛事列表</returns>
         Task<IEnumerable<Event>> GetChampionEventsByTeamAsync(Guid teamId);
+
+        Task<bool> AddEventAdminAsync(Guid eventId, string userId);
+        Task<bool> RemoveEventAdminAsync(Guid eventId, string userId);
+        Task<IEnumerable<string>> GetEventAdminUserIdsAsync(Guid eventId);
+        Task<bool> IsEventAdminAsync(Guid eventId, string userId);
     }
 }

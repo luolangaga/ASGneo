@@ -16,7 +16,7 @@ const pageSize = ref(10)
 const authorMap = ref({})
 const keyword = ref('')
 
-const heroTitle = computed(() => '社区文章')
+const heroTitle = computed(() => '社区论坛')
 const loggedIn = computed(() => isAuthenticated.value)
 
 async function load() {
@@ -44,7 +44,7 @@ async function load() {
       }
     }))
   } catch (err) {
-    errorMsg.value = err?.payload?.message || err?.message || '加载文章失败'
+    errorMsg.value = err?.payload?.message || err?.message || '加载帖子失败'
   } finally {
     loading.value = false
   }
@@ -95,20 +95,20 @@ async function onLike(a) {
 </script>
 
 <template>
-  <PageHero :title="heroTitle" subtitle="浏览社区文章，了解最新动态" icon="article">
+  <PageHero :title="heroTitle" subtitle="浏览社区帖子，了解最新动态" icon="article">
     <template #actions>
-      <v-btn v-if="loggedIn" class="mb-3" color="primary" variant="tonal" @click="goCreate" prepend-icon="edit">发布文章</v-btn>
+      <v-btn v-if="loggedIn" class="mb-3" color="primary" variant="tonal" @click="goCreate" prepend-icon="edit">发布帖子</v-btn>
     </template>
   </PageHero>
 
-  <v-container class="py-6">
+  <v-container class="py-6 page-container">
     <v-alert v-if="errorMsg" type="error" :text="errorMsg" class="mb-4" />
     <v-card class="mb-4">
       <v-card-title class="d-flex align-center">
         <v-text-field
           v-model="keyword"
           class="flex-grow-1"
-          label="搜索文章关键字"
+          label="搜索帖子关键字"
           prepend-inner-icon="search"
           clearable
           hide-details
@@ -125,7 +125,7 @@ async function onLike(a) {
 
     <v-row v-else-if="items.length" dense>
       <v-col v-for="a in items" :key="a.id || a.Id" cols="12" sm="6" md="4" lg="3">
-        <v-card>
+        <v-card class="article-card h-100">
           <v-card-item class="pa-3">
             <router-link :to="`/articles/${a.id || a.Id}`" class="text-h6 mb-2 d-inline-block text-decoration-none">{{ a.title || a.Title }}</router-link>
             <div class="d-flex align-center">
@@ -138,7 +138,16 @@ async function onLike(a) {
                 </template>
               </v-avatar>
               <div class="flex-grow-1">
-                <div class="text-caption">{{ a.authorName || a.AuthorName || '未知' }}</div>
+                <div class="text-caption">
+                  <router-link
+                    v-if="a.authorUserId || a.AuthorUserId"
+                    :to="`/users/${a.authorUserId || a.AuthorUserId}`"
+                    class="text-decoration-none"
+                  >{{ a.authorName || a.AuthorName || '未知' }}</router-link>
+                  <template v-else>
+                    {{ a.authorName || a.AuthorName || '未知' }}
+                  </template>
+                </div>
                 <div class="text-caption text-medium-emphasis">
                   战队：
                   <template v-if="a.authorTeamName || a.AuthorTeamName">
@@ -166,8 +175,8 @@ async function onLike(a) {
 
     <v-card v-else class="pa-8 text-center">
       <v-icon size="40" color="primary" icon="article" />
-      <div class="text-h6 mt-3">暂无文章</div>
-      <div class="text-medium-emphasis">登录后可以发布属于你的首篇文章</div>
+      <div class="text-h6 mt-3">暂无帖子</div>
+      <div class="text-medium-emphasis">登录后可以发布属于你的首篇帖子</div>
     </v-card>
 
     <div class="d-flex justify-center mt-4" v-if="totalCount > pageSize">
@@ -177,4 +186,6 @@ async function onLike(a) {
 </template>
 
 <style scoped>
+.article-card { display: flex; flex-direction: column; }
+.article-card .v-card-actions { margin-top: auto; }
 </style>

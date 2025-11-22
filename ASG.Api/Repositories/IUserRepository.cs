@@ -18,5 +18,11 @@ namespace ASG.Api.Repositories
         Task<int> GetUserCountByRoleAsync(UserRole role);
         Task<IEnumerable<User>> GetUsersWithPaginationAsync(int pageNumber, int pageSize);
         Task<int> GetTotalUserCountAsync();
+
+        // 邮件积分相关方法
+        Task<bool> UpdateEmailCreditsAsync(string userId, int credits);
+        Task<bool> AdjustEmailCreditsAsync(string userId, int delta);
+
+        Task<IEnumerable<User>> SearchByNameAsync(string name, int limit = 10);
     }
 }

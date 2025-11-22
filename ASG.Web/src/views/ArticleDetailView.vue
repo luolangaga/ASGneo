@@ -21,12 +21,14 @@ const comments = ref([])
 const commentsTotal = ref(0)
 const commentsPage = ref(1)
 const commentsPageSize = ref(20)
+const replyOpen = ref({})
+const replyText = ref({})
 
 const newComment = ref('')
 const posting = ref(false)
 
 const loggedIn = computed(() => isAuthenticated.value)
-const heroTitle = computed(() => (article.value?.title || article.value?.Title || '文章详情'))
+const heroTitle = computed(() => (article.value?.title || article.value?.Title || '帖子详情'))
 const subtitleText = computed(() => {
   const d = article.value?.createdAt || article.value?.CreatedAt
   const ds = d ? new Date(d).toLocaleString() : ''
@@ -86,7 +88,7 @@ async function loadArticle() {
   try {
     article.value = await getArticle(id)
   } catch (err) {
-    errorMsg.value = err?.payload?.message || err?.message || '加载文章失败'
+    errorMsg.value = err?.payload?.message || err?.message || '加载帖子失败'
   } finally {
     loading.value = false
   }
@@ -105,17 +107,26 @@ async function loadAuthor() {
   }
 }
 
+function mapComment(c) {
+  const item = {
+    id: c.id || c.Id,
+    authorName: c.authorName || c.AuthorName || '匿名',
+    authorEmail: c.authorEmail || c.AuthorEmail || '',
+    authorAvatarUrl: c.authorAvatarUrl || c.AuthorAvatarUrl || null,
+    content: c.content || c.Content,
+    createdAt: c.createdAt || c.CreatedAt,
+    parentId: c.parentId || c.ParentId || null,
+    replies: Array.isArray(c.replies || c.Replies) ? (c.replies || c.Replies).map(mapComment) : []
+  }
+  return item
+}
+
 async function loadComments() {
   commentsLoading.value = true
   commentsError.value = ''
   try {
     const res = await getComments(id, { page: commentsPage.value, pageSize: commentsPageSize.value })
-    comments.value = (res.items || res.Items || []).map(c => ({
-      id: c.id || c.Id,
-      authorName: c.authorName || c.AuthorName || '匿名',
-      content: c.content || c.Content,
-      createdAt: c.createdAt || c.CreatedAt,
-    }))
+    comments.value = (res.items || res.Items || []).map(mapComment)
     commentsTotal.value = res.totalCount || res.TotalCount || comments.value.length
   } catch (err) {
     commentsError.value = err?.payload?.message || err?.message || '加载评论失败'
@@ -135,6 +146,23 @@ async function onPostComment() {
     commentsError.value = err?.payload?.message || err?.message || '发表评论失败'
   } finally {
     posting.value = false
+  }
+}
+
+function toggleReply(cid) {
+  replyOpen.value[cid] = !replyOpen.value[cid]
+}
+
+async function submitReply(cid) {
+  const text = (replyText.value[cid] || '').trim()
+  if (!text) return
+  try {
+    await addComment(id, { content: text, parentId: cid })
+    replyText.value[cid] = ''
+    replyOpen.value[cid] = false
+    await loadComments()
+  } catch (err) {
+    commentsError.value = err?.payload?.message || err?.message || '回复失败'
   }
 }
 
@@ -174,7 +202,14 @@ onMounted(async () => {
             </template>
           </v-avatar>
           <div class="flex-grow-1">
-            <div class="text-subtitle-1 font-weight-medium">{{ authorName }}</div>
+            <div class="text-subtitle-1 font-weight-medium">
+              <router-link
+                v-if="article?.authorUserId || article?.AuthorUserId"
+                :to="`/users/${article?.authorUserId || article?.AuthorUserId}`"
+                class="text-decoration-none"
+              >{{ authorName }}</router-link>
+              <template v-else>{{ authorName }}</template>
+            </div>
             <div class="text-caption text-medium-emphasis">
               战队：
               <template v-if="authorTeamName && authorTeamName !== '无'">
@@ -229,11 +264,53 @@ onMounted(async () => {
 
         <v-list density="comfortable">
           <template v-if="comments.length">
-            <v-list-item v-for="c in comments" :key="c.id">
-              <v-list-item-title>{{ c.authorName }}</v-list-item-title>
-              <v-list-item-subtitle class="text-caption text-medium-emphasis">{{ new Date(c.createdAt).toLocaleString() }}</v-list-item-subtitle>
-              <div class="mt-2">{{ c.content }}</div>
-            </v-list-item>
+            <div v-for="c in comments" :key="c.id" class="mb-4">
+              <div class="d-flex">
+                <v-avatar size="36" class="mr-3">
+                  <template v-if="c.authorAvatarUrl">
+                    <v-img :src="c.authorAvatarUrl" alt="头像" cover />
+                  </template>
+                  <template v-else>
+                    <span class="text-body-2">{{ (c.authorName || 'NA').slice(0,2) }}</span>
+                  </template>
+                </v-avatar>
+                <div class="flex-grow-1">
+                  <div class="text-subtitle-2">{{ c.authorName }} <span v-if="c.authorEmail" class="text-caption text-medium-emphasis">· {{ c.authorEmail }}</span></div>
+                  <div class="text-caption text-medium-emphasis">{{ new Date(c.createdAt).toLocaleString() }}</div>
+                  <div class="mt-2">{{ c.content }}</div>
+                  <div class="mt-2">
+                    <v-btn size="x-small" variant="text" color="primary" @click="toggleReply(c.id)">回复</v-btn>
+                  </div>
+                  <div v-if="replyOpen[c.id]" class="mt-2">
+                    <v-textarea v-model="replyText[c.id]" rows="2" auto-grow hide-details label="回复内容" />
+                    <div class="mt-2">
+                      <v-btn size="small" color="primary" @click="submitReply(c.id)" prepend-icon="send">发表回复</v-btn>
+                      <v-btn size="small" variant="text" class="ml-2" @click="toggleReply(c.id)">取消</v-btn>
+                    </div>
+                  </div>
+
+                  <div v-if="c.replies && c.replies.length" class="mt-3 pl-6 border-left">
+                    <div v-for="r in c.replies" :key="r.id" class="mb-3">
+                      <div class="d-flex">
+                        <v-avatar size="30" class="mr-3">
+                          <template v-if="r.authorAvatarUrl">
+                            <v-img :src="r.authorAvatarUrl" alt="头像" cover />
+                          </template>
+                          <template v-else>
+                            <span class="text-body-2">{{ (r.authorName || 'NA').slice(0,2) }}</span>
+                          </template>
+                        </v-avatar>
+                        <div class="flex-grow-1">
+                          <div class="text-subtitle-2">{{ r.authorName }} <span v-if="r.authorEmail" class="text-caption text-medium-emphasis">· {{ r.authorEmail }}</span></div>
+                          <div class="text-caption text-medium-emphasis">{{ new Date(r.createdAt).toLocaleString() }}</div>
+                          <div class="mt-2">{{ r.content }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </template>
           <template v-else-if="!commentsLoading && !commentsError">
             <v-alert type="info" text="暂时没有评论" />

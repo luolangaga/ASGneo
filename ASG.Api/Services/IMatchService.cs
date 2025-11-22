@@ -48,6 +48,8 @@ namespace ASG.Api.Services
         /// <returns>更新的赛程DTO</returns>
         Task<MatchDto?> UpdateMatchAsync(Guid id, UpdateMatchDto updateDto, string userId);
 
+        Task<MatchDto?> UpdateMatchScoresAsync(Guid id, UpdateMatchScoresDto scoresDto, string userId);
+
         /// <summary>
         /// 删除赛程
         /// </summary>

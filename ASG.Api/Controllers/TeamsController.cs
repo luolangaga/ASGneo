@@ -273,7 +273,10 @@ namespace ASG.Api.Controllers
                     return BadRequest("战队不存在或密码错误");
                 }
 
-                return Ok(new { message = "战队绑定成功" });
+                var my = await _teamService.GetMyPlayerAsync(userId);
+                var needsPlayer = my == null;
+                var playerAdded = !needsPlayer;
+                return Ok(new { message = "战队绑定成功", playerAdded, needsPlayer });
             }
             catch (Exception ex)
             {
@@ -308,7 +311,10 @@ namespace ASG.Api.Controllers
                     return BadRequest("战队不存在或密码错误");
                 }
 
-                return Ok(new { message = "战队绑定成功" });
+                var my = await _teamService.GetMyPlayerAsync(userId);
+                var needsPlayer = my == null;
+                var playerAdded = !needsPlayer;
+                return Ok(new { message = "战队绑定成功", playerAdded, needsPlayer });
             }
             catch (Exception ex)
             {
@@ -437,6 +443,153 @@ namespace ASG.Api.Controllers
             }
         }
 
+        [HttpPost("{id}/invite")]
+        [Authorize]
+        public async Task<ActionResult<TeamInviteDto>> GenerateInvite(Guid id, [FromQuery] int validDays = 7)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized("用户未登录");
+                var dto = await _teamService.GenerateTeamInviteAsync(id, userId, validDays);
+                return Ok(dto);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "生成邀请链接失败，战队ID: {TeamId}", id);
+                return StatusCode(500, new { message = "生成邀请失败", error = ex.Message });
+            }
+        }
+
+        [HttpGet("invites/{token}")]
+        public async Task<ActionResult<TeamInviteDto>> GetInvite(Guid token)
+        {
+            try
+            {
+                var dto = await _teamService.GetTeamInviteAsync(token);
+                if (dto == null) return NotFound(new { message = "邀请不存在或已过期" });
+                return Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取邀请信息失败，Token: {Token}", token);
+                return StatusCode(500, new { message = "获取邀请失败", error = ex.Message });
+            }
+        }
+
+        [HttpPost("invites/{token}/accept")]
+        [Authorize]
+        public async Task<ActionResult<PlayerDto>> AcceptInvite(Guid token, [FromBody] CreatePlayerDto? player)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized("用户未登录");
+                var result = await _teamService.AcceptTeamInviteAsync(token, userId, player);
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "接受邀请失败，Token: {Token}", token);
+                return StatusCode(500, new { message = "接受邀请失败", error = ex.Message });
+            }
+        }
+
+        [HttpGet("me/player")]
+        [Authorize]
+        public async Task<ActionResult<PlayerDto?>> GetMyPlayer()
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { message = "用户未登录" });
+                }
+                var dto = await _teamService.GetMyPlayerAsync(userId);
+                return Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取我的玩家失败");
+                return StatusCode(500, new { message = "获取玩家失败", error = ex.Message });
+            }
+        }
+
+        [HttpPost("me/player")]
+        [Authorize]
+        public async Task<ActionResult<PlayerDto>> UpsertMyPlayer([FromBody] CreatePlayerDto dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { message = "用户未登录" });
+                }
+                var result = await _teamService.UpsertMyPlayerAsync(userId, dto);
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "保存我的玩家失败");
+                return StatusCode(500, new { message = "保存玩家失败", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// 退出当前战队（移除当前用户在该战队的玩家记录，并解除绑定）
+        /// </summary>
+        [HttpPost("{id}/leave")]
+        [Authorize]
+        public async Task<ActionResult> LeaveTeam(Guid id)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { message = "用户未登录" });
+                }
+
+                var ok = await _teamService.LeaveTeamAsync(id, userId);
+                if (!ok)
+                {
+                    return BadRequest(new { message = "退出失败" });
+                }
+                return Ok(new { message = "已退出战队" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "退出战队失败，战队ID: {TeamId}", id);
+                return StatusCode(500, new { message = "退出战队失败", error = ex.Message });
+            }
+        }
+
         /// <summary>
         /// 上传战队徽标（需要登录且为战队拥有者）
         /// </summary>
@@ -503,6 +656,59 @@ namespace ASG.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "上传战队徽标时发生错误，战队ID: {TeamId}", id);
+                return StatusCode(500, new { message = "上传徽标失败", error = ex.Message });
+            }
+        }
+
+        public class LogoFromUrlDto
+        {
+            public string SourceUrl { get; set; } = string.Empty;
+        }
+
+        [HttpPost("{id}/logo-from-url")]
+        [Authorize]
+        public async Task<IActionResult> UploadTeamLogoFromUrl(Guid id, [FromBody] LogoFromUrlDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized("用户未登录");
+                var isOwner = await _teamService.VerifyTeamOwnershipAsync(id, userId);
+                if (!isOwner) return Forbid("您没有权限上传该战队的徽标");
+                if (string.IsNullOrWhiteSpace(dto?.SourceUrl)) return BadRequest(new { message = "缺少来源" });
+                var root = _env.WebRootPath;
+                if (string.IsNullOrEmpty(root)) root = Path.Combine(_env.ContentRootPath, "wwwroot");
+                var uri = new Uri(dto.SourceUrl, UriKind.RelativeOrAbsolute);
+                string? srcPath = null;
+                if (!uri.IsAbsoluteUri)
+                {
+                    srcPath = Path.Combine(root, uri.OriginalString.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                }
+                else
+                {
+                    if (uri.Host == (Request.Host.HasValue ? Request.Host.Host : string.Empty))
+                    {
+                        srcPath = Path.Combine(root, uri.AbsolutePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                    }
+                }
+                if (string.IsNullOrEmpty(srcPath) || !System.IO.File.Exists(srcPath)) return BadRequest(new { message = "来源不可用" });
+                var teamDir = Path.Combine(root, "team-logos", id.ToString());
+                Directory.CreateDirectory(teamDir);
+                foreach (var file in Directory.GetFiles(teamDir, "logo.*")) { try { System.IO.File.Delete(file); } catch { } }
+                var ext = Path.GetExtension(srcPath);
+                if (string.IsNullOrWhiteSpace(ext)) ext = ".png";
+                var filePath = Path.Combine(teamDir, $"logo{ext.ToLowerInvariant()}");
+                await using (var src = new FileStream(srcPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                await using (var dst = new FileStream(filePath, FileMode.Create))
+                {
+                    await src.CopyToAsync(dst);
+                }
+                var url = GetTeamLogoUrl(id);
+                return Ok(new { logoUrl = url });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "通过URL设置战队徽标失败，战队ID: {TeamId}", id);
                 return StatusCode(500, new { message = "上传徽标失败", error = ex.Message });
             }
         }

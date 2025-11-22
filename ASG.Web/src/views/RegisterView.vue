@@ -6,12 +6,12 @@ import { register } from '../services/auth'
 const router = useRouter()
 const email = ref('')
 const password = ref('')
-const firstName = ref('')
-const lastName = ref('')
+const fullName = ref('')
 const loading = ref(false)
 const errorMsg = ref('')
 const formRef = ref(null)
 const showPassword = ref(false)
+const agree = ref(false)
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const emailRules = [
@@ -24,9 +24,10 @@ const passwordRules = [
   v => /[A-Za-z]/.test(String(v)) && /\d/.test(String(v)) || '需包含字母与数字',
 ]
 const nameRules = [
-  v => !!(v && String(v).trim()) || '必填',
-  v => String(v).trim().length <= 50 || '长度不超过 50',
+  v => !!(v && String(v).trim()) || '请输入姓名',
+  v => String(v).trim().length <= 100 || '长度不超过 100',
 ]
+const agreeRules = [v => v === true || '请阅读并同意用户协议与隐私政策']
 
 function analyzePassword(pw) {
   const s = String(pw || '')
@@ -66,7 +67,9 @@ async function onSubmit() {
   try {
     const res = await formRef.value?.validate?.()
     if (res && res.valid === false) { loading.value = false; return }
-    await register({ email: email.value.trim(), password: password.value, firstName: firstName.value.trim(), lastName: lastName.value.trim() })
+    if (!agree.value) { errorMsg.value = '请勾选并同意用户协议与隐私政策'; loading.value = false; return }
+    await register({ email: email.value.trim(), password: password.value, fullName: fullName.value.trim() })
+    try { localStorage.setItem('onboarding:welcome', '1') } catch {}
     router.push('/')
   } catch (err) {
     errorMsg.value = err?.payload?.message || err?.message || '注册失败'
@@ -112,19 +115,18 @@ async function onSubmit() {
             <span v-for="(sug, idx) in strength.suggestions" :key="idx">{{ sug }}<span v-if="idx < strength.suggestions.length - 1">，</span></span>
           </div>
           <v-text-field
-            v-model="firstName"
-            label="名字"
+            v-model="fullName"
+            label="姓名"
             prepend-inner-icon="person"
             required
             :rules="nameRules"
           />
-          <v-text-field
-            v-model="lastName"
-            label="姓氏"
-            prepend-inner-icon="person"
-            required
-            :rules="nameRules"
-          />
+          <div class="d-flex align-center mb-3">
+            <v-checkbox v-model="agree" :rules="agreeRules" density="comfortable" hide-details="auto" label="我已阅读并同意" />
+            <router-link to="/terms" class="ml-1">用户协议</router-link>
+            <span class="mx-1">与</span>
+            <router-link to="/privacy">隐私政策</router-link>
+          </div>
           <div class="d-flex align-center justify-space-between">
             <v-btn :loading="loading" type="submit" color="primary">注册</v-btn>
             <v-btn to="/login" variant="text">已有账号？去登录</v-btn>

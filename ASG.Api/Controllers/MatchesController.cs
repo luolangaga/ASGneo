@@ -138,6 +138,40 @@ namespace ASG.Api.Controllers
             }
         }
 
+        [HttpPut("{id}/scores")]
+        [Authorize]
+        public async Task<ActionResult<MatchDto>> UpdateMatchScores(Guid id, [FromBody] UpdateMatchScoresDto scoresDto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { message = "用户未登录" });
+                }
+
+                var matchDto = await _matchService.UpdateMatchScoresAsync(id, scoresDto, userId);
+                if (matchDto == null)
+                {
+                    return NotFound(new { message = "赛程不存在" });
+                }
+
+                return Ok(matchDto);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "更新赛果失败", error = ex.Message });
+            }
+        }
+
         /// <summary>
         /// 删除赛程（需要登录；赛事创建者或管理员）
         /// </summary>

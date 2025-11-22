@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ASG.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4758f324d6ffa60a5fb65b598919ad30b0298b09")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+65998176f5ba8c86ffdeab13d777145fad204905")]
 [assembly: System.Reflection.AssemblyProductAttribute("ASG.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ASG.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

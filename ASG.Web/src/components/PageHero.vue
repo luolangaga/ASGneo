@@ -18,7 +18,9 @@ const props = defineProps({
           </div>
         </v-col>
         <v-col cols="12" md="5" class="d-none d-md-flex justify-center">
-          <v-icon :icon="icon" size="120" color="white" class="hero-icon" />
+          <slot name="media">
+            <v-icon :icon="icon" size="120" color="white" class="hero-icon" />
+          </slot>
         </v-col>
       </v-row>
     </v-container>

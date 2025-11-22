@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ASG.Api.Models;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace ASG.Api.Data
 {
@@ -19,6 +20,17 @@ namespace ASG.Api.Data
     public DbSet<Match> Matches { get; set; }
     public DbSet<Article> Articles { get; set; }
     public DbSet<Comment> Comments { get; set; }
+    public DbSet<RecruitmentTask> RecruitmentTasks { get; set; }
+    public DbSet<RecruitmentApplication> RecruitmentApplications { get; set; }
+    public DbSet<RecruitmentTaskMatch> RecruitmentTaskMatches { get; set; }
+    public DbSet<EventAdmin> EventAdmins { get; set; }
+    public DbSet<Conversation> Conversations { get; set; }
+    public DbSet<ConversationMember> ConversationMembers { get; set; }
+    public DbSet<Message> Messages { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
+    public DbSet<UserBlock> UserBlocks { get; set; }
+    public DbSet<NeteaseHero> NeteaseHeroes { get; set; }
+    public DbSet<NeteaseHeroStat> NeteaseHeroStats { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -44,13 +56,16 @@ namespace ASG.Api.Data
                     .IsRequired();
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("datetime('now')");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.UpdatedAt)
-                    .HasDefaultValueSql("datetime('now')");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.IsActive)
                     .HasDefaultValue(true);
+
+                entity.Property(e => e.EmailCredits)
+                    .HasDefaultValue(0);
 
                 // 配置与 Team 的关系
                 entity.HasOne(u => u.OwnedTeam)
@@ -77,17 +92,21 @@ namespace ASG.Api.Data
                 entity.Property(e => e.Description)
                     .HasMaxLength(1000);
 
+                entity.Property(e => e.QqNumber)
+                    .HasMaxLength(20);
+
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("datetime('now')");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.UpdatedAt)
-                    .HasDefaultValueSql("datetime('now')");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                    .IsConcurrencyToken();
 
-                // 配置与 Player 的一对多关系
+                // 配置与 Player 的一对多关系（玩家可游离，删除战队不删除玩家）
                 entity.HasMany(t => t.Players)
                     .WithOne(p => p.Team)
                     .HasForeignKey(p => p.TeamId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 entity.ToTable("Teams");
             });
@@ -111,10 +130,10 @@ namespace ASG.Api.Data
                     .HasMaxLength(500);
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("datetime('now')");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.UpdatedAt)
-                    .HasDefaultValueSql("datetime('now')");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.ToTable("Players");
             });
@@ -152,10 +171,10 @@ namespace ASG.Api.Data
                     .HasMaxLength(500);
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("datetime('now')");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.UpdatedAt)
-                    .HasDefaultValueSql("datetime('now')");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.ToTable("GameRoles");
             });
@@ -177,10 +196,14 @@ namespace ASG.Api.Data
                     .IsRequired();
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("datetime('now')");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.UpdatedAt)
-                    .HasDefaultValueSql("datetime('now')");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.Property(e => e.CustomData)
+                    .IsRequired()
+                    .HasDefaultValue("{}");
 
                 // 冠军战队关系（可为空；冠军删除或战队删除时不影响赛事）
                 entity.HasOne(e => e.ChampionTeam)
@@ -189,6 +212,21 @@ namespace ASG.Api.Data
                     .OnDelete(DeleteBehavior.SetNull);
 
                 entity.ToTable("Events");
+            });
+
+            builder.Entity<EventAdmin>(entity =>
+            {
+                entity.HasKey(ea => new { ea.EventId, ea.UserId });
+                entity.Property(ea => ea.AddedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne(ea => ea.Event)
+                    .WithMany(e => e.EventAdmins)
+                    .HasForeignKey(ea => ea.EventId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(ea => ea.User)
+                    .WithMany()
+                    .HasForeignKey(ea => ea.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.ToTable("EventAdmins");
             });
 
             // Configure Match entity
@@ -219,10 +257,10 @@ namespace ASG.Api.Data
                     .HasDefaultValue(0);
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("datetime('now')");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.UpdatedAt)
-                    .HasDefaultValueSql("datetime('now')");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 // Relationships
                 entity.HasOne(m => m.HomeTeam)
@@ -256,7 +294,7 @@ namespace ASG.Api.Data
                     .HasMaxLength(500);
 
                 entity.Property(e => e.RegistrationTime)
-                    .HasDefaultValueSql("datetime('now')");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 // Configure relationships
                 entity.HasOne(te => te.Team)
@@ -285,10 +323,10 @@ namespace ASG.Api.Data
                     .IsRequired();
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("datetime('now')");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.UpdatedAt)
-                    .HasDefaultValueSql("datetime('now')");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.Likes)
                     .HasDefaultValue(0);
@@ -318,15 +356,150 @@ namespace ASG.Api.Data
                     .IsRequired();
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("datetime('now')");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.HasOne(e => e.Author)
                     .WithMany()
                     .HasForeignKey(e => e.AuthorUserId)
                     .OnDelete(DeleteBehavior.Cascade);
 
+                entity.HasOne(e => e.Parent)
+                    .WithMany(e => e.Replies)
+                    .HasForeignKey(e => e.ParentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
                 entity.ToTable("Comments");
             });
+
+            builder.Entity<RecruitmentTask>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.PositionType).HasConversion<string>().IsRequired();
+                entity.Property(e => e.Status).HasConversion<string>().IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(1000);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne<Event>()
+                    .WithMany()
+                    .HasForeignKey(e => e.EventId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.ToTable("RecruitmentTasks");
+            });
+
+            builder.Entity<RecruitmentApplication>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Status).HasConversion<string>().IsRequired();
+                entity.Property(e => e.Note).HasMaxLength(1000);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne<RecruitmentTask>()
+                    .WithMany()
+                    .HasForeignKey(e => e.TaskId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.ToTable("RecruitmentApplications");
+            });
+
+            builder.Entity<RecruitmentTaskMatch>(entity =>
+            {
+                entity.HasKey(e => new { e.TaskId, e.MatchId });
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.ToTable("RecruitmentTaskMatches");
+            });
+            builder.Entity<Conversation>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.IsDirect).HasDefaultValue(true);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.ToTable("Conversations");
+            });
+
+            builder.Entity<ConversationMember>(entity =>
+            {
+                entity.HasKey(e => new { e.ConversationId, e.UserId });
+                entity.Property(e => e.JoinedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+                entity.HasOne<Conversation>()
+                    .WithMany()
+                    .HasForeignKey(e => e.ConversationId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.ToTable("ConversationMembers");
+            });
+
+            builder.Entity<Message>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Content).IsRequired().HasMaxLength(2000);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne<Conversation>()
+                    .WithMany()
+                    .HasForeignKey(e => e.ConversationId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.ToTable("Messages");
+            });
+
+            builder.Entity<Notification>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.UserId).IsRequired();
+                entity.Property(e => e.Type).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Payload).HasDefaultValue("");
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.IsRead).HasDefaultValue(false);
+                entity.ToTable("Notifications");
+            });
+
+            builder.Entity<UserBlock>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.BlockerUserId).IsRequired();
+                entity.Property(e => e.BlockedUserId).IsRequired();
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasIndex(e => new { e.BlockerUserId, e.BlockedUserId }).IsUnique();
+                entity.ToTable("UserBlocks");
+            });
+
+            builder.Entity<NeteaseHero>(entity =>
+            {
+                entity.HasKey(e => e.HeroId);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.CampId).IsRequired();
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.ToTable("NeteaseHeroes");
+            });
+
+            builder.Entity<NeteaseHeroStat>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.HeroId).IsRequired();
+                entity.Property(e => e.CampId).IsRequired();
+                entity.Property(e => e.Season).IsRequired();
+                entity.Property(e => e.Part).IsRequired();
+                entity.Property(e => e.WinRate).IsRequired();
+                entity.Property(e => e.PingRate).IsRequired();
+                entity.Property(e => e.UseRate).IsRequired();
+                entity.Property(e => e.BanRate).IsRequired();
+                entity.Property(e => e.StartDate).IsRequired();
+                entity.Property(e => e.EndDate).IsRequired();
+                entity.Property(e => e.Position).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Source).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.FetchedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne<NeteaseHero>()
+                    .WithMany()
+                    .HasForeignKey(e => e.HeroId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(e => new { e.Source, e.HeroId, e.CampId, e.Season, e.Part, e.WeekNum, e.StartDate, e.EndDate, e.Position }).IsUnique();
+                entity.ToTable("NeteaseHeroStats");
+            });
+
+            foreach (var entityType in builder.Model.GetEntityTypes())
+            {
+                var dateProps = entityType.GetProperties().Where(p => p.ClrType == typeof(DateTime) || p.ClrType == typeof(DateTime?));
+                foreach (var p in dateProps)
+                {
+                    p.SetColumnType("timestamp with time zone");
+                }
+            }
         }
     }
 }

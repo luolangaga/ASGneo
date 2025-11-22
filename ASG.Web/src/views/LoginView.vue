@@ -1,15 +1,17 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { login } from '../services/auth'
 
 const router = useRouter()
+const route = useRoute()
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const errorMsg = ref('')
 const formRef = ref(null)
 const showPassword = ref(false)
+const redirectTarget = computed(() => route.query.redirect || '/')
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const emailRules = [
@@ -29,7 +31,7 @@ async function onSubmit() {
     const res = await formRef.value?.validate?.()
     if (res && res.valid === false) { loading.value = false; return }
     await login(email.value.trim(), password.value)
-    router.push('/')
+    router.push(redirectTarget.value)
   } catch (err) {
     errorMsg.value = err?.payload?.message || err?.message || '登录失败'
   } finally {
@@ -43,6 +45,7 @@ async function onSubmit() {
     <v-card>
       <v-card-title>登录</v-card-title>
       <v-card-text>
+    
         <v-alert v-if="errorMsg" type="error" :text="errorMsg" class="mb-4" />
         <v-form ref="formRef" @submit.prevent="onSubmit">
           <v-text-field
@@ -67,8 +70,12 @@ async function onSubmit() {
           />
           <div class="d-flex align-center justify-space-between">
             <v-btn :loading="loading" type="submit" color="primary">登录</v-btn>
-            <v-btn to="/register" variant="text">没有账号？去注册</v-btn>
+            <div>
+              <v-btn to="/forgot-password" variant="text" class="mr-2">忘记密码？</v-btn>
+              <v-btn to="/register" variant="text">没有账号？去注册</v-btn>
+            </div>
           </div>
+          
         </v-form>
       </v-card-text>
     </v-card>
@@ -76,4 +83,5 @@ async function onSubmit() {
 </template>
 
 <style scoped>
+.login-hero { display: flex; justify-content: center; align-items: center; margin-bottom: 24px }
 </style>

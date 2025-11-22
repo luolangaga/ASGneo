@@ -25,6 +25,7 @@ namespace ASG.Api.DTOs
         public string? ChampionTeamName { get; set; }
         public int RegisteredTeamsCount { get; set; }
         public List<TeamEventDto>? RegisteredTeams { get; set; }
+        public List<string>? AdminUserIds { get; set; }
     }
 
     /// <summary>
@@ -96,6 +97,8 @@ namespace ASG.Api.DTOs
         public RegistrationStatus Status { get; set; }
         public string? Notes { get; set; }
         public string? RegisteredByUserId { get; set; }
+        public string? QqNumberMasked { get; set; }
+        public string? QqNumberFull { get; set; }
     }
 
     /// <summary>
@@ -120,6 +123,11 @@ namespace ASG.Api.DTOs
 
         [StringLength(500, ErrorMessage = "备注长度不能超过500个字符")]
         public string? Notes { get; set; }
+
+        /// <summary>
+        /// 是否通过邮件通知战队拥有者（将扣除其邮件积分）
+        /// </summary>
+        public bool NotifyByEmail { get; set; } = false;
     }
 
     /// <summary>
@@ -128,5 +136,10 @@ namespace ASG.Api.DTOs
     public class SetChampionDto
     {
         public Guid? TeamId { get; set; }
+    }
+
+    public class AddEventAdminDto
+    {
+        public string UserId { get; set; } = string.Empty;
     }
 }

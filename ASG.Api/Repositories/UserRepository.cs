@@ -100,5 +100,45 @@ namespace ASG.Api.Repositories
         {
             return await _context.Users.CountAsync(u => u.IsActive);
         }
+
+        public async Task<bool> UpdateEmailCreditsAsync(string userId, int credits)
+        {
+            var user = await GetByIdAsync(userId);
+            if (user == null || !user.IsActive)
+                return false;
+
+            user.EmailCredits = Math.Max(0, credits);
+            user.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> AdjustEmailCreditsAsync(string userId, int delta)
+        {
+            var user = await GetByIdAsync(userId);
+            if (user == null || !user.IsActive)
+                return false;
+
+            var newCredits = user.EmailCredits + delta;
+            user.EmailCredits = newCredits < 0 ? 0 : newCredits;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<IEnumerable<User>> SearchByNameAsync(string name, int limit = 10)
+        {
+            name ??= string.Empty;
+            var q = name.Trim();
+            var query = _context.Users.AsQueryable();
+            if (!string.IsNullOrEmpty(q))
+            {
+                query = query.Where(u => (u.FirstName + u.LastName).Contains(q) || u.UserName.Contains(q));
+            }
+            return await query.Where(u => u.IsActive)
+                .OrderBy(u => u.CreatedAt)
+                .Take(limit <= 0 ? 10 : limit)
+                .ToListAsync();
+        }
     }
 }

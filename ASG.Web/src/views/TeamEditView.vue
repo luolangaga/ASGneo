@@ -1,11 +1,14 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import PageHero from '../components/PageHero.vue'
 import MarkdownEditor from '../components/MarkdownEditor.vue'
 import { currentUser, isAuthenticated, updateCurrentUser } from '../stores/auth'
-import { getTeam, updateTeam, uploadTeamLogo, deleteTeam } from '../services/teams'
+import { getTeam, updateTeam, uploadTeamLogo, deleteTeam, generateInvite } from '../services/teams'
+import { polishText } from '../services/ai'
 import { getProfile } from '../services/user'
+import ResultDialog from '../components/ResultDialog.vue'
+import { extractErrorDetails } from '../services/api'
 
 const router = useRouter()
 
@@ -17,12 +20,22 @@ const saving = ref(false)
 const uploadingLogo = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
+const showSuccess = ref(false)
+const errorOpen = ref(false)
+const errorDetails = ref([])
 const deleting = ref(false)
 
 const name = ref('')
 const description = ref('')
 const players = ref([])
 const logoUrl = ref('')
+const inviteInfo = ref(null)
+const generatingInvite = ref(false)
+const appOrigin = computed(() => (typeof window !== 'undefined' && window.location) ? window.location.origin : '')
+const inviteLink = computed(() => {
+  const token = inviteInfo.value?.token || inviteInfo.value?.Token
+  return token ? `${appOrigin.value}/join/${token}` : ''
+})
 
 const canEdit = computed(() => isAuthenticated.value && !!teamId.value)
 
@@ -51,6 +64,7 @@ async function loadTeam() {
       description: p.description || '',
     }))
     if (!players.value.length) addPlayer()
+    inviteInfo.value = null
   } catch (err) {
     errorMsg.value = err?.payload?.message || err?.message || '加载战队失败'
   } finally {
@@ -102,8 +116,24 @@ async function onSubmit() {
     // 权限或其它错误
     const msg = err?.payload?.message || err?.message || '保存失败'
     errorMsg.value = msg.includes('权限') ? '你没有权限修改此战队' : msg
+    errorDetails.value = extractErrorDetails(err?.payload)
   } finally {
     saving.value = false
+  }
+}
+
+const posting = ref(false)
+
+async function onPolishDescription() {
+  if (!description.value || posting.value) return
+  posting.value = true
+  try {
+    const r = await polishText({ scope: 'team', text: description.value })
+    if (r?.text || r?.Text) description.value = r.text || r.Text
+  } catch (e) {
+    errorMsg.value = e?.payload?.message || e?.message || 'AI润色失败'
+  } finally {
+    posting.value = false
   }
 }
 
@@ -120,6 +150,7 @@ async function onUploadLogo(e) {
     successMsg.value = '徽标已更新'
   } catch (err) {
     errorMsg.value = err?.payload?.message || err?.message || '上传徽标失败'
+    errorDetails.value = extractErrorDetails(err?.payload)
   } finally {
     uploadingLogo.value = false
     // 清空文件选择
@@ -127,11 +158,47 @@ async function onUploadLogo(e) {
   }
 }
 
+watch(successMsg, (v) => { if (v) showSuccess.value = true })
+watch(errorMsg, (v) => { if (v) errorOpen.value = true })
+
 onMounted(() => {
   if (!canEdit.value) return
   loadTeam()
 })
 
+async function onGenerateInvite() {
+  if (!teamId.value) return
+  generatingInvite.value = true
+  errorMsg.value = ''
+  successMsg.value = ''
+  try {
+    const info = await generateInvite(teamId.value, 7)
+    inviteInfo.value = info
+    successMsg.value = '邀请链接已生成'
+  } catch (err) {
+    errorMsg.value = err?.payload?.message || err?.message || '生成邀请失败'
+  } finally {
+    generatingInvite.value = false
+  }
+}
+
+async function copyInviteLinkSafe() {
+  if (!inviteLink.value) return
+  try {
+    await navigator.clipboard?.writeText(inviteLink.value)
+    successMsg.value = '邀请链接已复制'
+  } catch {
+    try {
+      const input = document.createElement('input')
+      input.value = inviteLink.value
+      document.body.appendChild(input)
+      input.select()
+      document.execCommand('copy')
+      document.body.removeChild(input)
+      successMsg.value = '邀请链接已复制'
+    } catch {}
+  }
+}
 async function onDeleteTeam() {
   if (!teamId.value) return
   const ok = window.confirm(`确定要删除战队“${name.value}”吗？此操作不可恢复。`)
@@ -150,6 +217,7 @@ async function onDeleteTeam() {
   } catch (err) {
     const msg = err?.payload?.message || err?.message || '删除战队失败'
     errorMsg.value = msg
+    errorDetails.value = extractErrorDetails(err?.payload)
   } finally {
     deleting.value = false
   }
@@ -193,7 +261,7 @@ async function onDeleteTeam() {
         </v-card-title>
         <v-card-text>
           <v-alert v-if="errorMsg" type="error" :text="errorMsg" class="mb-4" />
-          <v-alert v-if="successMsg" type="success" :text="successMsg" class="mb-4" />
+          
 
           <template v-if="loading">
             <v-skeleton-loader type="article" />
@@ -202,8 +270,24 @@ async function onDeleteTeam() {
             <v-form @submit.prevent="onSubmit">
               <v-text-field v-model="name" label="战队名称" prepend-inner-icon="group" required />
               <MarkdownEditor v-model="description" label="战队描述" :rows="6" :maxLength="999" />
+              <div class="d-flex justify-end mt-2">
+                <v-btn :loading="posting" variant="tonal" color="primary" prepend-icon="auto_awesome" @click="onPolishDescription">AI润色</v-btn>
+              </div>
 
-              <v-divider class="my-4" />
+          <v-divider class="my-4" />
+          <div class="d-flex align-center justify-space-between mb-2">
+            <div class="text-subtitle-1">邀请队员加入</div>
+            <v-btn color="secondary" variant="tonal" :loading="generatingInvite" @click="onGenerateInvite" prepend-icon="link">生成邀请链接</v-btn>
+          </div>
+          <template v-if="inviteInfo">
+            <v-alert type="success" class="mb-2">
+              <div class="d-flex align-center">
+                <div class="flex-grow-1">邀请有效期至：{{ new Date(inviteInfo.expiresAt || inviteInfo.ExpiresAt).toLocaleString() }}</div>
+                <v-btn variant="text" :title="'点击复制邀请链接'" @click="copyInviteLinkSafe" prepend-icon="content_copy">复制链接</v-btn>
+              </div>
+              <div class="mt-2 text-caption">{{ inviteLink }}</div>
+            </v-alert>
+          </template>
               <div class="text-subtitle-1 mb-2">战队徽标</div>
               <div class="d-flex align-center gap-3 mb-3">
                 <v-avatar size="64" v-if="logoUrl">
@@ -260,6 +344,8 @@ async function onDeleteTeam() {
       </v-card>
     </template>
   </v-container>
+  <ResultDialog v-model="showSuccess" :type="'success'" :message="successMsg" />
+  <ResultDialog v-model="errorOpen" :type="'error'" :message="errorMsg" :details="errorDetails" />
 </template>
 
 <style scoped>

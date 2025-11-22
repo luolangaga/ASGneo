@@ -8,4 +8,16 @@ export default defineConfig({
     vue(),
     vuetify({ autoImport: true }),
   ],
+  server: {
+    port: 5583,
+    strictPort: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5250',
+        changeOrigin: true,
+        secure: false,
+        ws: false,
+      },
+    },
+  },
 })

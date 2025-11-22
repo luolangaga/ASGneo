@@ -5,11 +5,17 @@ import vuetify from 'vite-plugin-vuetify'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => ['lottie-player'].includes(tag)
+        }
+      }
+    }),
     vuetify({ autoImport: true }),
   ],
   server: {
     port: 5175,
-    strictPort: true,
+    strictPort: false,
   },
 })

@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getEvent, updateEvent, deleteEvent } from '../services/events'
+import { polishText } from '../services/ai'
 import MarkdownEditor from '../components/MarkdownEditor.vue'
 
 const route = useRoute()
@@ -21,6 +22,7 @@ const competitionStartTime = ref('')  // datetime-local
 const competitionEndTime = ref('')    // datetime-local, optional
 const maxTeams = ref('')
 const status = ref(0)
+const polishing = ref(false)
 
 const statusOptions = [
   { title: '草稿', value: 0 },
@@ -93,6 +95,19 @@ async function onSave() {
   }
 }
 
+async function onPolishDescription() {
+  if (!description.value || polishing.value) return
+  polishing.value = true
+  try {
+    const r = await polishText({ scope: 'event', text: description.value })
+    if (r?.text || r?.Text) description.value = r.text || r.Text
+  } catch (e) {
+    errorMsg.value = e?.payload?.message || e?.message || 'AI润色失败'
+  } finally {
+    polishing.value = false
+  }
+}
+
 function onCancel() {
   router.push('/events/manage')
 }
@@ -124,6 +139,9 @@ async function onDelete() {
         <v-form v-else>
           <v-text-field v-model="name" label="赛事名称" required />
           <MarkdownEditor v-model="description" label="赛事描述" :rows="8" :maxLength="999" />
+          <div class="d-flex justify-end mt-2">
+            <v-btn :loading="polishing" variant="tonal" color="primary" prepend-icon="auto_awesome" @click="onPolishDescription">AI润色</v-btn>
+          </div>
 
           <v-row>
             <v-col cols="12" md="6">

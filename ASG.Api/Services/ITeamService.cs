@@ -17,5 +17,11 @@ namespace ASG.Api.Services
         Task<bool> VerifyTeamOwnershipAsync(Guid teamId, string userId);
         Task<bool> TeamExistsAsync(Guid id);
         Task<int> LikeTeamAsync(Guid id);
+        Task<TeamInviteDto> GenerateTeamInviteAsync(Guid teamId, string userId, int validDays = 7);
+        Task<TeamInviteDto?> GetTeamInviteAsync(Guid token);
+        Task<PlayerDto> AcceptTeamInviteAsync(Guid token, string userId, CreatePlayerDto playerDto);
+        Task<bool> LeaveTeamAsync(Guid teamId, string userId);
+        Task<PlayerDto?> GetMyPlayerAsync(string userId);
+        Task<PlayerDto> UpsertMyPlayerAsync(string userId, CreatePlayerDto playerDto);
     }
 }

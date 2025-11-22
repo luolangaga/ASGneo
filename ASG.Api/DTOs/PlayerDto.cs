@@ -11,7 +11,7 @@ namespace ASG.Api.DTOs
         public string? Description { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-        public Guid TeamId { get; set; }
+        public Guid? TeamId { get; set; }
     }
 
     public class CreatePlayerDto

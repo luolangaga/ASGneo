@@ -23,6 +23,28 @@ namespace ASG.Api.Controllers
             _env = env;
         }
 
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string name, [FromQuery] int limit = 10)
+        {
+            var list = await _userRepository.SearchByNameAsync(name ?? string.Empty, limit);
+            var results = list.Select(user => new UserResponseDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FullName = user.FullName,
+                Role = user.Role,
+                RoleDisplayName = user.RoleDisplayName,
+                RoleName = user.RoleName,
+                CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt,
+                IsActive = user.IsActive,
+                AvatarUrl = GetAvatarUrl(user.Id),
+                TeamId = user.TeamId,
+                EmailCredits = user.EmailCredits
+            });
+            return Ok(results);
+        }
+
         /// <summary>
         /// 获取自己的信息
         /// </summary>
@@ -39,15 +61,13 @@ namespace ASG.Api.Controllers
             var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
             {
-                return NotFound(new { message = "User not found." });
+                return NotFound(new { message = "用户未找到" });
             }
 
             var userResponse = new UserResponseDto
             {
                 Id = user.Id,
                 Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
                 FullName = user.FullName,
                 Role = user.Role,
                 RoleDisplayName = user.RoleDisplayName,
@@ -56,7 +76,8 @@ namespace ASG.Api.Controllers
                 UpdatedAt = user.UpdatedAt,
                 IsActive = user.IsActive,
                 AvatarUrl = GetAvatarUrl(user.Id),
-                TeamId = user.TeamId
+                TeamId = user.TeamId,
+                EmailCredits = user.EmailCredits
             };
 
             return Ok(userResponse);
@@ -75,15 +96,15 @@ namespace ASG.Api.Controllers
             {
                 Id = user.Id,
                 Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
                 FullName = user.FullName,
                 Role = user.Role,
                 RoleDisplayName = user.RoleDisplayName,
                 RoleName = user.RoleName,
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt,
-                IsActive = user.IsActive
+                IsActive = user.IsActive,
+                EmailCredits = user.EmailCredits,
+                TeamId = user.TeamId
             });
 
             return Ok(userResponses);
@@ -100,15 +121,13 @@ namespace ASG.Api.Controllers
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
             {
-                return NotFound(new { message = "User not found." });
+                return NotFound(new { message = "用户未找到" });
             }
 
             var userResponse = new UserResponseDto
             {
                 Id = user.Id,
                 Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
                 FullName = user.FullName,
                 Role = user.Role,
                 RoleDisplayName = user.RoleDisplayName,
@@ -117,15 +136,56 @@ namespace ASG.Api.Controllers
                 UpdatedAt = user.UpdatedAt,
                 IsActive = user.IsActive,
                 AvatarUrl = GetAvatarUrl(user.Id),
-                TeamId = user.TeamId
+                TeamId = user.TeamId,
+                EmailCredits = user.EmailCredits
             };
 
             return Ok(userResponse);
         }
 
         /// <summary>
-        /// 更新个人资料（仅更新 FirstName / LastName）
+        /// 管理员：更新指定用户的邮件积分
         /// </summary>
+        [HttpPut("{id}/email-credits")]
+        [Authorize(Policy = AuthorizationPolicies.CanManageUsers)]
+        public async Task<IActionResult> UpdateEmailCredits(string id, [FromBody] UpdateEmailCreditsDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var success = await _userRepository.UpdateEmailCreditsAsync(id, dto.Credits);
+            if (!success)
+            {
+                return NotFound(new { message = "用户未找到或未激活" });
+            }
+
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound(new { message = "用户未找到" });
+            }
+
+            var userResponse = new UserResponseDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FullName = user.FullName,
+                Role = user.Role,
+                RoleDisplayName = user.RoleDisplayName,
+                RoleName = user.RoleName,
+                CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt,
+                IsActive = user.IsActive,
+                AvatarUrl = GetAvatarUrl(user.Id),
+                TeamId = user.TeamId,
+                EmailCredits = user.EmailCredits
+            };
+
+            return Ok(userResponse);
+        }
+
         [HttpPut("profile")]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
         {
@@ -143,19 +203,17 @@ namespace ASG.Api.Controllers
             var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
             {
-                return NotFound(new { message = "User not found." });
+                return NotFound(new { message = "用户未找到" });
             }
 
-            user.FirstName = dto.FirstName;
-            user.LastName = dto.LastName;
+            user.FirstName = dto.FullName;
+            user.LastName = string.Empty;
             await _userRepository.UpdateAsync(user);
 
             var userResponse = new UserResponseDto
             {
                 Id = user.Id,
                 Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
                 FullName = user.FullName,
                 Role = user.Role,
                 RoleDisplayName = user.RoleDisplayName,
@@ -260,13 +318,13 @@ namespace ASG.Api.Controllers
             var exists = await _userRepository.ExistsAsync(id);
             if (!exists)
             {
-                return NotFound(new { message = "User not found." });
+                return NotFound(new { message = "用户未找到" });
             }
 
             await _userRepository.DeleteAsync(id);
             _logger.LogInformation("User deleted: {UserId}", id);
 
-            return Ok(new { message = "User deleted successfully." });
+            return Ok(new { message = "用户已删除" });
         }
     }
 }

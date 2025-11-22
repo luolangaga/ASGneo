@@ -11,8 +11,8 @@ export async function login(email, password) {
   return data
 }
 
-export async function register({ email, password, firstName, lastName, role }) {
-  const payload = { email, password, firstName, lastName }
+export async function register({ email, password, fullName, role }) {
+  const payload = { email, password, fullName }
   if (role) payload.role = role
   const data = await apiFetch('/Auth/register', {
     method: 'POST',
@@ -24,4 +24,22 @@ export async function register({ email, password, firstName, lastName, role }) {
 
 export function logout() {
   clearAuth()
+}
+
+export async function requestPasswordReset(email) {
+  const payload = { email }
+  const data = await apiFetch('/Auth/password-reset/request', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+  return data
+}
+
+export async function resetPassword({ email, token, password }) {
+  const payload = { email, token, newPassword: password }
+  const data = await apiFetch('/Auth/password-reset/confirm', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+  return data
 }

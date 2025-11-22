@@ -3,13 +3,17 @@
     <template #actions>
       <v-btn variant="text" class="mb-3" to="/teams/create" prepend-icon="person_add">创建战队</v-btn>
     </template>
+    <template #media>
+      <lottie-player src="/animations/Untitled_file.json" autoplay loop style="width:220px;height:220px"></lottie-player>
+    </template>
   </PageHero>
-  <v-container class="py-6">
+  <v-container class="py-6 page-container">
     <v-card class="mb-4">
-      <v-card-title class="d-flex align-center">
+      <v-card-title class="d-flex align-center flex-wrap">
         <v-text-field
           v-model="query"
-          class="flex-grow-1"
+          class="flex-grow-1 mr-2"
+          style="min-width: 220px"
           label="搜索站内内容（战队 / 赛事 / 文章）"
           prepend-inner-icon="search"
           clearable
@@ -75,7 +79,11 @@
             <div class="d-flex align-center">
               <v-avatar size="40" class="mr-3" color="primary" variant="tonal">
                 <template v-if="team.logoUrl">
-                  <v-img :src="team.logoUrl" cover />
+                  <v-img :src="team.logoUrl" cover>
+                    <template #placeholder>
+                      <div class="img-skeleton"></div>
+                    </template>
+                  </v-img>
                 </template>
                 <template v-else>
                   <span class="text-subtitle-2">{{ getAvatarLetter(team.name) }}</span>
@@ -94,16 +102,19 @@
               <v-btn size="x-small" variant="text" @click="toggleExpandedTeam(team.id)">{{ isExpandedTeam(team.id) ? '收起' : '展开' }}</v-btn>
             </div>
           </v-card-text>
-          <v-card-actions>
-            <v-btn
-              color="default"
-              variant="text"
-              :to="{ name: 'team-detail', params: { id: team.id } }"
-              prepend-icon="visibility"
-            >查看详情</v-btn>
-            <v-spacer />
-            <v-btn color="secondary" variant="tonal" @click="doLikeList(team.id)" prepend-icon="thumb_up_off_alt">点赞</v-btn>
-          </v-card-actions>
+  <v-card-actions>
+    <v-btn
+      color="default"
+      variant="text"
+      :to="{ name: 'team-detail', params: { id: team.id } }"
+      prepend-icon="visibility"
+    >查看详情</v-btn>
+    <v-spacer />
+    <div class="like-anim-container">
+      <v-btn color="secondary" variant="tonal" @click="doLikeList(team.id)" prepend-icon="thumb_up_off_alt">点赞</v-btn>
+      <lottie-player v-if="likeFxTeamId === team.id" class="like-anim" src="/animations/Love_Animation_with_Particle.json" autoplay style="width:140px;height:140px"></lottie-player>
+    </div>
+  </v-card-actions>
         </v-card>
       </v-col>
     </v-row>
@@ -123,10 +134,14 @@
       <v-col v-for="ev in eventResults" :key="ev.id" cols="12" sm="6" md="4" lg="3">
         <v-card>
           <v-card-title class="d-flex align-center">
-            <v-avatar size="36" class="mr-2">
-              <v-img v-if="ev.logoUrl" :src="ev.logoUrl" alt="event logo" cover />
+              <v-avatar size="36" class="mr-2">
+              <v-img v-if="ev.logoUrl" :src="ev.logoUrl" alt="event logo" cover>
+                <template #placeholder>
+                  <div class="img-skeleton"></div>
+                </template>
+              </v-img>
               <v-icon v-else icon="grid_view" />
-            </v-avatar>
+              </v-avatar>
             <div class="flex-grow-1">
               <div class="text-subtitle-1">{{ ev.name }}</div>
               <div class="text-medium-emphasis">报名队伍：{{ ev.registeredTeamsCount ?? 0 }}</div>
@@ -161,7 +176,13 @@
             <div class="text-subtitle-1">{{ a.title }}</div>
           </v-card-title>
           <v-card-text>
-            <div class="text-medium-emphasis">作者：{{ a.authorName || '匿名' }}</div>
+            <div class="text-medium-emphasis">
+              作者：
+              <router-link v-if="a.authorUserId" :to="`/users/${a.authorUserId}`" class="text-decoration-none">
+                {{ a.authorName || '匿名' }}
+              </router-link>
+              <template v-else>{{ a.authorName || '匿名' }}</template>
+            </div>
             <div v-if="a.contentMarkdown" class="text-body-2 md-truncate" v-html="toMd(a.contentMarkdown)" />
           </v-card-text>
           <v-card-actions>
@@ -204,6 +225,7 @@ const page = ref(1)
 const pageSize = ref(12)
 const totalCount = ref(0)
 const results = ref([]) // 战队结果
+const likeFxTeamId = ref(null)
 const eventResults = ref([])
 const eventsCount = ref(0)
 const articleResults = ref([])
@@ -263,6 +285,7 @@ async function doSearch() {
         title: a.title || a.Title,
         contentMarkdown: a.contentMarkdown || a.ContentMarkdown,
         authorName: a.authorName || a.AuthorName || '',
+        authorUserId: a.authorUserId || a.AuthorUserId || null,
       }))
       articlesCount.value = articlePaged.TotalCount ?? articlePaged.totalCount ?? articleResults.value.length
     } else if (type === 'teams') {
@@ -294,6 +317,7 @@ async function doSearch() {
         title: a.title || a.Title,
         contentMarkdown: a.contentMarkdown || a.ContentMarkdown,
         authorName: a.authorName || a.AuthorName || '',
+        authorUserId: a.authorUserId || a.AuthorUserId || null,
       }))
       articlesCount.value = articlePaged.TotalCount ?? articlePaged.totalCount ?? articleResults.value.length
       results.value = []
@@ -326,6 +350,8 @@ async function doLikeList(teamId) {
     const res = await likeTeam(teamId)
     const newLikes = res.likes ?? res.Likes ?? null
     results.value = results.value.map(r => r.id === teamId ? { ...r, likes: newLikes ?? r.likes } : r)
+    likeFxTeamId.value = teamId
+    setTimeout(() => { if (likeFxTeamId.value === teamId) likeFxTeamId.value = null }, 3200)
   } catch (e) {
     error.value = e?.message || '点赞失败'
   }
@@ -344,4 +370,7 @@ function toggleExpandedTeam(id) {
 </script>
 
 <style scoped>
+.like-anim-container { position: relative; display: inline-block }
+.like-anim { position: absolute; left: 50%; transform: translateX(-50%); top: -120px; pointer-events: none; z-index: 2; will-change: opacity, transform; animation: hoverPulse 3.2s ease-out forwards }
+@keyframes hoverPulse { 0% { opacity: 0; transform: translate(-50%, -10px) scale(0.92) } 12% { opacity: 1; transform: translate(-50%, 0) scale(1) } 35% { transform: translate(-50%, -6px) } 68% { transform: translate(-50%, -3px) } 92% { transform: translate(-50%, -5px) } 100% { opacity: 0; transform: translate(-50%, -5px) } }
 </style>

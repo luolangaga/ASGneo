@@ -27,8 +27,9 @@ namespace ASG.Api.Authorization
                 options.AddPolicy(RequireAdminRole, policy =>
                     policy.Requirements.Add(new RoleRequirement(UserRole.Admin)));
 
+                // 移除 SuperAdmin 作为唯一的高权限角色，统一由 Admin 管理
                 options.AddPolicy(RequireSuperAdminRole, policy =>
-                    policy.Requirements.Add(new RoleRequirement(UserRole.SuperAdmin, false)));
+                    policy.Requirements.Add(new RoleRequirement(UserRole.Admin, false)));
 
                 // 权限策略配置
                 options.AddPolicy(CanManageUsers, policy =>

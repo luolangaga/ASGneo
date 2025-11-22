@@ -1,5 +1,7 @@
 using ASG.Api.DTOs;
 using ASG.Api.Services;
+using Microsoft.Extensions.Caching.Memory;
+using System.IO.Compression;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,11 +19,13 @@ namespace ASG.Api.Controllers
     {
         private readonly IEventService _eventService;
         private readonly IWebHostEnvironment _env;
+        private readonly IMemoryCache _cache;
 
-        public EventsController(IEventService eventService, IWebHostEnvironment env)
+        public EventsController(IEventService eventService, IWebHostEnvironment env, IMemoryCache cache)
         {
             _eventService = eventService;
             _env = env;
+            _cache = cache;
         }
 
         /// <summary>
@@ -369,7 +373,16 @@ namespace ASG.Api.Controllers
         {
             try
             {
-                var registrations = await _eventService.GetEventRegistrationsAsync(id);
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var registrations = await _eventService.GetEventRegistrationsWithSensitiveAsync(id, userId);
+                // 仅当返回包含完整QQ时进行审计日志记录
+                var containsFull = registrations.Any(r => !string.IsNullOrEmpty(r.QqNumberFull));
+                if (containsFull)
+                {
+                    var count = registrations.Count(r => !string.IsNullOrEmpty(r.QqNumberFull));
+                    // 记录查看敏感数据的行为
+                    Console.WriteLine($"[AUDIT] View QQ numbers: EventId={id}, UserId={userId}, Count={count}, Time={DateTime.UtcNow:O}");
+                }
                 return Ok(registrations);
             }
             catch (Exception ex)
@@ -378,11 +391,6 @@ namespace ASG.Api.Controllers
             }
         }
 
-        /// <summary>
-        /// 导出赛事报名信息为CSV（需要登录且为赛事创建者或管理员）
-        /// </summary>
-        /// <param name="id">赛事ID</param>
-        /// <returns>CSV文件</returns>
         [HttpGet("{id}/registrations/export")]
         [Authorize]
         public async Task<IActionResult> ExportEventRegistrationsCsv(Guid id)
@@ -410,6 +418,153 @@ namespace ASG.Api.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "导出报名信息失败", error = ex.Message });
+            }
+        }
+
+        [HttpGet("{id}/registrations/export-logos")]
+        [Authorize]
+        public async Task<IActionResult> ExportEventTeamLogosZip(Guid id)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { message = "用户未登录" });
+                }
+
+                // 速率限制：同一用户对同一赛事一分钟一次
+                var rateKey = $"export:logos:{id}:{userId}";
+                if (_cache.TryGetValue(rateKey, out _))
+                {
+                    return StatusCode(429, new { message = "请求过于频繁，请一分钟后再试" });
+                }
+                _cache.Set(rateKey, true, TimeSpan.FromMinutes(1));
+
+                // 权限校验
+                var canManage = await _eventService.CanUserManageEventAsync(id, userId);
+                if (!canManage)
+                {
+                    return Forbid("您没有权限导出该赛事的战队徽标");
+                }
+
+                var regs = await _eventService.GetEventRegistrationsWithSensitiveAsync(id, userId);
+
+                var root = _env.WebRootPath;
+                if (string.IsNullOrEmpty(root))
+                {
+                    root = Path.Combine(_env.ContentRootPath, "wwwroot");
+                }
+
+                await using var mem = new MemoryStream();
+                using (var zip = new ZipArchive(mem, ZipArchiveMode.Create, leaveOpen: true))
+                {
+                    foreach (var r in regs)
+                    {
+                        var teamId = r.TeamId;
+                        var dir = Path.Combine(root, "team-logos", teamId.ToString());
+                        if (!Directory.Exists(dir)) continue;
+                        var logoPath = Directory.GetFiles(dir, "logo.*").FirstOrDefault();
+                        if (string.IsNullOrEmpty(logoPath)) continue;
+
+                        var ext = Path.GetExtension(logoPath).ToLowerInvariant();
+                        var teamName = r.TeamName ?? teamId.ToString();
+                        var safeTeamName = Regex.Replace(teamName, "[^a-zA-Z0-9_\\-]", "_");
+                        var entryName = $"{safeTeamName}-{teamId}{ext}";
+                        var entry = zip.CreateEntry(entryName, CompressionLevel.Optimal);
+                        await using var src = new FileStream(logoPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        await using var dest = entry.Open();
+                        await src.CopyToAsync(dest);
+                    }
+                }
+                mem.Position = 0;
+
+                var eventInfo = await _eventService.GetEventByIdAsync(id);
+                var safeEventName = Regex.Replace(eventInfo?.Name ?? "event", "[^a-zA-Z0-9_\\-]", "_");
+                var fileName = $"{safeEventName}-team-logos.zip";
+                return File(mem, "application/zip", fileName);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "导出战队徽标失败", error = ex.Message });
+            }
+        }
+
+        [HttpGet("{id}/admins")]
+        public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetEventAdmins(Guid id)
+        {
+            try
+            {
+                var admins = await _eventService.GetEventAdminsAsync(id);
+                return Ok(admins);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "获取赛事管理员失败", error = ex.Message });
+            }
+        }
+
+        [HttpPost("{id}/admins")]
+        [Authorize]
+        public async Task<ActionResult> AddEventAdmin(Guid id, [FromBody] AddEventAdminDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { message = "用户未登录" });
+                }
+                await _eventService.AddEventAdminAsync(id, userId, dto.UserId);
+                return Ok(new { message = "添加赛事管理员成功" });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "添加赛事管理员失败", error = ex.Message });
+            }
+        }
+
+        [HttpDelete("{id}/admins/{adminUserId}")]
+        [Authorize]
+        public async Task<ActionResult> RemoveEventAdmin(Guid id, string adminUserId)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { message = "用户未登录" });
+                }
+                var ok = await _eventService.RemoveEventAdminAsync(id, userId, adminUserId);
+                if (!ok)
+                {
+                    return NotFound(new { message = "赛事管理员不存在" });
+                }
+                return Ok(new { message = "移除赛事管理员成功" });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "移除赛事管理员失败", error = ex.Message });
             }
         }
 
@@ -480,6 +635,52 @@ namespace ASG.Api.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "获取正在报名的赛事失败", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// 获取赛事赛程图画布（JSON）
+        /// </summary>
+        [HttpGet("{id}/bracket")]
+        public async Task<ActionResult<object>> GetBracketCanvas(Guid id)
+        {
+            try
+            {
+                var json = await _eventService.GetBracketCanvasAsync(id);
+                var node = System.Text.Json.Nodes.JsonNode.Parse(string.IsNullOrWhiteSpace(json) ? "{}" : json);
+                return Ok(node);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "获取赛程图画布失败", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// 保存赛事赛程图画布（需要登录且为赛事创建者或管理员）
+        /// </summary>
+        [HttpPut("{id}/bracket")]
+        [Authorize]
+        public async Task<ActionResult> SaveBracketCanvas(Guid id, [FromBody] System.Text.Json.JsonElement canvas)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { message = "用户未登录" });
+                }
+                var json = canvas.GetRawText();
+                await _eventService.SaveBracketCanvasAsync(id, userId, json);
+                return Ok(new { message = "保存成功" });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "保存赛程图画布失败", error = ex.Message });
             }
         }
 

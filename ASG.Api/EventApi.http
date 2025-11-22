@@ -78,13 +78,14 @@ Content-Type: {{contentType}}
 
 ###############################################
 ### 8. 更新战队报名状态 (需要登录和赛事创建者权限)
-PUT {{baseUrl}}/api/events/{{eventId}}/registrations/{{teamId}}
+PUT {{baseUrl}}/api/Events/{{eventId}}/register/{{teamId}}
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
 
 {
   "status": "Approved",
-  "notes": "战队资格审核通过"
+  "notes": "战队资格审核通过",
+  "notifyByEmail": true
 }
 
 ###############################################
@@ -267,7 +268,7 @@ Authorization: Bearer {{token}}
 ### 场景5: 状态管理测试
 
 ### 5.1 审批战队报名
-PUT {{baseUrl}}/api/events/{{eventId}}/registrations/{{teamId}}
+PUT {{baseUrl}}/api/Events/{{eventId}}/register/{{teamId}}
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
 
@@ -277,7 +278,7 @@ Authorization: Bearer {{token}}
 }
 
 ### 5.2 拒绝战队报名
-PUT {{baseUrl}}/api/events/{{eventId}}/registrations/{{teamId}}
+PUT {{baseUrl}}/api/Events/{{eventId}}/register/{{teamId}}
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
 
@@ -287,7 +288,7 @@ Authorization: Bearer {{token}}
 }
 
 ### 5.3 确认战队报名
-PUT {{baseUrl}}/api/events/{{eventId}}/registrations/{{teamId}}
+PUT {{baseUrl}}/api/Events/{{eventId}}/register/{{teamId}}
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
 

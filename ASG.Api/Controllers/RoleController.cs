@@ -84,10 +84,10 @@ namespace ASG.Api.Controllers
         }
 
         /// <summary>
-        /// 获取角色统计信息（仅超级管理员可查看）
+        /// 获取角色统计信息（管理员可查看）
         /// </summary>
         [HttpGet("statistics")]
-        [Authorize(Policy = AuthorizationPolicies.RequireSuperAdminRole)]
+        [Authorize(Policy = AuthorizationPolicies.RequireAdminRole)]
         public async Task<ActionResult<Dictionary<UserRole, int>>> GetRoleStatistics()
         {
             var statistics = await _roleService.GetRoleStatisticsAsync();
@@ -117,6 +117,10 @@ namespace ASG.Api.Controllers
             var currentUserRoleStr = User.FindFirst(ClaimTypes.Role)?.Value;
             if (!Enum.TryParse<UserRole>(currentUserRoleStr, out var currentUserRole))
                 return BadRequest("无法确定当前用户角色");
+
+            // 历史兼容：将 SuperAdmin 视为 Admin
+            if (currentUserRole == UserRole.SuperAdmin)
+                currentUserRole = UserRole.Admin;
 
             var roleInfo = new RoleInfoDto
             {

@@ -1,11 +1,13 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageHero from '../components/PageHero.vue'
 import { getEvent, getEventRegistrations } from '../services/events'
-import { getMatches, createMatch, deleteMatch, updateMatch } from '../services/matches'
+import { getMatches, createMatch, deleteMatch, updateMatch, updateMatchScores } from '../services/matches'
 import { currentUser, isAuthenticated } from '../stores/auth'
 import { getTeam } from '../services/teams'
+import ResultDialog from '../components/ResultDialog.vue'
+import { extractErrorDetails } from '../services/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -19,6 +21,9 @@ const loadingTeams = ref(false)
 const loadingMatches = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
+const showSuccess = ref(false)
+const errorOpen = ref(false)
+const errorDetails = ref([])
 
 const page = ref(1)
 const pageSize = ref(20)
@@ -30,11 +35,13 @@ const canManageEvent = computed(() => {
   const me = currentUser.value
   if (!me) return false
   const createdByUserId = ev.value.createdByUserId || ev.value.CreatedByUserId
+  const adminIds = ev.value.adminUserIds || ev.value.AdminUserIds || []
   const myId = me.id || me.Id
   const roleName = me.roleName || me.RoleName
   const isCreator = !!createdByUserId && !!myId && createdByUserId === myId
   const isAdmin = roleName === 'Admin' || roleName === 'SuperAdmin'
-  return isCreator || isAdmin
+  const isEventAdmin = !!myId && Array.isArray(adminIds) && adminIds.includes(myId)
+  return isCreator || isAdmin || isEventAdmin
 })
 
 // 赛事创建者或管理员可管理赛程（创建/编辑/删除），与后端服务层一致
@@ -49,6 +56,25 @@ const loadingTeamIds = ref(new Set())
 function getAvatarLetter(name) {
   if (!name || typeof name !== 'string') return '?'
   return name.trim().charAt(0).toUpperCase()
+}
+const parseCustom = m => {
+  const s = m?.customData || m?.CustomData
+  if (!s) return {}
+  try { return JSON.parse(s) || {} } catch { return {} }
+}
+const getStage = m => (m?.stage || m?.Stage || parseCustom(m).stage || '')
+const getReplayLink = m => (m?.replayLink || m?.ReplayLink || parseCustom(m).replayLink || '')
+function getWinnerName(m) {
+  const d = parseCustom(m)
+  const n = m?.winnerTeamName || m?.WinnerTeamName || d.winnerTeamName
+  if (n) return n
+  const wid = m?.winnerTeamId || m?.WinnerTeamId || d.winnerTeamId
+  const hid = m?.homeTeamId || m?.HomeTeamId
+  const aid = m?.awayTeamId || m?.AwayTeamId
+  if (!wid) return ''
+  if (wid === hid) return m?.homeTeamName || m?.HomeTeamName || ''
+  if (wid === aid) return m?.awayTeamName || m?.AwayTeamName || ''
+  return ''
 }
 
 // 分组预览与动画
@@ -295,6 +321,9 @@ async function onCreateMatch() {
   }
 }
 
+watch(successMsg, (v) => { if (v) showSuccess.value = true })
+watch(errorMsg, (v) => { if (v) errorOpen.value = true })
+
 // 随机生成赛程
 const generateOpen = ref(false)
 const generateIntervalMinutes = ref(60)
@@ -377,6 +406,7 @@ async function onGenerateRandom() {
     generateOpen.value = false
   } catch (e) {
     errorMsg.value = e?.payload?.message || e?.message || '随机生成失败'
+    errorDetails.value = extractErrorDetails(e?.payload)
   } finally {
     generating.value = false
   }
@@ -388,6 +418,7 @@ async function loadEvent() {
     ev.value = await getEvent(eventId.value)
   } catch (e) {
     errorMsg.value = e?.payload?.message || e?.message || '获取赛事信息失败'
+    errorDetails.value = extractErrorDetails(e?.payload)
   } finally {
     loadingEvent.value = false
   }
@@ -424,6 +455,7 @@ async function onDeleteMatch(id) {
     await loadMatches()
   } catch (e) {
     errorMsg.value = e?.payload?.message || e?.message || '删除赛程失败'
+    errorDetails.value = extractErrorDetails(e?.payload)
   }
 }
 
@@ -432,10 +464,19 @@ const editOpen = ref(false)
 const editTarget = ref(null)
 const editMatchTime = ref('')
 const editLiveLink = ref('')
+const editStage = ref('')
+const editReplayLink = ref('')
+const editWinnerTeamId = ref(null)
 const editCommentator = ref('')
 const editDirector = ref('')
 const editReferee = ref('')
 const editing = ref(false)
+
+const scoreboardOpenIds = ref(new Set())
+const editScoreOpen = ref(false)
+const editScoreTarget = ref(null)
+const editScoreGames = ref([])
+const editScoreBestOf = ref(0)
 
 function getId(m) { return m?.id || m?.Id }
 
@@ -443,6 +484,13 @@ function openEdit(m) {
   editTarget.value = m
   editMatchTime.value = toLocalDateTimeInput(m.matchTime || m.MatchTime)
   editLiveLink.value = m.liveLink || m.LiveLink || ''
+  const custom = parseCustom(m)
+  editStage.value = m.stage || m.Stage || custom.stage || ''
+  editReplayLink.value = m.replayLink || m.ReplayLink || custom.replayLink || ''
+  const wid = m.winnerTeamId || m.WinnerTeamId || custom.winnerTeamId
+  const hid = m.homeTeamId || m.HomeTeamId
+  const aid = m.awayTeamId || m.AwayTeamId
+  editWinnerTeamId.value = (wid === hid || wid === aid) ? wid : null
   editCommentator.value = m.commentator || m.Commentator || ''
   editDirector.value = m.director || m.Director || ''
   editReferee.value = m.referee || m.Referee || ''
@@ -458,6 +506,25 @@ async function onSaveEdit() {
   const payload = {
     matchTime: editMatchTime.value ? toIso(editMatchTime.value) : null,
     liveLink: editLiveLink.value?.trim() || null,
+    customData: (() => {
+      const base = parseCustom(editTarget.value)
+      const s = editStage.value?.trim()
+      const rl = editReplayLink.value?.trim()
+      const hid = editTarget.value?.homeTeamId || editTarget.value?.HomeTeamId
+      const aid = editTarget.value?.awayTeamId || editTarget.value?.AwayTeamId
+      const nameHome = editTarget.value?.homeTeamName || editTarget.value?.HomeTeamName
+      const nameAway = editTarget.value?.awayTeamName || editTarget.value?.AwayTeamName
+      if (s) base.stage = s; else delete base.stage
+      if (rl) base.replayLink = rl; else delete base.replayLink
+      if (editWinnerTeamId.value && (editWinnerTeamId.value === hid || editWinnerTeamId.value === aid)) {
+        base.winnerTeamId = editWinnerTeamId.value
+        base.winnerTeamName = editWinnerTeamId.value === hid ? nameHome : nameAway
+      } else {
+        delete base.winnerTeamId
+        delete base.winnerTeamName
+      }
+      try { return JSON.stringify(base) } catch { return '{}' }
+    })(),
     commentator: editCommentator.value?.trim() || null,
     director: editDirector.value?.trim() || null,
     referee: editReferee.value?.trim() || null,
@@ -470,8 +537,54 @@ async function onSaveEdit() {
     await loadMatches()
   } catch (e) {
     errorMsg.value = e?.payload?.message || e?.message || '更新赛程失败'
+    errorDetails.value = extractErrorDetails(e?.payload)
   } finally {
     editing.value = false
+  }
+}
+
+function getGames(m) {
+  const d = parseCustom(m)
+  const arr = Array.isArray(d.games) ? d.games : []
+  return arr.map(g => ({ home: Number(g?.home ?? 0), away: Number(g?.away ?? 0) }))
+}
+function isScoreOpen(m) {
+  const id = getId(m)
+  return id ? scoreboardOpenIds.value.has(id) : false
+}
+function toggleScore(m) {
+  const id = getId(m)
+  if (!id) return
+  const set = scoreboardOpenIds.value
+  if (set.has(id)) set.delete(id); else set.add(id)
+}
+function openEditScore(m) {
+  editScoreTarget.value = m
+  const games = getGames(m)
+  editScoreGames.value = games.length ? games : [{ home: 0, away: 0 }]
+  const d = parseCustom(m)
+  const bo = Number(d.bestOf || editScoreGames.value.length || 0)
+  editScoreBestOf.value = bo > 0 ? bo : editScoreGames.value.length
+  editScoreOpen.value = true
+}
+async function onSaveEditScore() {
+  errorMsg.value = ''
+  successMsg.value = ''
+  const id = getId(editScoreTarget.value)
+  if (!id) { errorMsg.value = '无效的赛程'; return }
+  const cleaned = (editScoreGames.value || []).map(g => ({
+    home: Math.max(0, Number(g?.home ?? 0)),
+    away: Math.max(0, Number(g?.away ?? 0)),
+  }))
+  try {
+    const bo = Number(editScoreBestOf.value || cleaned.length || 0)
+    await updateMatchScores(id, { bestOf: bo > 0 ? bo : cleaned.length, games: cleaned })
+    successMsg.value = '赛果更新成功'
+    editScoreOpen.value = false
+    await loadMatches()
+  } catch (e) {
+    errorMsg.value = e?.payload?.message || e?.message || '赛果更新失败'
+    errorDetails.value = extractErrorDetails(e?.payload)
   }
 }
 
@@ -544,13 +657,19 @@ onMounted(async () => {
         </template>
         返回赛事详情
       </v-btn>
+      <v-btn class="mb-3 ml-2" variant="text" prepend-icon="account_tree" :to="{ name: 'event-bracket', params: { id: eventId } }">查看赛程图</v-btn>
       <v-btn v-if="canManageMatches" class="mb-3 ml-2" variant="outlined" prepend-icon="shuffle" @click="generateOpen = true">随机分组生成</v-btn>
     </template>
   </PageHero>
 
-  <v-container class="py-6">
+  <v-container class="py-6 page-container">
     <v-alert v-if="errorMsg" type="error" :text="errorMsg" class="mb-4" />
-    <v-alert v-if="successMsg" type="success" :text="successMsg" class="mb-4" />
+    <v-alert v-if="successMsg" type="success" class="mb-4">
+      <div class="d-flex align-center">
+        <lottie-player src="https://assets9.lottiefiles.com/packages/lf20_jcikwtux.json" autoplay style="width:32px;height:32px;margin-right:8px"></lottie-player>
+        <div>{{ successMsg }}</div>
+      </div>
+    </v-alert>
 
     <v-row class="mb-6" dense>
       <v-col cols="12">
@@ -587,11 +706,12 @@ onMounted(async () => {
                             {{ formatTimeLabel(m) }}
                           </span>
                           <v-spacer />
+                          <v-chip v-if="getStage(m)" size="small" color="primary" variant="tonal">{{ getStage(m) }}</v-chip>
                           <v-chip v-if="m.liveLink || m.LiveLink" size="small" color="secondary" variant="tonal" prepend-icon="videocam">直播</v-chip>
                         </div>
                         <div class="entry-main d-flex align-center">
                           <router-link :to="{ name: 'team-detail', params: { id: m.homeTeamId || m.HomeTeamId } }" class="d-inline-flex align-center text-decoration-none mr-3">
-                            <v-avatar size="40" color="primary" variant="tonal">
+                            <v-avatar size="64" color="primary" variant="tonal">
                               <template v-if="teamDetails[m.homeTeamId || m.HomeTeamId]?.logoUrl || teamDetails[m.homeTeamId || m.HomeTeamId]?.LogoUrl">
                                 <v-img :src="teamDetails[m.homeTeamId || m.HomeTeamId].logoUrl || teamDetails[m.homeTeamId || m.HomeTeamId].LogoUrl" cover />
                               </template>
@@ -610,7 +730,7 @@ onMounted(async () => {
                             </router-link>
                           </div>
                           <router-link :to="{ name: 'team-detail', params: { id: m.awayTeamId || m.AwayTeamId } }" class="d-inline-flex align-center text-decoration-none ml-3">
-                            <v-avatar size="40" color="secondary" variant="tonal">
+                            <v-avatar size="64" color="secondary" variant="tonal">
                               <template v-if="teamDetails[m.awayTeamId || m.AwayTeamId]?.logoUrl || teamDetails[m.awayTeamId || m.AwayTeamId]?.LogoUrl">
                                 <v-img :src="teamDetails[m.awayTeamId || m.AwayTeamId].logoUrl || teamDetails[m.awayTeamId || m.AwayTeamId].LogoUrl" cover />
                               </template>
@@ -620,7 +740,37 @@ onMounted(async () => {
                             </v-avatar>
                           </router-link>
                         </div>
+                        <div class="score-toggle d-flex align-center px-4 pb-2">
+                          <v-btn variant="text" density="comfortable" prepend-icon="expand_more" @click="toggleScore(m)">
+                            {{ isScoreOpen(m) ? '隐藏赛果' : '查看赛果' }}
+                          </v-btn>
+                          <v-spacer />
+                          <v-chip v-if="getGames(m).length" label color="default" variant="tonal">共 {{ getGames(m).length }} 局</v-chip>
+                        </div>
+                        <v-expand-transition>
+                          <div v-show="isScoreOpen(m)" class="scoreboard px-4 pb-3">
+                            <v-table density="comfortable">
+                              <thead>
+                                <tr>
+                                  <th class="text-left" style="width: 140px"></th>
+                                  <th v-for="(g, idx) in getGames(m)" :key="idx" class="text-center">Game {{ idx + 1 }}</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td class="text-left">{{ m.homeTeamName || m.HomeTeamName }}</td>
+                                  <td v-for="(g, idx) in getGames(m)" :key="'h-' + idx" class="text-center">{{ g.home }}</td>
+                                </tr>
+                                <tr>
+                                  <td class="text-left">{{ m.awayTeamName || m.AwayTeamName }}</td>
+                                  <td v-for="(g, idx) in getGames(m)" :key="'a-' + idx" class="text-center">{{ g.away }}</td>
+                                </tr>
+                              </tbody>
+                            </v-table>
+                          </div>
+                        </v-expand-transition>
                         <div class="entry-meta d-flex align-center">
+                          <v-chip v-if="getWinnerName(m)" size="small" color="success" variant="tonal" class="mr-2" prepend-icon="emoji_events">{{ getWinnerName(m) }} 获胜</v-chip>
                           <div v-if="m.commentator || m.Commentator" class="crew-chip">
                             <v-icon size="18" class="mr-1" color="primary" icon="mic" /> {{ m.commentator || m.Commentator }}
                           </div>
@@ -636,9 +786,11 @@ onMounted(async () => {
                         </div>
                         <div class="entry-actions d-flex align-center">
                           <v-btn v-if="canManageMatches && !selectionMode" color="primary" variant="tonal" density="comfortable" prepend-icon="edit" class="mr-2" @click="openEdit(m)">编辑</v-btn>
+                          <v-btn v-if="canManageMatches && !selectionMode" color="secondary" variant="tonal" density="comfortable" prepend-icon="grid_on" class="mr-2" @click="openEditScore(m)">编辑赛果</v-btn>
                           <v-btn v-if="canManageMatches && !selectionMode" color="error" variant="tonal" density="comfortable" prepend-icon="delete" class="mr-2" @click="onDeleteMatch(m.id || m.Id)">删除</v-btn>
                           <v-spacer />
                           <v-btn v-if="m.liveLink || m.LiveLink" :href="m.liveLink || m.LiveLink" target="_blank" color="secondary" variant="tonal" density="comfortable" prepend-icon="open_in_new">打开直播</v-btn>
+                          <v-btn v-if="getReplayLink(m)" :href="getReplayLink(m)" target="_blank" color="secondary" variant="tonal" density="comfortable" prepend-icon="open_in_new" class="ml-2">打开录播</v-btn>
                         </div>
                       </v-card>
                     </div>
@@ -750,7 +902,7 @@ onMounted(async () => {
               <v-expand-transition>
                 <v-list-item v-show="idx < previewVisibleCount">
                   <div class="d-flex align-center">
-                    <v-avatar size="36" class="mr-2" color="primary" variant="tonal">
+                    <v-avatar size="56" class="mr-2" color="primary" variant="tonal">
                       <template v-if="teamDetails[item.homeId]?.logoUrl || teamDetails[item.homeId]?.LogoUrl">
                         <v-img :src="teamDetails[item.homeId].logoUrl || teamDetails[item.homeId].LogoUrl" cover />
                       </template>
@@ -759,7 +911,7 @@ onMounted(async () => {
                       </template>
                     </v-avatar>
                     <v-icon class="mr-2" icon="sports_martial_arts" color="primary" />
-                    <v-avatar size="36" class="mr-2" color="secondary" variant="tonal">
+                    <v-avatar size="56" class="mr-2" color="secondary" variant="tonal">
                       <template v-if="teamDetails[item.awayId]?.logoUrl || teamDetails[item.awayId]?.LogoUrl">
                         <v-img :src="teamDetails[item.awayId].logoUrl || teamDetails[item.awayId].LogoUrl" cover />
                       </template>
@@ -794,6 +946,16 @@ onMounted(async () => {
               <v-text-field v-model="editMatchTime" label="比赛时间" type="datetime-local" prepend-inner-icon="schedule" />
             </v-col>
             <v-col cols="12" md="6"><v-text-field v-model="editLiveLink" label="直播链接" prepend-inner-icon="videocam" /></v-col>
+            <v-col cols="12" md="6"><v-text-field v-model="editReplayLink" label="录播链接" prepend-inner-icon="movie" /></v-col>
+            <v-col cols="12" md="6"><v-text-field v-model="editStage" label="阶段" prepend-inner-icon="flag" /></v-col>
+            <v-col cols="12">
+              <v-radio-group v-model="editWinnerTeamId">
+                <template #label>胜者</template>
+                <v-radio :label="editTarget?.homeTeamName || editTarget?.HomeTeamName" :value="editTarget?.homeTeamId || editTarget?.HomeTeamId" />
+                <v-radio :label="editTarget?.awayTeamName || editTarget?.AwayTeamName" :value="editTarget?.awayTeamId || editTarget?.AwayTeamId" />
+                <v-radio label="未设置" :value="null" />
+              </v-radio-group>
+            </v-col>
             <v-col cols="12" md="6"><v-text-field v-model="editCommentator" label="解说" prepend-inner-icon="mic" /></v-col>
             <v-col cols="12" md="6"><v-text-field v-model="editDirector" label="导播" prepend-inner-icon="video_camera_back" /></v-col>
             <v-col cols="12" md="6"><v-text-field v-model="editReferee" label="裁判" prepend-inner-icon="sports" /></v-col>
@@ -806,7 +968,53 @@ onMounted(async () => {
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="editScoreOpen" max-width="720">
+      <v-card>
+        <v-card-title>编辑赛果比分</v-card-title>
+        <v-card-text>
+          <v-row dense>
+            <v-col cols="12" md="6">
+              <v-select v-model.number="editScoreBestOf" :items="[1,3,5,7]" label="局数" prepend-inner-icon="filter_5" />
+            </v-col>
+            <v-col cols="12">
+              <v-btn variant="tonal" prepend-icon="add" class="mr-2" @click="editScoreGames.push({ home: 0, away: 0 })">添加一局</v-btn>
+              <v-btn variant="tonal" prepend-icon="remove" @click="editScoreGames.splice(editScoreGames.length - 1, 1)" :disabled="!editScoreGames.length">删除末尾一局</v-btn>
+            </v-col>
+          </v-row>
+          <v-table density="comfortable" class="mt-2">
+            <thead>
+              <tr>
+                <th class="text-left" style="width: 160px"></th>
+                <th v-for="(g, idx) in editScoreGames" :key="'eh-' + idx" class="text-center">Game {{ idx + 1 }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left">{{ editScoreTarget?.homeTeamName || editScoreTarget?.HomeTeamName }}</td>
+                <td v-for="(g, idx) in editScoreGames" :key="'ehv-' + idx" class="text-center">
+                  <v-text-field v-model.number="g.home" type="number" min="0" hide-details density="compact" />
+                </td>
+              </tr>
+              <tr>
+                <td class="text-left">{{ editScoreTarget?.awayTeamName || editScoreTarget?.AwayTeamName }}</td>
+                <td v-for="(g, idx) in editScoreGames" :key="'eav-' + idx" class="text-center">
+                  <v-text-field v-model.number="g.away" type="number" min="0" hide-details density="compact" />
+                </td>
+              </tr>
+            </tbody>
+          </v-table>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn variant="text" @click="editScoreOpen = false">取消</v-btn>
+          <v-spacer />
+          <v-btn color="primary" prepend-icon="save" @click="onSaveEditScore">保存</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
+  <ResultDialog v-model="showSuccess" :type="'success'" :message="successMsg" />
+  <ResultDialog v-model="errorOpen" :type="'error'" :message="errorMsg" :details="errorDetails" />
 </template>
 
 <style scoped>
@@ -933,6 +1141,14 @@ onMounted(async () => {
 }
 .entry-actions {
   padding: 0 16px 12px 16px;
+}
+.scoreboard {
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.95);
+}
+.score-toggle {
+  padding-top: 6px;
 }
 
 @media (max-width: 600px) {

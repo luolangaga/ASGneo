@@ -2,6 +2,7 @@ using ASG.Api.DTOs;
 using ASG.Api.Models;
 using ASG.Api.Repositories;
 using Microsoft.AspNetCore.Identity;
+using System.Net;
 using System.Text;
 
 namespace ASG.Api.Services
@@ -14,12 +15,18 @@ namespace ASG.Api.Services
         private readonly IEventRepository _eventRepository;
         private readonly ITeamRepository _teamRepository;
         private readonly UserManager<User> _userManager;
+        private readonly IEmailService _emailService;
+        private readonly INotificationService _notify;
+        private readonly Microsoft.Extensions.Logging.ILogger<EventService> _logger;
 
-        public EventService(IEventRepository eventRepository, ITeamRepository teamRepository, UserManager<User> userManager)
+        public EventService(IEventRepository eventRepository, ITeamRepository teamRepository, UserManager<User> userManager, IEmailService emailService, Microsoft.Extensions.Logging.ILogger<EventService> logger, INotificationService notify)
         {
             _eventRepository = eventRepository;
             _teamRepository = teamRepository;
             _userManager = userManager;
+            _emailService = emailService;
+            _logger = logger;
+            _notify = notify;
         }
 
         public async Task<IEnumerable<EventDto>> GetAllEventsAsync()
@@ -43,30 +50,28 @@ namespace ASG.Api.Services
                 throw new InvalidOperationException("赛事名称已存在");
             }
 
-            // 统一将时间标准化为 UTC，避免本地/未指定时区导致的比较误判
-            var regStartUtc = EnsureUtc(createEventDto.RegistrationStartTime);
-            var regEndUtc = EnsureUtc(createEventDto.RegistrationEndTime);
-            var compStartUtc = EnsureUtc(createEventDto.CompetitionStartTime);
-            var compEndUtc = createEventDto.CompetitionEndTime.HasValue 
-                ? EnsureUtc(createEventDto.CompetitionEndTime.Value) 
+            var regStart = createEventDto.RegistrationStartTime;
+            var regEnd = createEventDto.RegistrationEndTime;
+            var compStart = createEventDto.CompetitionStartTime;
+            var compEnd = createEventDto.CompetitionEndTime.HasValue
+                ? createEventDto.CompetitionEndTime.Value
                 : (DateTime?)null;
 
-            // 验证时间逻辑（使用归一化后的 UTC 时间）
-            ValidateEventTimes(regStartUtc, regEndUtc, compStartUtc, compEndUtc);
+            ValidateEventTimes(regStart, regEnd, compStart, compEnd);
 
             var eventEntity = new Event
             {
                 Id = Guid.NewGuid(),
                 Name = createEventDto.Name,
                 Description = createEventDto.Description,
-                RegistrationStartTime = regStartUtc,
-                RegistrationEndTime = regEndUtc,
-                CompetitionStartTime = compStartUtc,
-                CompetitionEndTime = compEndUtc,
+                RegistrationStartTime = regStart,
+                RegistrationEndTime = regEnd,
+                CompetitionStartTime = compStart,
+                CompetitionEndTime = compEnd,
                 MaxTeams = createEventDto.MaxTeams,
                 Status = EventStatus.Draft,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
+                CreatedAt = ChinaNow(),
+                UpdatedAt = ChinaNow(),
                 CreatedByUserId = creatorUserId
             };
 
@@ -93,24 +98,22 @@ namespace ASG.Api.Services
                 throw new InvalidOperationException("赛事名称已存在");
             }
 
-            // 统一将时间标准化为 UTC
-            var regStartUtc = EnsureUtc(updateEventDto.RegistrationStartTime);
-            var regEndUtc = EnsureUtc(updateEventDto.RegistrationEndTime);
-            var compStartUtc = EnsureUtc(updateEventDto.CompetitionStartTime);
-            var compEndUtc = updateEventDto.CompetitionEndTime.HasValue 
-                ? EnsureUtc(updateEventDto.CompetitionEndTime.Value) 
+            var regStart = updateEventDto.RegistrationStartTime;
+            var regEnd = updateEventDto.RegistrationEndTime;
+            var compStart = updateEventDto.CompetitionStartTime;
+            var compEnd = updateEventDto.CompetitionEndTime.HasValue
+                ? updateEventDto.CompetitionEndTime.Value
                 : (DateTime?)null;
 
-            // 验证时间逻辑（使用归一化后的 UTC 时间）
-            ValidateEventTimes(regStartUtc, regEndUtc, compStartUtc, compEndUtc);
+            ValidateEventTimes(regStart, regEnd, compStart, compEnd);
 
             // 更新赛事信息
             eventEntity.Name = updateEventDto.Name;
             eventEntity.Description = updateEventDto.Description;
-            eventEntity.RegistrationStartTime = regStartUtc;
-            eventEntity.RegistrationEndTime = regEndUtc;
-            eventEntity.CompetitionStartTime = compStartUtc;
-            eventEntity.CompetitionEndTime = compEndUtc;
+            eventEntity.RegistrationStartTime = regStart;
+            eventEntity.RegistrationEndTime = regEnd;
+            eventEntity.CompetitionStartTime = compStart;
+            eventEntity.CompetitionEndTime = compEnd;
             eventEntity.MaxTeams = updateEventDto.MaxTeams;
             eventEntity.Status = updateEventDto.Status;
 
@@ -124,8 +127,9 @@ namespace ASG.Api.Services
             if (eventEntity == null)
                 return false;
 
-            // 验证权限
-            if (!await CanUserManageEventAsync(id, userId))
+            var user = await _userManager.FindByIdAsync(userId);
+            var isAdmin = user != null && await _userManager.IsInRoleAsync(user, "Admin");
+            if (!(eventEntity.CreatedByUserId == userId || isAdmin))
             {
                 throw new UnauthorizedAccessException("您没有权限删除此赛事");
             }
@@ -154,17 +158,16 @@ namespace ASG.Api.Services
             }
 
             // 验证赛事状态和报名时间（统一用 UTC 进行比较）
-            var now = DateTime.UtcNow;
+            var now = ChinaNow();
             if (eventEntity.Status != EventStatus.RegistrationOpen)
             {
                 throw new InvalidOperationException("赛事未开放报名");
             }
 
-            // 注意：数据库读取的时间Kind可能为Unspecified，这里的报名时间应视为UTC存储，避免二次偏移
-            var eventRegStartUtc = AssumeUtc(eventEntity.RegistrationStartTime);
-            var eventRegEndUtc = AssumeUtc(eventEntity.RegistrationEndTime);
+            var eventRegStart = eventEntity.RegistrationStartTime;
+            var eventRegEnd = eventEntity.RegistrationEndTime;
 
-            if (now < eventRegStartUtc || now > eventRegEndUtc)
+            if (now < eventRegStart || now > eventRegEnd)
             {
                 throw new InvalidOperationException("不在报名时间范围内");
             }
@@ -190,7 +193,7 @@ namespace ASG.Api.Services
             {
                 TeamId = registerDto.TeamId,
                 EventId = eventId,
-                RegistrationTime = DateTime.UtcNow,
+                RegistrationTime = ChinaNow(),
                 Status = RegistrationStatus.Pending,
                 Notes = registerDto.Notes,
                 RegisteredByUserId = userId
@@ -227,6 +230,119 @@ namespace ASG.Api.Services
             var team = await _teamRepository.GetTeamByIdAsync(teamId);
             var eventEntity = await _eventRepository.GetEventByIdAsync(eventId);
 
+            // 邮件通知与积分扣减（Approved 状态默认通知）
+            var shouldNotify = updateDto.NotifyByEmail || updateDto.Status == RegistrationStatus.Approved;
+            if (shouldNotify && team?.OwnerId != null)
+            {
+                // 收件人：战队拥有者；扣费方：赛事创建者
+                var teamOwner = await _userManager.FindByIdAsync(team.OwnerId);
+                var toEmail = teamOwner?.Email;
+                var eventOwnerId = eventEntity?.CreatedByUserId;
+                var eventOwner = eventOwnerId != null ? await _userManager.FindByIdAsync(eventOwnerId) : null;
+
+                // 没有赛事创建者或其账户不存在，跳过发送并记录
+                if (string.IsNullOrWhiteSpace(toEmail) || teamOwner == null || eventOwner == null)
+                {
+                    _logger?.LogWarning("Skip email: missing recipient or event owner. EventId={EventId}, TeamId={TeamId}, EventOwnerId={EventOwnerId}", eventId, teamId, eventOwnerId);
+                }
+                else
+                {
+                    _logger?.LogInformation("Notify email requested: EventId={EventId}, TeamId={TeamId}, Status={Status}, Notify={Notify}", eventId, teamId, updateDto.Status, shouldNotify);
+                    // 由赛事创建者的积分决定是否发送
+                    if (eventOwner.EmailCredits > 0)
+                    {
+                        var statusText = updateDto.Status switch
+                        {
+                            RegistrationStatus.Approved => "审核通过",
+                            RegistrationStatus.Rejected => "审核拒绝",
+                            RegistrationStatus.Pending => "待审核",
+                            _ => updateDto.Status.ToString()
+                        };
+
+                        var subject = $"赛事报名状态更新：{team?.Name} - {statusText}";
+                        var sb = new StringBuilder();
+                        sb.AppendLine($"尊敬的{teamOwner.FullName ?? teamOwner.UserName}, 您的战队 \"{team?.Name}\" 在赛事 \"{eventEntity?.Name}\" 的报名状态已更新为：{statusText}。");
+                        if (!string.IsNullOrWhiteSpace(updateDto.Notes))
+                        {
+                            sb.AppendLine($"备注：{updateDto.Notes}");
+                        }
+                        sb.AppendLine("如有疑问请联系赛事管理员。");
+
+                        var safeNotes = string.IsNullOrWhiteSpace(updateDto.Notes)
+                            ? string.Empty
+                            : WebUtility.HtmlEncode(updateDto.Notes);
+
+                        var htmlBody = $@"<!doctype html>
+<html lang='zh-CN'>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width,initial-scale=1'>
+  <title>{subject}</title>
+  <style>
+    body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Microsoft YaHei', sans-serif; background:#f5f7fb; margin:0; padding:24px; }}
+    .container {{ max-width:680px; margin:0 auto; background:#ffffff; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.08); overflow:hidden; }}
+    .header {{ background:#0d6efd; color:#fff; padding:16px 24px; font-size:18px; font-weight:600; }}
+    .content {{ padding:24px; color:#1f2937; line-height:1.7; }}
+    .item {{ margin:10px 0; }}
+    .badge {{ display:inline-block; padding:4px 10px; border-radius:999px; background:#e9f2ff; color:#0d6efd; font-weight:600; font-size:12px; }}
+    .footer {{ padding:16px 24px; font-size:12px; color:#6b7280; background:#f9fafb; }}
+    strong {{ color:#111827; }}
+  </style>
+<!-- 邮件模板 -->
+</head>
+<body>
+  <div class='container'>
+    <div class='header'>赛事报名状态更新</div>
+    <div class='content'>
+      <p>尊敬的 {teamOwner.FullName ?? teamOwner.UserName}，</p>
+      <p class='item'>您的战队 <strong>{team?.Name}</strong> 在赛事 <strong>{eventEntity?.Name}</strong> 的报名状态更新为：<span class='badge'>{statusText}</span></p>
+      {(string.IsNullOrEmpty(safeNotes) ? string.Empty : $"<p class='item'>备注：{safeNotes}</p>")}
+      <p class='item'>如有疑问请联系赛事管理员。</p>
+    </div>
+    <div class='footer'>此邮件由系统自动发送，请勿直接回复。</div>
+  </div>
+</body>
+</html>";
+
+                        try
+                        {
+                            var sent = await _emailService.SendHtmlAsync(toEmail!, subject, htmlBody, sb.ToString());
+                            if (sent)
+                            {
+                                _logger?.LogInformation("Email sent successfully: EventId={EventId}, TeamId={TeamId}, To={To}, Subject={Subject}", eventId, teamId, toEmail, subject);
+                                // 扣减赛事创建者积分并持久化
+                                eventOwner.EmailCredits -= 1;
+                                await _userManager.UpdateAsync(eventOwner);
+                                _logger?.LogInformation("Credits deducted: EventOwnerId={EventOwnerId}, CreditsLeft={Credits}", eventOwner.Id, eventOwner.EmailCredits);
+                            }
+                            else
+                            {
+                                _logger?.LogWarning("Email not sent due to configuration or precondition: EventId={EventId}, TeamId={TeamId}, To={To}", eventId, teamId, toEmail);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger?.LogWarning(ex, "Email send failed: EventId={EventId}, TeamId={TeamId}, To={To}, Subject={Subject}", eventId, teamId, toEmail, subject);
+                            // 发送失败不影响业务流程
+                        }
+                    }
+                    else
+                    {
+                        _logger?.LogWarning("Skip email due to insufficient credits: EventOwnerId={EventOwnerId}, Credits={Credits}", eventOwner.Id, eventOwner.EmailCredits);
+                        // 邮件积分不足：跳过通知，不抛出异常以免影响更新流程
+                    }
+                }
+            }
+
+            if (updateDto.Status == RegistrationStatus.Approved)
+            {
+                var toUserId = updatedTeamEvent.RegisteredByUserId ?? team?.OwnerId;
+                if (!string.IsNullOrEmpty(toUserId))
+                {
+                    var payload = System.Text.Json.JsonSerializer.Serialize(new { eventId = eventEntity?.Id, eventName = eventEntity?.Name, teamId = team?.Id, teamName = team?.Name, status = "approved" });
+                    await _notify.NotifyUserAsync(toUserId, "event.registration.approved", payload);
+                }
+            }
             return MapToTeamEventDto(updatedTeamEvent, team?.Name ?? "", eventEntity?.Name ?? "");
         }
 
@@ -234,6 +350,36 @@ namespace ASG.Api.Services
         {
             var registrations = await _eventRepository.GetEventRegistrationsAsync(eventId);
             return registrations.Select(te => MapToTeamEventDto(te, te.Team?.Name ?? "", te.Event?.Name ?? ""));
+        }
+
+        public async Task<IEnumerable<TeamEventDto>> GetEventRegistrationsWithSensitiveAsync(Guid eventId, string? userId)
+        {
+            var registrations = await _eventRepository.GetEventRegistrationsAsync(eventId);
+            var canViewFull = false;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                canViewFull = await CanUserManageEventAsync(eventId, userId);
+            }
+
+            string Mask(string? qq)
+            {
+                if (string.IsNullOrWhiteSpace(qq)) return string.Empty;
+                var s = qq.Trim();
+                if (s.Length <= 7) return s;
+                var prefix = s.Substring(0, Math.Min(3, s.Length));
+                var suffixLen = Math.Min(4, s.Length - prefix.Length);
+                var suffix = s.Substring(s.Length - suffixLen, suffixLen);
+                return $"{prefix}****{suffix}";
+            }
+
+            return registrations.Select(te =>
+            {
+                var dto = MapToTeamEventDto(te, te.Team?.Name ?? "", te.Event?.Name ?? "");
+                var qq = te.Team?.QqNumber;
+                dto.QqNumberMasked = Mask(qq);
+                dto.QqNumberFull = canViewFull ? qq : null;
+                return dto;
+            });
         }
 
         public async Task<IEnumerable<TeamEventDto>> GetTeamRegistrationsAsync(Guid teamId)
@@ -356,7 +502,10 @@ namespace ASG.Api.Services
 
             // 管理员可以管理
             var user = await _userManager.FindByIdAsync(userId);
-            if (user != null && await _userManager.IsInRoleAsync(user, "Administrator"))
+            if (user != null && await _userManager.IsInRoleAsync(user, "Admin"))
+                return true;
+
+            if (eventEntity.EventAdmins != null && eventEntity.EventAdmins.Any(a => a.UserId == userId))
                 return true;
 
             return false;
@@ -401,25 +550,26 @@ namespace ASG.Api.Services
             sb.AppendLine(string.Join(",",
                 new[]
                 {
-                    "EventName","EventId","TeamName","TeamId","RegistrationStatus","RegistrationTime","Notes",
+                    "EventName","EventId","TeamName","TeamId","QQNumber","RegistrationStatus","RegistrationTime","Notes",
                     "PlayerId","PlayerName","GameId","GameRank","PlayerDescription"
                 }));
 
             foreach (var te in registrations)
             {
                 var teamName = te.Team?.Name ?? string.Empty;
+                var teamQq = te.Team?.QqNumber ?? string.Empty;
                 var players = await _teamRepository.GetTeamPlayersAsync(te.TeamId);
 
                 if (players == null || !players.Any())
                 {
                     // 没有队员时也输出一行，队员字段为空
-                    sb.AppendLine(string.Join(",",
-                        new[]
-                        {
-                            CsvEscape(eventEntity.Name), CsvEscape(eventEntity.Id.ToString()), CsvEscape(teamName), CsvEscape(te.TeamId.ToString()),
-                            CsvEscape(te.Status.ToString()), CsvEscape(te.RegistrationTime.ToString("yyyy-MM-ddTHH:mm:ssZ")), CsvEscape(te.Notes ?? string.Empty),
+                        sb.AppendLine(string.Join(",",
+                            new[]
+                            {
+                            CsvEscape(eventEntity.Name), CsvEscape(eventEntity.Id.ToString()), CsvEscape(teamName), CsvEscape(te.TeamId.ToString()), CsvEscape(teamQq),
+                            CsvEscape(te.Status.ToString()), CsvEscape(te.RegistrationTime.ToString("yyyy-MM-ddTHH:mm:ss")), CsvEscape(te.Notes ?? string.Empty),
                             CsvEscape(string.Empty), CsvEscape(string.Empty), CsvEscape(string.Empty), CsvEscape(string.Empty), CsvEscape(string.Empty)
-                        }));
+                            }));
                 }
                 else
                 {
@@ -428,8 +578,8 @@ namespace ASG.Api.Services
                         sb.AppendLine(string.Join(",",
                             new[]
                             {
-                                CsvEscape(eventEntity.Name), CsvEscape(eventEntity.Id.ToString()), CsvEscape(teamName), CsvEscape(te.TeamId.ToString()),
-                                CsvEscape(te.Status.ToString()), CsvEscape(te.RegistrationTime.ToString("yyyy-MM-ddTHH:mm:ssZ")), CsvEscape(te.Notes ?? string.Empty),
+                                CsvEscape(eventEntity.Name), CsvEscape(eventEntity.Id.ToString()), CsvEscape(teamName), CsvEscape(te.TeamId.ToString()), CsvEscape(teamQq),
+                                CsvEscape(te.Status.ToString()), CsvEscape(te.RegistrationTime.ToString("yyyy-MM-ddTHH:mm:ss")), CsvEscape(te.Notes ?? string.Empty),
                                 CsvEscape(p.Id.ToString()), CsvEscape(p.Name ?? string.Empty), CsvEscape(p.GameId ?? string.Empty), CsvEscape(p.GameRank ?? string.Empty), CsvEscape(p.Description ?? string.Empty)
                             }));
                     }
@@ -448,32 +598,9 @@ namespace ASG.Api.Services
             return $"\"{escaped}\"";
         }
 
-        /// <summary>
-        /// 将 DateTime 统一转换为 UTC。
-        /// - 若为 Utc，直接返回；
-        /// - 若为 Local，转换为 Utc；
-        /// - 若为 Unspecified，按本地时间解释后转换为 Utc（避免遗漏时区信息导致的误判）。
-        /// </summary>
-        private static DateTime EnsureUtc(DateTime dt)
+        private static DateTime ChinaNow()
         {
-            if (dt.Kind == DateTimeKind.Utc) return dt;
-            if (dt.Kind == DateTimeKind.Local) return dt.ToUniversalTime();
-            // 未指定时区：按本地时间解释，再转为 UTC
-            var assumedLocal = DateTime.SpecifyKind(dt, DateTimeKind.Local);
-            return assumedLocal.ToUniversalTime();
-        }
-
-        /// <summary>
-        /// 标注 DateTime 为 UTC 而不改变具体的时刻值。
-        /// - 若为 Utc，直接返回；
-        /// - 若为 Local，转换为 Utc；
-        /// - 若为 Unspecified，直接指定为 Utc（避免序列化丢失 "Z" 标识）。
-        /// </summary>
-        private static DateTime AssumeUtc(DateTime dt)
-        {
-            if (dt.Kind == DateTimeKind.Utc) return dt;
-            if (dt.Kind == DateTimeKind.Local) return dt.ToUniversalTime();
-            return DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+            return DateTime.UtcNow;
         }
 
         private static void ValidateEventTimes(DateTime registrationStart, DateTime registrationEnd,
@@ -502,19 +629,20 @@ namespace ASG.Api.Services
                 Id = eventEntity.Id,
                 Name = eventEntity.Name,
                 Description = eventEntity.Description,
-                RegistrationStartTime = AssumeUtc(eventEntity.RegistrationStartTime),
-                RegistrationEndTime = AssumeUtc(eventEntity.RegistrationEndTime),
-                CompetitionStartTime = AssumeUtc(eventEntity.CompetitionStartTime),
-                CompetitionEndTime = eventEntity.CompetitionEndTime.HasValue ? AssumeUtc(eventEntity.CompetitionEndTime.Value) : (DateTime?)null,
+                RegistrationStartTime = eventEntity.RegistrationStartTime,
+                RegistrationEndTime = eventEntity.RegistrationEndTime,
+                CompetitionStartTime = eventEntity.CompetitionStartTime,
+                CompetitionEndTime = eventEntity.CompetitionEndTime,
                 MaxTeams = eventEntity.MaxTeams,
                 Status = eventEntity.Status,
-                CreatedAt = AssumeUtc(eventEntity.CreatedAt),
-                UpdatedAt = AssumeUtc(eventEntity.UpdatedAt),
+                CreatedAt = eventEntity.CreatedAt,
+                UpdatedAt = eventEntity.UpdatedAt,
                 CreatedByUserId = eventEntity.CreatedByUserId,
                 ChampionTeamId = eventEntity.ChampionTeamId,
                 ChampionTeamName = eventEntity.ChampionTeam?.Name,
                 RegisteredTeamsCount = eventEntity.TeamEvents?.Count ?? 0,
-                RegisteredTeams = eventEntity.TeamEvents?.Select(te => MapToTeamEventDto(te, te.Team?.Name ?? "", eventEntity.Name)).ToList()
+                RegisteredTeams = eventEntity.TeamEvents?.Select(te => MapToTeamEventDto(te, te.Team?.Name ?? "", eventEntity.Name)).ToList(),
+                AdminUserIds = eventEntity.EventAdmins?.Select(a => a.UserId).ToList()
             };
         }
 
@@ -526,11 +654,114 @@ namespace ASG.Api.Services
                 EventId = teamEvent.EventId,
                 TeamName = teamName,
                 EventName = eventName,
-                RegistrationTime = AssumeUtc(teamEvent.RegistrationTime),
+                RegistrationTime = teamEvent.RegistrationTime,
                 Status = teamEvent.Status,
                 Notes = teamEvent.Notes,
                 RegisteredByUserId = teamEvent.RegisteredByUserId
             };
+        }
+
+        public async Task<IEnumerable<UserResponseDto>> GetEventAdminsAsync(Guid eventId)
+        {
+            var ids = await _eventRepository.GetEventAdminUserIdsAsync(eventId);
+            var list = new List<UserResponseDto>();
+            foreach (var id in ids)
+            {
+                var u = await _userManager.FindByIdAsync(id);
+                if (u != null)
+                {
+                    list.Add(new UserResponseDto
+                    {
+                        Id = u.Id,
+                        Email = u.Email ?? string.Empty,
+                        FullName = u.FullName,
+                        Role = u.Role,
+                        RoleDisplayName = u.RoleDisplayName,
+                        RoleName = u.RoleName,
+                        CreatedAt = u.CreatedAt,
+                        UpdatedAt = u.UpdatedAt,
+                        IsActive = u.IsActive,
+                        AvatarUrl = null,
+                        TeamId = u.TeamId,
+                        EmailCredits = u.EmailCredits
+                    });
+                }
+            }
+            return list;
+        }
+
+        public async Task<bool> AddEventAdminAsync(Guid eventId, string userId, string targetUserId)
+        {
+            var ev = await _eventRepository.GetEventByIdAsync(eventId);
+            if (ev == null) throw new InvalidOperationException("赛事不存在");
+            var actor = await _userManager.FindByIdAsync(userId);
+            var isAdmin = actor != null && await _userManager.IsInRoleAsync(actor, "Admin");
+            if (!(ev.CreatedByUserId == userId || isAdmin)) throw new UnauthorizedAccessException("无权限设置赛事管理员");
+            var target = await _userManager.FindByIdAsync(targetUserId);
+            if (target == null) throw new InvalidOperationException("目标用户不存在");
+            if (ev.CreatedByUserId == targetUserId) return true;
+            return await _eventRepository.AddEventAdminAsync(eventId, targetUserId);
+        }
+
+        public async Task<bool> RemoveEventAdminAsync(Guid eventId, string userId, string targetUserId)
+        {
+            var ev = await _eventRepository.GetEventByIdAsync(eventId);
+            if (ev == null) throw new InvalidOperationException("赛事不存在");
+            var actor = await _userManager.FindByIdAsync(userId);
+            var isAdmin = actor != null && await _userManager.IsInRoleAsync(actor, "Admin");
+            if (!(ev.CreatedByUserId == userId || isAdmin)) throw new UnauthorizedAccessException("无权限移除赛事管理员");
+            if (ev.CreatedByUserId == targetUserId) throw new InvalidOperationException("不能移除赛事创建者");
+            return await _eventRepository.RemoveEventAdminAsync(eventId, targetUserId);
+        }
+
+        // 赛程图画布持久化
+        public async Task<bool> SaveBracketCanvasAsync(Guid eventId, string userId, string canvasJson)
+        {
+            var ev = await _eventRepository.GetEventByIdAsync(eventId);
+            if (ev == null) throw new InvalidOperationException("赛事不存在");
+            if (!await CanUserManageEventAsync(eventId, userId)) throw new UnauthorizedAccessException("无权限保存赛程图");
+
+            System.Text.Json.Nodes.JsonObject node;
+            try
+            {
+                node = (!string.IsNullOrWhiteSpace(ev.CustomData) ? System.Text.Json.Nodes.JsonNode.Parse(ev.CustomData) as System.Text.Json.Nodes.JsonObject : null) ?? new System.Text.Json.Nodes.JsonObject();
+            }
+            catch
+            {
+                node = new System.Text.Json.Nodes.JsonObject();
+            }
+
+            try
+            {
+                var canvasNode = System.Text.Json.Nodes.JsonNode.Parse(string.IsNullOrWhiteSpace(canvasJson) ? "{}" : canvasJson);
+                node["bracketCanvas"] = canvasNode;
+            }
+            catch
+            {
+                node["bracketCanvas"] = new System.Text.Json.Nodes.JsonObject();
+            }
+
+            ev.CustomData = node.ToJsonString();
+            await _eventRepository.UpdateEventAsync(ev);
+            return true;
+        }
+
+        public async Task<string> GetBracketCanvasAsync(Guid eventId)
+        {
+            var ev = await _eventRepository.GetEventByIdAsync(eventId);
+            if (ev == null) throw new InvalidOperationException("赛事不存在");
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(ev.CustomData))
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(ev.CustomData);
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("bracketCanvas", out var bc))
+                        return bc.GetRawText();
+                }
+            }
+            catch { }
+            return "{}";
         }
     }
 }

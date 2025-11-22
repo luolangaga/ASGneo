@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { createEvent, uploadEventLogo } from '../services/events'
 import PageHero from '../components/PageHero.vue'
 import MarkdownEditor from '../components/MarkdownEditor.vue'
+import { polishText } from '../services/ai'
 
 const router = useRouter()
 const saving = ref(false)
@@ -18,6 +19,7 @@ const competitionEndTime = ref('')
 const maxTeams = ref(null)
 const logoFile = ref(null)
 const logoError = ref('')
+const polishing = ref(false)
 
 function toIso(dt) {
   return dt ? new Date(dt).toISOString() : null
@@ -66,6 +68,19 @@ async function onSubmit() {
   }
 }
 
+async function onPolishDescription() {
+  if (!description.value || polishing.value) return
+  polishing.value = true
+  try {
+    const r = await polishText({ scope: 'event', text: description.value })
+    if (r?.text || r?.Text) description.value = r.text || r.Text
+  } catch (e) {
+    errorMsg.value = e?.payload?.message || e?.message || 'AI润色失败'
+  } finally {
+    polishing.value = false
+  }
+}
+
 function onLogoSelected(files) {
   logoError.value = ''
   const file = Array.isArray(files) ? files[0] : files
@@ -103,6 +118,9 @@ function onLogoSelected(files) {
         <v-form @submit.prevent="onSubmit">
           <v-text-field v-model="name" label="赛事名称" prepend-inner-icon="text_fields" required />
           <MarkdownEditor v-model="description" label="赛事描述" :rows="8" :maxLength="999" />
+          <div class="d-flex justify-end mt-2">
+            <v-btn :loading="polishing" variant="tonal" color="primary" prepend-icon="auto_awesome" @click="onPolishDescription">AI润色</v-btn>
+          </div>
           <div class="mb-2">
             <div class="text-caption mb-2">赛事Logo（必填，png/jpg/webp，≤5MB）：</div>
             <v-file-input

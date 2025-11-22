@@ -7,6 +7,7 @@ namespace ASG.Api.DTOs
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public string? QqNumber { get; set; }
         public int Likes { get; set; } = 0;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
@@ -27,6 +28,10 @@ namespace ASG.Api.DTOs
         [StringLength(500, ErrorMessage = "描述不能超过500个字符")]
         public string? Description { get; set; }
 
+        [Required(ErrorMessage = "QQ号不能为空")]
+        [StringLength(20, ErrorMessage = "QQ号不能超过20个字符")]
+        public string QqNumber { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "至少需要一个玩家")]
         [MinLength(1, ErrorMessage = "至少需要一个玩家")]
         public List<CreatePlayerDto> Players { get; set; } = new List<CreatePlayerDto>();
@@ -40,6 +45,9 @@ namespace ASG.Api.DTOs
 
         [StringLength(500, ErrorMessage = "描述不能超过500个字符")]
         public string? Description { get; set; }
+
+        [StringLength(20, ErrorMessage = "QQ号不能超过20个字符")]
+        public string? QqNumber { get; set; }
 
         public List<UpdatePlayerDto> Players { get; set; } = new List<UpdatePlayerDto>();
     }
@@ -71,5 +79,19 @@ namespace ASG.Api.DTOs
         [Required(ErrorMessage = "新密码不能为空")]
         [StringLength(255, MinimumLength = 6, ErrorMessage = "新密码长度必须在6-255个字符之间")]
         public string NewPassword { get; set; } = string.Empty;
+    }
+
+    public class TeamInviteDto
+    {
+        public Guid TeamId { get; set; }
+        public string TeamName { get; set; } = string.Empty;
+        public Guid Token { get; set; }
+        public DateTime ExpiresAt { get; set; }
+    }
+
+    public class AcceptTeamInviteDto
+    {
+        public Guid Token { get; set; }
+        public CreatePlayerDto? Player { get; set; }
     }
 }

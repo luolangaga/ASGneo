@@ -1,12 +1,14 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { renderMarkdown } from '../utils/markdown'
 import { useRoute, useRouter } from 'vue-router'
-import { getEvent, getEventRegistrations, exportEventRegistrationsCsv, registerTeamToEvent, uploadEventLogo, updateTeamRegistrationStatus, setEventChampion } from '../services/events'
-import { getTeam, uploadTeamLogo } from '../services/teams'
+import { getEvent, getEventRegistrations, exportEventRegistrationsCsv, exportEventTeamLogosZip, registerTeamToEvent, uploadEventLogo, updateTeamRegistrationStatus, setEventChampion, getEventAdmins, addEventAdmin, removeEventAdmin } from '../services/events'
+import { getTeam, uploadTeamLogo, generateInvite } from '../services/teams'
 import { getUser } from '../services/user'
 import { currentUser, isAuthenticated } from '../stores/auth'
 import PageHero from '../components/PageHero.vue'
+import ResultDialog from '../components/ResultDialog.vue'
+import { extractErrorDetails } from '../services/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -24,6 +26,8 @@ const registering = ref(false)
 const actionError = ref('')
 const successMsg = ref('')
 const showSuccess = ref(false)
+const errorOpen = ref(false)
+const errorDetails = ref([])
 const shareDialog = ref(false)
 const uploadingLogo = ref(false)
 const uploadLogoError = ref('')
@@ -32,6 +36,10 @@ const teamLogoFile = ref(null)
 const teamLogoError = ref('')
 const teamLogoUploading = ref(false)
 const pendingTeamId = ref(null)
+const inviteInfo = ref(null)
+const generatingInvite = ref(false)
+// 审批时是否邮件通知队伍拥有者
+const notifyByEmail = ref(false)
 
 // 冠军板块相关状态
 const championTeam = ref(null)
@@ -66,7 +74,7 @@ const nowMs = ref(Date.now())
 let regTimer = null
 
 const shareLink = computed(() => {
-  const origin = window.location?.origin || ''
+  const origin = (typeof window !== 'undefined' && window.location) ? window.location.origin : ''
   const id = eventId || ev.value?.id || ev.value?.Id
   return `${origin}/events/${id}`
 })
@@ -78,12 +86,33 @@ const canManageEvent = computed(() => {
   const me = currentUser.value
   if (!me) return false
   const createdByUserId = ev.value.createdByUserId || ev.value.CreatedByUserId
+  const adminIds = ev.value.adminUserIds || ev.value.AdminUserIds || []
+  const myId = me.id || me.Id
+  const roleName = me.roleName || me.RoleName
+  const isCreator = !!createdByUserId && !!myId && createdByUserId === myId
+  const isAdmin = roleName === 'Admin' || roleName === 'SuperAdmin'
+  const isEventAdmin = !!myId && Array.isArray(adminIds) && adminIds.includes(myId)
+  return isCreator || isAdmin || isEventAdmin
+})
+
+const canManageAdmins = computed(() => {
+  if (!isAuthenticated.value || !ev.value) return false
+  const me = currentUser.value
+  if (!me) return false
+  const createdByUserId = ev.value.createdByUserId || ev.value.CreatedByUserId
   const myId = me.id || me.Id
   const roleName = me.roleName || me.RoleName
   const isCreator = !!createdByUserId && !!myId && createdByUserId === myId
   const isAdmin = roleName === 'Admin' || roleName === 'SuperAdmin'
   return isCreator || isAdmin
 })
+
+const adminList = ref([])
+const loadingAdmins = ref(false)
+const adminError = ref('')
+const addUserId = ref('')
+const addingAdmin = ref(false)
+const removingAdminIds = ref(new Set())
 
 function normalizeStatus(status) {
   if (typeof status === 'string') return status
@@ -118,6 +147,10 @@ function statusLabel(status) {
   return '待审核'
 }
 
+function getRegisteredByUserId(r) {
+  return r?.registeredByUserId || r?.RegisteredByUserId || ''
+}
+
 async function load() {
   loading.value = true
   errorMsg.value = ''
@@ -128,7 +161,7 @@ async function load() {
       const uid = ev.value?.createdByUserId || ev.value?.CreatedByUserId
       if (uid && isAuthenticated.value) {
         const u = await getUser(uid)
-        const name = u?.fullName || [u?.firstName, u?.lastName].filter(Boolean).join(' ') || u?.email || ''
+        const name = u?.fullName || u?.FullName || u?.email || ''
         creatorName.value = name || ''
       }
     } catch (e) {
@@ -157,6 +190,14 @@ async function load() {
     } finally {
       loadingRegs.value = false
     }
+    try {
+      loadingAdmins.value = true
+      adminList.value = await getEventAdmins(eventId)
+    } catch (e) {
+      adminError.value = e?.payload?.message || e?.message || '加载赛事管理员失败'
+    } finally {
+      loadingAdmins.value = false
+    }
   } catch (err) {
     errorMsg.value = err?.payload?.message || err?.message || '加载赛事详情失败'
   } finally {
@@ -177,6 +218,44 @@ onUnmounted(() => {
 
 function backToEvents() {
   router.push('/events')
+}
+
+async function onAddAdmin() {
+  adminError.value = ''
+  successMsg.value = ''
+  if (!canManageAdmins.value) return
+  const uid = (addUserId.value || '').trim()
+  if (!uid) { adminError.value = '请输入用户ID'; return }
+  addingAdmin.value = true
+  try {
+    await addEventAdmin(eventId, uid)
+    addUserId.value = ''
+    adminList.value = await getEventAdmins(eventId)
+    successMsg.value = '已添加赛事管理员'
+    showSuccess.value = true
+  } catch (e) {
+    adminError.value = e?.payload?.message || e?.message || '添加赛事管理员失败'
+    errorDetails.value = extractErrorDetails(e?.payload)
+  } finally {
+    addingAdmin.value = false
+  }
+}
+
+async function onRemoveAdmin(userId) {
+  if (!canManageAdmins.value) return
+  const id = userId
+  removingAdminIds.value.add(id)
+  try {
+    await removeEventAdmin(eventId, id)
+    adminList.value = await getEventAdmins(eventId)
+    successMsg.value = '已移除赛事管理员'
+    showSuccess.value = true
+  } catch (e) {
+    adminError.value = e?.payload?.message || e?.message || '移除赛事管理员失败'
+    errorDetails.value = extractErrorDetails(e?.payload)
+  } finally {
+    removingAdminIds.value.delete(id)
+  }
 }
 
 async function togglePlayers(teamId) {
@@ -211,7 +290,8 @@ async function setRegistrationStatus(teamId, status) {
   actionError.value = ''
   successMsg.value = ''
   try {
-    const updated = await updateTeamRegistrationStatus(eventId, teamId, { status })
+    const shouldNotify = notifyByEmail.value || normalizeStatus(status) === 'Approved'
+    const updated = await updateTeamRegistrationStatus(eventId, teamId, { status, notifyByEmail: shouldNotify })
     // 用返回的数据更新本地列表项
     const idx = registrations.value.findIndex(r => (r.teamId || r.TeamId) === teamId)
     if (idx >= 0) {
@@ -254,6 +334,23 @@ async function doExportCsv() {
     URL.revokeObjectURL(url)
   } catch (err) {
     errorMsg.value = err?.payload?.message || err?.message || '导出CSV失败'
+  }
+}
+
+async function doExportLogosZip() {
+  try {
+    const blob = await exportEventTeamLogosZip(eventId)
+    const url = URL.createObjectURL(blob)
+    const nameSafe = (ev.value?.name || 'event').replace(/[^a-zA-Z0-9_\-]/g, '_')
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${nameSafe}-team-logos.zip`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    errorMsg.value = err?.payload?.message || err?.message || '导出徽标ZIP失败'
   }
 }
 
@@ -393,6 +490,7 @@ async function onRegister() {
     registrations.value = await getEventRegistrations(eventId)
   } catch (err) {
     actionError.value = err?.payload?.message || err?.message || '报名失败'
+    errorDetails.value = extractErrorDetails(err?.payload)
   } finally {
     registering.value = false
   }
@@ -476,10 +574,16 @@ async function onEventLogoSelected(files) {
     }
   } catch (err) {
     uploadLogoError.value = err?.payload?.message || err?.message || '上传赛事Logo失败'
+    errorDetails.value = extractErrorDetails(err?.payload)
   } finally {
     uploadingLogo.value = false
   }
 }
+
+watch([actionError, uploadLogoError, teamLogoError], (vals) => {
+  const m = vals[0] || vals[1] || vals[2]
+  if (m) errorOpen.value = true
+})
 
 function onTeamLogoSelected(files) {
   teamLogoError.value = ''
@@ -507,9 +611,45 @@ async function confirmUploadAndRegister() {
     registrations.value = await getEventRegistrations(eventId)
   } catch (err) {
     teamLogoError.value = err?.payload?.message || err?.message || '上传队伍Logo失败'
+    errorDetails.value = extractErrorDetails(err?.payload)
   } finally {
     teamLogoUploading.value = false
     registering.value = false
+  }
+}
+
+async function onGenerateTeamInvite() {
+  if (!isAuthenticated.value) { router.push('/login'); return }
+  const me = currentUser.value
+  const myTeamId = me?.teamId || me?.TeamId
+  if (!myTeamId) { actionError.value = '您还没有战队，请先创建战队'; router.push('/teams/create'); return }
+  generatingInvite.value = true
+  actionError.value = ''
+  successMsg.value = ''
+  try {
+    const info = await generateInvite(myTeamId, 7)
+    inviteInfo.value = info
+    successMsg.value = '邀请链接已生成'
+    showSuccess.value = true
+  } catch (err) {
+    actionError.value = err?.payload?.message || err?.message || '生成邀请失败'
+    errorDetails.value = extractErrorDetails(err?.payload)
+  } finally {
+    generatingInvite.value = false
+  }
+}
+
+async function copyInviteLink() {
+  if (!inviteInfo.value) return
+  const token = inviteInfo.value.token || inviteInfo.value.Token
+  const origin = (typeof window !== 'undefined' && window.location) ? window.location.origin : ''
+  const url = `${origin}/join/${token}`
+  try {
+    await navigator.clipboard.writeText(url)
+    successMsg.value = '邀请链接已复制'
+    showSuccess.value = true
+  } catch {
+    actionError.value = '复制失败，请手动复制'
   }
 }
 </script>
@@ -525,6 +665,13 @@ async function confirmUploadAndRegister() {
         :to="'/events/' + (ev.id || ev.Id) + '/schedule'"
         prepend-icon="calendar_month"
       >赛程</v-btn>
+      <v-btn
+        v-if="ev"
+        variant="text"
+        class="mr-3 mb-3"
+        :to="'/events/' + (ev.id || ev.Id) + '/bracket'"
+        prepend-icon="account_tree"
+      >赛程图</v-btn>
       <v-chip :color="registrationStatusColor" class="mb-3 mr-2" size="small">报名状态：{{ registrationStatusLabel }}</v-chip>
       <template v-if="registrationOpen()">
         <v-btn
@@ -539,7 +686,17 @@ async function confirmUploadAndRegister() {
         >
           报名参赛
         </v-btn>
+        <v-btn
+          color="secondary"
+          prepend-icon="link"
+          :loading="generatingInvite"
+          class="mb-3"
+          @click="onGenerateTeamInvite"
+        >邀请队员加入我的战队</v-btn>
       </template>
+      </template>
+    <template #media>
+      <lottie-player src="/animations/Champion.json" autoplay loop style="width:220px;height:220px"></lottie-player>
     </template>
   </PageHero>
   <v-container class="py-8" style="max-width: 1200px">
@@ -550,8 +707,12 @@ async function confirmUploadAndRegister() {
     <template v-if="ev">
       <v-card>
         <v-card-title class="d-flex align-center">
-          <v-avatar size="56" class="mr-3">
-            <v-img v-if="ev.logoUrl || ev.LogoUrl" :src="ev.logoUrl || ev.LogoUrl" alt="event logo" cover />
+            <v-avatar size="56" class="mr-3">
+            <v-img v-if="ev.logoUrl || ev.LogoUrl" :src="ev.logoUrl || ev.LogoUrl" alt="event logo" cover>
+              <template #placeholder>
+                <div class="img-skeleton"></div>
+              </template>
+            </v-img>
             <v-icon v-else icon="emoji_events" size="40" />
           </v-avatar>
           <span class="text-h6 text-truncate">{{ ev.name }}</span>
@@ -588,6 +749,9 @@ async function confirmUploadAndRegister() {
             <v-btn v-if="canManageEvent" color="primary" prepend-icon="download" class="mr-3" @click="doExportCsv">
               导出报名CSV
             </v-btn>
+            <v-btn v-if="canManageEvent" color="primary" variant="tonal" prepend-icon="download" class="mr-3" @click="doExportLogosZip">
+              导出战队Logo ZIP
+            </v-btn>
             <v-btn v-if="canManageEvent" variant="tonal" prepend-icon="share" class="mr-3" @click="shareDialog = true">
               分享赛事
             </v-btn>
@@ -609,6 +773,65 @@ async function confirmUploadAndRegister() {
           <v-alert v-if="actionError" type="error" :text="actionError" class="mt-3" />
         </v-card-text>
       </v-card>
+      <template v-if="inviteInfo">
+        <v-alert type="success" class="mt-4">
+          <div class="d-flex align-center">
+            <div class="flex-grow-1">邀请有效期至：{{ new Date(inviteInfo.expiresAt || inviteInfo.ExpiresAt).toLocaleString() }}</div>
+            <v-btn variant="text" prepend-icon="content_copy" @click="copyInviteLink">复制邀请链接</v-btn>
+          </div>
+          <div class="mt-2 text-caption">{{ `${(typeof window !== 'undefined' && window.location) ? window.location.origin : ''}/join/${inviteInfo.token || inviteInfo.Token}` }}</div>
+        </v-alert>
+      </template>
+
+      <v-card class="mt-6">
+        <v-card-title class="d-flex align-center">
+          <v-icon icon="shield_person" class="mr-2" />
+          <span class="text-subtitle-1">赛事管理员</span>
+          <v-spacer />
+        </v-card-title>
+        <v-card-text>
+          <v-alert v-if="adminError" type="error" :text="adminError" class="mb-3" />
+          <div class="text-body-2 mb-2">创建者：{{ creatorDisplay }}</div>
+          <div class="text-body-2 text-medium-emphasis mb-2">已添加的管理员：</div>
+          <v-progress-linear v-if="loadingAdmins" indeterminate color="primary" />
+          <template v-else>
+            <div v-if="!adminList || adminList.length === 0" class="text-body-2">暂无赛事管理员</div>
+            <v-list v-else density="comfortable">
+              <v-list-item v-for="u in adminList" :key="u.id || u.Id">
+                <template #prepend>
+                  <v-icon icon="person" class="mr-2" />
+                </template>
+                <v-list-item-title>{{ u.fullName || [u.firstName, u.lastName].filter(Boolean).join(' ') || u.email || (u.id || u.Id) }}</v-list-item-title>
+                <v-list-item-subtitle>
+                  <span v-if="u.email">{{ u.email }}</span>
+                </v-list-item-subtitle>
+                <template #append>
+                  <v-btn
+                    v-if="canManageAdmins && (u.id || u.Id) !== creatorUserId"
+                    size="small"
+                    color="error"
+                    variant="text"
+                    prepend-icon="delete"
+                    :loading="removingAdminIds.has(u.id || u.Id)"
+                    @click="onRemoveAdmin(u.id || u.Id)"
+                  >移除</v-btn>
+                </template>
+              </v-list-item>
+            </v-list>
+          </template>
+          <div v-if="canManageAdmins" class="mt-4 d-flex align-center">
+            <v-text-field
+              v-model="addUserId"
+              class="mr-3"
+              density="comfortable"
+              label="用户ID"
+              placeholder="输入要添加为管理员的用户ID"
+              hide-details
+            />
+            <v-btn :loading="addingAdmin" color="primary" prepend-icon="person_add" @click="onAddAdmin">添加管理员</v-btn>
+          </div>
+        </v-card-text>
+      </v-card>
 
       <!-- 冠军战队板块 -->
       <v-card class="mt-6">
@@ -624,7 +847,11 @@ async function confirmUploadAndRegister() {
             <template v-if="championTeam">
               <div class="d-flex align-center mb-3">
                 <v-avatar size="48" class="mr-3">
-                  <v-img v-if="championTeam.logoUrl || championTeam.LogoUrl" :src="championTeam.logoUrl || championTeam.LogoUrl" alt="champion logo" cover />
+                  <v-img v-if="championTeam.logoUrl || championTeam.LogoUrl" :src="championTeam.logoUrl || championTeam.LogoUrl" alt="champion logo" cover>
+                    <template #placeholder>
+                      <div class="img-skeleton"></div>
+                    </template>
+                  </v-img>
                   <v-icon v-else icon="group" size="32" />
                 </v-avatar>
                 <div>
@@ -671,6 +898,15 @@ async function confirmUploadAndRegister() {
           <v-progress-linear v-if="loadingRegs" indeterminate color="primary" />
 
           <template v-else>
+            <template v-if="canManageEvent">
+              <v-switch
+                v-model="notifyByEmail"
+                color="primary"
+                inset
+                class="mb-4"
+                :label="notifyByEmail ? '审批时将通过邮件通知队伍拥有者（每次扣减1积分）' : '审批时通过邮件通知队伍拥有者'"
+              />
+            </template>
             <div v-if="!registrations || registrations.length === 0" class="text-body-2">暂无报名队伍</div>
             <v-row v-else>
               <v-col v-for="r in registrations" :key="r.teamId" cols="12" sm="6" md="4" lg="3">
@@ -678,7 +914,11 @@ async function confirmUploadAndRegister() {
                   <v-card-title class="d-flex align-center">
                     <router-link :to="{ name: 'team-detail', params: { id: r.teamId } }" class="d-inline-flex align-center text-decoration-none">
                       <v-avatar size="28" class="mr-2">
-                        <v-img v-if="teamDetails[r.teamId]?.logoUrl || teamDetails[r.teamId]?.LogoUrl" :src="teamDetails[r.teamId]?.logoUrl || teamDetails[r.teamId]?.LogoUrl" alt="team logo" cover />
+                        <v-img v-if="teamDetails[r.teamId]?.logoUrl || teamDetails[r.teamId]?.LogoUrl" :src="teamDetails[r.teamId]?.logoUrl || teamDetails[r.teamId]?.LogoUrl" alt="team logo" cover>
+                          <template #placeholder>
+                            <div class="img-skeleton"></div>
+                          </template>
+                        </v-img>
                         <v-icon v-else icon="group" size="22" />
                       </v-avatar>
                       <span class="text-truncate">{{ r.teamName }}</span>
@@ -693,6 +933,15 @@ async function confirmUploadAndRegister() {
                       <v-btn size="small" variant="text" prepend-icon="group" :loading="loadingTeamIds.has(r.teamId)" @click="togglePlayers(r.teamId)">
                         {{ teamDetails[r.teamId] ? '收起队员' : '查看队员' }}
                       </v-btn>
+                      <v-btn
+                        v-if="canManageEvent && getRegisteredByUserId(r)"
+                        size="small"
+                        variant="text"
+                        color="secondary"
+                        :to="`/messages/${getRegisteredByUserId(r)}`"
+                        class="ml-1"
+                        prepend-icon="chat"
+                      >联系队长</v-btn>
                       <template v-if="canManageEvent">
                         <v-btn size="small" color="success" class="ml-2" prepend-icon="check_circle" :loading="updatingStatusIds.has(r.teamId)" :disabled="normalizeStatus(r.status) === 'Approved'" @click="approve(r.teamId)">
                           通过
@@ -821,12 +1070,8 @@ async function confirmUploadAndRegister() {
         </v-card>
       </v-dialog>
 
-      <v-snackbar v-model="showSuccess" color="success" :timeout="2500" location="bottom right">
-        <div class="d-flex align-center">
-          <v-icon class="mr-2" icon="check_circle" />
-          {{ successMsg || '操作成功' }}
-        </div>
-      </v-snackbar>
+      <ResultDialog v-model="showSuccess" :type="'success'" :message="successMsg" />
+      <ResultDialog v-model="errorOpen" :type="'error'" :message="actionError || uploadLogoError || teamLogoError" :details="errorDetails" />
     </template>
   </v-container>
 </template>

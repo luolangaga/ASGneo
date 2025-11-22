@@ -45,6 +45,16 @@ namespace ASG.Api.Repositories
         Task<Match> UpdateMatchAsync(Match match);
 
         /// <summary>
+        /// 批量更新赛程
+        /// </summary>
+        Task<int> UpdateMatchesAsync(IEnumerable<Match> matches);
+
+        /// <summary>
+        /// 按ID集合获取赛程（限定赛事）
+        /// </summary>
+        Task<IEnumerable<Match>> GetMatchesByIdsAsync(Guid eventId, IEnumerable<Guid> ids);
+
+        /// <summary>
         /// 删除赛程
         /// </summary>
         /// <param name="id">赛程ID</param>

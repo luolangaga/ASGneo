@@ -9,7 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fluentui/web-components": "^2.6.1",
+    "@lottiefiles/lottie-player": "^2.0.12",
     "@mdi/font": "^7.4.47",
+    "@microsoft/signalr": "^10.0.0",
+    "echarts": "^6.0.0",
     "markdown-it": "^14.1.0",
     "sass": "^1.93.3",
     "vite-plugin-vuetify": "^2.1.2",

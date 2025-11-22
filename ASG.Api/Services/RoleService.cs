@@ -15,7 +15,9 @@ namespace ASG.Api.Services
 
         public async Task<IEnumerable<RoleInfoDto>> GetAllRolesAsync()
         {
-            var roles = Enum.GetValues<UserRole>().Select(role => new RoleInfoDto
+            // 仅返回 User 与 Admin 两个角色（移除 SuperAdmin）
+            var rolesEnum = new[] { UserRole.User, UserRole.Admin };
+            var roles = rolesEnum.Select(role => new RoleInfoDto
             {
                 Role = role,
                 RoleName = role.GetRoleName(),
@@ -64,25 +66,25 @@ namespace ASG.Api.Services
         public async Task<Dictionary<UserRole, int>> GetRoleStatisticsAsync()
         {
             var statistics = new Dictionary<UserRole, int>();
-            
-            foreach (UserRole role in Enum.GetValues<UserRole>())
+            // 仅统计 User 与 Admin 两个角色
+            var rolesEnum = new[] { UserRole.User, UserRole.Admin };
+            foreach (var role in rolesEnum)
             {
                 var count = await _userRepository.GetUserCountByRoleAsync(role);
                 statistics[role] = count;
             }
-
             return statistics;
         }
 
         public bool CanAssignRole(UserRole currentUserRole, UserRole targetRole)
         {
-            // SuperAdmin 可以分配任何角色
+            // 历史兼容：SuperAdmin 等同于 Admin
             if (currentUserRole == UserRole.SuperAdmin)
-                return true;
+                currentUserRole = UserRole.Admin;
 
-            // Admin 可以分配 User 角色，但不能分配 Admin 或 SuperAdmin 角色
+            // Admin 可以分配 User 或 Admin 角色
             if (currentUserRole == UserRole.Admin)
-                return targetRole == UserRole.User;
+                return targetRole == UserRole.User || targetRole == UserRole.Admin;
 
             // User 不能分配任何角色
             return false;
@@ -95,19 +97,21 @@ namespace ASG.Api.Services
 
         private static UserResponseDto MapToUserResponseDto(User user)
         {
+            // 统一将 SuperAdmin 视为 Admin（显示与数值）
+            var normalizedRole = user.Role == UserRole.SuperAdmin ? UserRole.Admin : user.Role;
             return new UserResponseDto
             {
                 Id = user.Id,
                 Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
                 FullName = user.FullName,
-                Role = user.Role,
-                RoleDisplayName = user.RoleDisplayName,
-                RoleName = user.RoleName,
+                Role = normalizedRole,
+                RoleDisplayName = normalizedRole.GetDisplayName(),
+                RoleName = normalizedRole.GetRoleName(),
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt,
-                IsActive = user.IsActive
+                IsActive = user.IsActive,
+                TeamId = user.TeamId,
+                EmailCredits = user.EmailCredits
             };
         }
     }

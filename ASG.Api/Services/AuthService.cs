@@ -9,15 +9,21 @@ namespace ASG.Api.Services
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IJwtService _jwtService;
+        private readonly IEmailService _emailService;
+        private readonly IConfiguration _config;
 
         public AuthService(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
-            IJwtService jwtService)
+            IJwtService jwtService,
+            IEmailService emailService,
+            IConfiguration config)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtService = jwtService;
+            _emailService = emailService;
+            _config = config;
         }
 
         public async Task<AuthResponseDto?> RegisterAsync(UserRegistrationDto registrationDto)
@@ -35,8 +41,8 @@ namespace ASG.Api.Services
             {
                 UserName = email,
                 Email = email,
-                FirstName = registrationDto.FirstName,
-                LastName = registrationDto.LastName,
+                FirstName = registrationDto.FullName,
+                LastName = string.Empty,
                 Role = registrationDto.Role,
                 CreatedAt = DateTime.UtcNow,
                 IsActive = true
@@ -59,15 +65,14 @@ namespace ASG.Api.Services
                 {
                     Id = user.Id,
                     Email = user.Email,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
                     FullName = user.FullName,
                     Role = user.Role,
                     RoleDisplayName = user.RoleDisplayName,
                     RoleName = user.RoleName,
                     CreatedAt = user.CreatedAt,
                     IsActive = user.IsActive,
-                    TeamId = user.TeamId
+                    TeamId = user.TeamId,
+                    EmailCredits = user.EmailCredits
                 }
             };
         }
@@ -96,8 +101,6 @@ namespace ASG.Api.Services
                 {
                     Id = user.Id,
                     Email = user.Email,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
                     FullName = user.FullName,
                     Role = user.Role,
                     RoleDisplayName = user.RoleDisplayName,
@@ -105,7 +108,8 @@ namespace ASG.Api.Services
                     CreatedAt = user.CreatedAt,
                     UpdatedAt = user.UpdatedAt,
                     IsActive = user.IsActive,
-                    TeamId = user.TeamId
+                    TeamId = user.TeamId,
+                    EmailCredits = user.EmailCredits
                 }
             };
         }
@@ -116,5 +120,38 @@ namespace ASG.Api.Services
             await Task.CompletedTask;
             return true;
         }
+
+        public async Task<bool> RequestPasswordResetAsync(string email)
+        {
+            var targetEmail = (email ?? string.Empty).Trim();
+            var user = await _userManager.FindByEmailAsync(targetEmail);
+            if (user == null)
+            {
+                return true;
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var baseUrl = _config["Frontend:BaseUrl"] ?? "https://idvevent.cn";
+            if (baseUrl.EndsWith("/")) baseUrl = baseUrl.TrimEnd('/');
+            var resetPath = _config["Frontend:ResetPasswordPath"] ?? "/reset-password";
+            var link = $"{baseUrl}{resetPath}?email={Uri.EscapeDataString(targetEmail)}&token={Uri.EscapeDataString(token)}";
+            var html = $"<p>请点击以下链接重置密码：</p><p><a href=\"{link}\">{link}</a></p><p>如果无法打开链接，可复制令牌至重置页面：</p><pre style=\"white-space:pre-wrap;word-break:break-all\">{System.Net.WebUtility.HtmlEncode(token)}</pre>";
+            await _emailService.SendHtmlAsync(targetEmail, "密码重置", html, token);
+            return true;
+        }
+
+        public async Task<bool> ResetPasswordAsync(string email, string token, string newPassword)
+        {
+            var targetEmail = (email ?? string.Empty).Trim();
+            var user = await _userManager.FindByEmailAsync(targetEmail);
+            if (user == null)
+            {
+                return false;
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+            return result.Succeeded;
+        }
+
     }
 }

@@ -82,6 +82,14 @@ namespace ASG.Api.Services
         Task<IEnumerable<TeamEventDto>> GetEventRegistrationsAsync(Guid eventId);
 
         /// <summary>
+        /// 获取赛事报名列表，并根据用户权限返回QQ遮蔽或完整号码
+        /// </summary>
+        /// <param name="eventId">赛事ID</param>
+        /// <param name="userId">当前用户ID（可空，未登录视为无权限）</param>
+        /// <returns>报名战队DTO列表（含QQ字段）</returns>
+        Task<IEnumerable<TeamEventDto>> GetEventRegistrationsWithSensitiveAsync(Guid eventId, string? userId);
+
+        /// <summary>
         /// 获取战队的报名赛事
         /// </summary>
         /// <param name="teamId">战队ID</param>
@@ -171,5 +179,13 @@ namespace ASG.Api.Services
         /// <param name="userId">操作用户ID</param>
         /// <returns>CSV字节数组（UTF-8 BOM）</returns>
         Task<byte[]> ExportEventRegistrationsCsvAsync(Guid eventId, string userId);
+
+        Task<IEnumerable<UserResponseDto>> GetEventAdminsAsync(Guid eventId);
+        Task<bool> AddEventAdminAsync(Guid eventId, string userId, string targetUserId);
+        Task<bool> RemoveEventAdminAsync(Guid eventId, string userId, string targetUserId);
+
+        // 赛程图画布持久化
+        Task<bool> SaveBracketCanvasAsync(Guid eventId, string userId, string canvasJson);
+        Task<string> GetBracketCanvasAsync(Guid eventId);
     }
 }

@@ -2,6 +2,8 @@ using ASG.Api.DTOs;
 using ASG.Api.Models;
 using ASG.Api.Repositories;
 using ASG.Api.Services;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace ASG.Api.Services
 {
@@ -68,15 +70,15 @@ namespace ASG.Api.Services
             {
                 HomeTeamId = createDto.HomeTeamId,
                 AwayTeamId = createDto.AwayTeamId,
-                MatchTime = EnsureUtc(createDto.MatchTime),
+                MatchTime = createDto.MatchTime,
                 EventId = createDto.EventId,
                 LiveLink = createDto.LiveLink,
                 CustomData = createDto.CustomData,
                 Commentator = createDto.Commentator,
                 Director = createDto.Director,
                 Referee = createDto.Referee,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = ChinaNow(),
+                UpdatedAt = ChinaNow()
             };
 
             var createdMatch = await _matchRepository.CreateMatchAsync(match);
@@ -94,7 +96,7 @@ namespace ASG.Api.Services
                 throw new UnauthorizedAccessException("您没有权限修改此赛程");
 
             // 更新字段
-            if (updateDto.MatchTime.HasValue) match.MatchTime = EnsureUtc(updateDto.MatchTime.Value);
+            if (updateDto.MatchTime.HasValue) match.MatchTime = updateDto.MatchTime.Value;
             if (updateDto.LiveLink != null) match.LiveLink = updateDto.LiveLink;
             if (updateDto.CustomData != null) match.CustomData = updateDto.CustomData;
             if (updateDto.Commentator != null) match.Commentator = updateDto.Commentator;
@@ -103,6 +105,93 @@ namespace ASG.Api.Services
 
             var updatedMatch = await _matchRepository.UpdateMatchAsync(match);
             return MapToMatchDto(updatedMatch);
+        }
+
+        public async Task<MatchDto?> UpdateMatchScoresAsync(Guid id, UpdateMatchScoresDto scoresDto, string userId)
+        {
+            var match = await _matchRepository.GetMatchByIdAsync(id);
+            if (match == null)
+                return null;
+
+            if (!await CanUserManageEventAsync(match.EventId, userId))
+                throw new UnauthorizedAccessException("您没有权限修改此赛程");
+
+            var node = (!string.IsNullOrWhiteSpace(match.CustomData) ? JsonNode.Parse(match.CustomData) as JsonObject : null) ?? new JsonObject();
+
+            var cleanedGames = new List<GameScoreDto>();
+            if (scoresDto.Games != null)
+            {
+                foreach (var g in scoresDto.Games)
+                {
+                    var home = g != null ? Math.Max(0, g.Home) : 0;
+                    var away = g != null ? Math.Max(0, g.Away) : 0;
+                    cleanedGames.Add(new GameScoreDto { Home = home, Away = away });
+                }
+            }
+
+            var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            node["games"] = JsonSerializer.SerializeToNode(cleanedGames, jsonOptions);
+
+            var bo = scoresDto.BestOf.HasValue ? scoresDto.BestOf.Value : cleanedGames.Count;
+            if (bo > 0) node["bestOf"] = bo; else node.Remove("bestOf");
+
+            // 计算胜者并保存到自定义字段
+            try
+            {
+                var homeWins = cleanedGames.Count(x => (x?.Home ?? 0) > (x?.Away ?? 0));
+                var awayWins = cleanedGames.Count(x => (x?.Away ?? 0) > (x?.Home ?? 0));
+
+                // 按 BestOf 判定需要的胜场数；若未设置则以更多胜场为胜
+                var needed = bo > 0 ? ((bo + 1) / 2) : 0;
+                Guid? winnerId = null;
+                string? winnerName = null;
+                if (needed > 0)
+                {
+                    if (homeWins >= needed)
+                    {
+                        winnerId = match.HomeTeamId;
+                        winnerName = match.HomeTeam?.Name;
+                    }
+                    else if (awayWins >= needed)
+                    {
+                        winnerId = match.AwayTeamId;
+                        winnerName = match.AwayTeam?.Name;
+                    }
+                }
+                else
+                {
+                    if (homeWins > awayWins)
+                    {
+                        winnerId = match.HomeTeamId;
+                        winnerName = match.HomeTeam?.Name;
+                    }
+                    else if (awayWins > homeWins)
+                    {
+                        winnerId = match.AwayTeamId;
+                        winnerName = match.AwayTeam?.Name;
+                    }
+                }
+
+                if (winnerId.HasValue)
+                {
+                    node["winnerTeamId"] = winnerId.Value.ToString();
+                    if (!string.IsNullOrWhiteSpace(winnerName)) node["winnerTeamName"] = winnerName; else node.Remove("winnerTeamName");
+                }
+                else
+                {
+                    node.Remove("winnerTeamId");
+                    node.Remove("winnerTeamName");
+                }
+            }
+            catch
+            {
+                // 若解析或计算失败则不影响其它字段更新
+            }
+
+            match.CustomData = node.ToJsonString();
+
+            var updated = await _matchRepository.UpdateMatchAsync(match);
+            return MapToMatchDto(updated);
         }
 
         public async Task<bool> DeleteMatchAsync(Guid id, string userId)
@@ -125,14 +214,14 @@ namespace ASG.Api.Services
 
         private MatchDto MapToMatchDto(Match match)
         {
-            return new MatchDto
+            var dto = new MatchDto
             {
                 Id = match.Id,
                 HomeTeamId = match.HomeTeamId,
                 HomeTeamName = match.HomeTeam?.Name ?? string.Empty,
                 AwayTeamId = match.AwayTeamId,
                 AwayTeamName = match.AwayTeam?.Name ?? string.Empty,
-                MatchTime = AssumeUtc(match.MatchTime),
+                MatchTime = match.MatchTime,
                 EventId = match.EventId,
                 EventName = match.Event?.Name ?? string.Empty,
                 LiveLink = match.LiveLink,
@@ -141,9 +230,47 @@ namespace ASG.Api.Services
                 Director = match.Director,
                 Referee = match.Referee,
                 Likes = match.Likes,
-                CreatedAt = AssumeUtc(match.CreatedAt),
-                UpdatedAt = AssumeUtc(match.UpdatedAt)
+                CreatedAt = match.CreatedAt,
+                UpdatedAt = match.UpdatedAt
             };
+
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(match.CustomData))
+                {
+                    using var doc = JsonDocument.Parse(match.CustomData);
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("stage", out var stageEl) && stageEl.ValueKind == JsonValueKind.String)
+                        dto.Stage = stageEl.GetString();
+                    if (root.TryGetProperty("winnerTeamId", out var wtiEl))
+                    {
+                        if (wtiEl.ValueKind == JsonValueKind.String)
+                        {
+                            var s = wtiEl.GetString();
+                            if (!string.IsNullOrWhiteSpace(s) && Guid.TryParse(s, out var gid)) dto.WinnerTeamId = gid;
+                        }
+                        else if (wtiEl.ValueKind == JsonValueKind.Number)
+                        {
+                            var s = wtiEl.GetRawText();
+                            if (Guid.TryParse(s, out var gid)) dto.WinnerTeamId = gid;
+                        }
+                    }
+                    if (root.TryGetProperty("winnerTeamName", out var wtnEl) && wtnEl.ValueKind == JsonValueKind.String)
+                        dto.WinnerTeamName = wtnEl.GetString();
+                    if (root.TryGetProperty("replayLink", out var rlEl) && rlEl.ValueKind == JsonValueKind.String)
+                        dto.ReplayLink = rlEl.GetString();
+                }
+                if (dto.WinnerTeamId.HasValue && string.IsNullOrEmpty(dto.WinnerTeamName))
+                {
+                    if (dto.WinnerTeamId.Value == match.HomeTeamId) dto.WinnerTeamName = match.HomeTeam?.Name;
+                    else if (dto.WinnerTeamId.Value == match.AwayTeamId) dto.WinnerTeamName = match.AwayTeam?.Name;
+                }
+            }
+            catch
+            {
+            }
+
+            return dto;
         }
 
         private async Task<bool> CanUserManageEventAsync(Guid eventId, string userId)
@@ -161,23 +288,15 @@ namespace ASG.Api.Services
             if (user != null && (user.Role == UserRole.Admin || user.Role == UserRole.SuperAdmin))
                 return true;
 
+            if (eventEntity.EventAdmins != null && eventEntity.EventAdmins.Any(a => a.UserId == userId))
+                return true;
+
             return false;
         }
 
-        // 时间处理：统一与赛事服务保持一致
-        private static DateTime EnsureUtc(DateTime dt)
+        private static DateTime ChinaNow()
         {
-            if (dt.Kind == DateTimeKind.Utc) return dt;
-            if (dt.Kind == DateTimeKind.Local) return dt.ToUniversalTime();
-            var assumedLocal = DateTime.SpecifyKind(dt, DateTimeKind.Local);
-            return assumedLocal.ToUniversalTime();
-        }
-
-        private static DateTime AssumeUtc(DateTime dt)
-        {
-            if (dt.Kind == DateTimeKind.Utc) return dt;
-            if (dt.Kind == DateTimeKind.Local) return dt.ToUniversalTime();
-            return DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+            return DateTime.UtcNow;
         }
     }
 }

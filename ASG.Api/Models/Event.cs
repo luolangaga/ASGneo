@@ -89,10 +89,16 @@ namespace ASG.Api.Models
         /// 参赛队伍关联
         /// </summary>
         public virtual ICollection<TeamEvent> TeamEvents { get; set; } = new List<TeamEvent>();
+        public virtual ICollection<EventAdmin> EventAdmins { get; set; } = new List<EventAdmin>();
         /// <summary>
         /// 赛程关联
         /// </summary>
         public virtual ICollection<Match> Matches { get; set; } = new List<Match>();
+
+        /// <summary>
+        /// 自定义数据（JSON），用于保存额外的赛事配置，例如赛程图画布
+        /// </summary>
+        public string CustomData { get; set; } = "{}";
     }
 
     /// <summary>

@@ -72,6 +72,12 @@
             <param name="teams">战队数量，默认15</param>
             <returns>插入后的统计信息</returns>
         </member>
+        <member name="M:ASG.Api.Controllers.DevController.GrantAdminToOutlook">
+            <summary>
+            开发环境：将邮箱为指定地址的用户赋予管理员角色（Admin）
+            固定邮箱：luolan233@outlook.com
+            </summary>
+        </member>
         <member name="T:ASG.Api.Controllers.EventsController">
             <summary>
             赛事管理控制器
@@ -157,13 +163,6 @@
             <param name="id">赛事ID</param>
             <returns>报名战队列表</returns>
         </member>
-        <member name="M:ASG.Api.Controllers.EventsController.ExportEventRegistrationsCsv(System.Guid)">
-            <summary>
-            导出赛事报名信息为CSV（需要登录且为赛事创建者或管理员）
-            </summary>
-            <param name="id">赛事ID</param>
-            <returns>CSV文件</returns>
-        </member>
         <member name="M:ASG.Api.Controllers.EventsController.GetTeamRegistrations(System.Guid)">
             <summary>
             获取战队的报名赛事
@@ -182,6 +181,16 @@
             获取正在报名的赛事
             </summary>
             <returns>正在报名的赛事列表</returns>
+        </member>
+        <member name="M:ASG.Api.Controllers.EventsController.GetBracketCanvas(System.Guid)">
+            <summary>
+            获取赛事赛程图画布（JSON）
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Controllers.EventsController.SaveBracketCanvas(System.Guid,System.Text.Json.JsonElement)">
+            <summary>
+            保存赛事赛程图画布（需要登录且为赛事创建者或管理员）
+            </summary>
         </member>
         <member name="M:ASG.Api.Controllers.EventsController.GetActiveRegistrationEventsPaged(System.Int32,System.Int32)">
             <summary>
@@ -288,7 +297,7 @@
         </member>
         <member name="M:ASG.Api.Controllers.RoleController.GetRoleStatistics">
             <summary>
-            获取角色统计信息（仅超级管理员可查看）
+            获取角色统计信息（管理员可查看）
             </summary>
         </member>
         <member name="M:ASG.Api.Controllers.RoleController.CheckPermission(System.String)">
@@ -373,6 +382,11 @@
             给战队点赞
             </summary>
         </member>
+        <member name="M:ASG.Api.Controllers.TeamsController.LeaveTeam(System.Guid)">
+            <summary>
+            退出当前战队（移除当前用户在该战队的玩家记录，并解除绑定）
+            </summary>
+        </member>
         <member name="M:ASG.Api.Controllers.TeamsController.UploadTeamLogo(System.Guid,Microsoft.AspNetCore.Http.IFormFile)">
             <summary>
             上传战队徽标（需要登录且为战队拥有者）
@@ -397,9 +411,9 @@
             <param name="id">User ID</param>
             <returns>User information</returns>
         </member>
-        <member name="M:ASG.Api.Controllers.UsersController.UpdateProfile(ASG.Api.DTOs.UpdateProfileDto)">
+        <member name="M:ASG.Api.Controllers.UsersController.UpdateEmailCredits(System.String,ASG.Api.DTOs.UpdateEmailCreditsDto)">
             <summary>
-            更新个人资料（仅更新 FirstName / LastName）
+            管理员：更新指定用户的邮件积分
             </summary>
         </member>
         <member name="M:ASG.Api.Controllers.UsersController.UploadAvatar(Microsoft.AspNetCore.Http.IFormFile)">
@@ -444,6 +458,11 @@
             更新战队报名状态DTO
             </summary>
         </member>
+        <member name="P:ASG.Api.DTOs.UpdateTeamRegistrationDto.NotifyByEmail">
+            <summary>
+            是否通过邮件通知战队拥有者（将扣除其邮件积分）
+            </summary>
+        </member>
         <member name="T:ASG.Api.DTOs.SetChampionDto">
             <summary>
             设置赛事冠军DTO（传null清除冠军）
@@ -454,142 +473,40 @@
             综合搜索返回结果（可选包含：战队、赛事、文章）
             </summary>
         </member>
-        <member name="T:ASG.Api.Migrations.AddUserRoleSupport">
+        <member name="T:ASG.Api.Migrations.Initial">
             <inheritdoc />
         </member>
-        <member name="M:ASG.Api.Migrations.AddUserRoleSupport.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:ASG.Api.Migrations.Initial.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:ASG.Api.Migrations.AddUserRoleSupport.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:ASG.Api.Migrations.Initial.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:ASG.Api.Migrations.AddUserRoleSupport.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:ASG.Api.Migrations.Initial.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:ASG.Api.Migrations.one">
+        <member name="T:ASG.Api.Migrations.AddEventHua">
             <inheritdoc />
         </member>
-        <member name="M:ASG.Api.Migrations.one.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:ASG.Api.Migrations.AddEventHua.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:ASG.Api.Migrations.one.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:ASG.Api.Migrations.AddEventHua.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:ASG.Api.Migrations.one.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:ASG.Api.Migrations.AddEventHua.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:ASG.Api.Migrations.AddTeamPlayerGameRoleCustomFields">
+        <member name="T:ASG.Api.Migrations.AddDisplayTeamIdToUser">
             <inheritdoc />
         </member>
-        <member name="M:ASG.Api.Migrations.AddTeamPlayerGameRoleCustomFields.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:ASG.Api.Migrations.AddDisplayTeamIdToUser.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:ASG.Api.Migrations.AddTeamPlayerGameRoleCustomFields.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:ASG.Api.Migrations.AddDisplayTeamIdToUser.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:ASG.Api.Migrations.AddTeamPlayerGameRoleCustomFields.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:ASG.Api.Migrations.SimplifyCustomFieldsToGameRole">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.SimplifyCustomFieldsToGameRole.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.SimplifyCustomFieldsToGameRole.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.SimplifyCustomFieldsToGameRole.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:ASG.Api.Migrations.AddEventAndTeamEventTables">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddEventAndTeamEventTables.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddEventAndTeamEventTables.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddEventAndTeamEventTables.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:ASG.Api.Migrations.FixUserRoleDefaultValue">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.FixUserRoleDefaultValue.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.FixUserRoleDefaultValue.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.FixUserRoleDefaultValue.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:ASG.Api.Migrations.AddUserRoleNoneValue">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddUserRoleNoneValue.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddUserRoleNoneValue.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddUserRoleNoneValue.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:ASG.Api.Migrations.AddMatchAndTeamLikes">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddMatchAndTeamLikes.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddMatchAndTeamLikes.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddMatchAndTeamLikes.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:ASG.Api.Migrations.AddLikesAndViewsToArticles">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddLikesAndViewsToArticles.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddLikesAndViewsToArticles.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:ASG.Api.Migrations.AddChampionTeamToEvent">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddChampionTeamToEvent.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddChampionTeamToEvent.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddChampionTeamToEvent.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:ASG.Api.Migrations.AddArticleAndComment">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddArticleAndComment.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddArticleAndComment.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddArticleAndComment.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:ASG.Api.Migrations.AddArticleLikesAndViews">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddArticleLikesAndViews.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:ASG.Api.Migrations.AddArticleLikesAndViews.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:ASG.Api.Migrations.AddDisplayTeamIdToUser.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:ASG.Api.Models.Event">
@@ -675,6 +592,11 @@
         <member name="P:ASG.Api.Models.Event.Matches">
             <summary>
             赛程关联
+            </summary>
+        </member>
+        <member name="P:ASG.Api.Models.Event.CustomData">
+            <summary>
+            自定义数据（JSON），用于保存额外的赛事配置，例如赛程图画布
             </summary>
         </member>
         <member name="T:ASG.Api.Models.EventStatus">
@@ -1017,6 +939,16 @@
             <param name="match">赛程信息</param>
             <returns>更新的赛程</returns>
         </member>
+        <member name="M:ASG.Api.Repositories.IMatchRepository.UpdateMatchesAsync(System.Collections.Generic.IEnumerable{ASG.Api.Models.Match})">
+            <summary>
+            批量更新赛程
+            </summary>
+        </member>
+        <member name="M:ASG.Api.Repositories.IMatchRepository.GetMatchesByIdsAsync(System.Guid,System.Collections.Generic.IEnumerable{System.Guid})">
+            <summary>
+            按ID集合获取赛程（限定赛事）
+            </summary>
+        </member>
         <member name="M:ASG.Api.Repositories.IMatchRepository.DeleteMatchAsync(System.Guid)">
             <summary>
             删除赛程
@@ -1039,22 +971,6 @@
         <member name="T:ASG.Api.Services.EventService">
             <summary>
             赛事业务逻辑实现
-            </summary>
-        </member>
-        <member name="M:ASG.Api.Services.EventService.EnsureUtc(System.DateTime)">
-            <summary>
-            将 DateTime 统一转换为 UTC。
-            - 若为 Utc，直接返回；
-            - 若为 Local，转换为 Utc；
-            - 若为 Unspecified，按本地时间解释后转换为 Utc（避免遗漏时区信息导致的误判）。
-            </summary>
-        </member>
-        <member name="M:ASG.Api.Services.EventService.AssumeUtc(System.DateTime)">
-            <summary>
-            标注 DateTime 为 UTC 而不改变具体的时刻值。
-            - 若为 Utc，直接返回；
-            - 若为 Local，转换为 Utc；
-            - 若为 Unspecified，直接指定为 Utc（避免序列化丢失 "Z" 标识）。
             </summary>
         </member>
         <member name="T:ASG.Api.Services.IEventService">
@@ -1134,6 +1050,14 @@
             </summary>
             <param name="eventId">赛事ID</param>
             <returns>报名战队DTO列表</returns>
+        </member>
+        <member name="M:ASG.Api.Services.IEventService.GetEventRegistrationsWithSensitiveAsync(System.Guid,System.String)">
+            <summary>
+            获取赛事报名列表，并根据用户权限返回QQ遮蔽或完整号码
+            </summary>
+            <param name="eventId">赛事ID</param>
+            <param name="userId">当前用户ID（可空，未登录视为无权限）</param>
+            <returns>报名战队DTO列表（含QQ字段）</returns>
         </member>
         <member name="M:ASG.Api.Services.IEventService.GetTeamRegistrationsAsync(System.Guid)">
             <summary>

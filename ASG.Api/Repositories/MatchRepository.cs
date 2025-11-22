@@ -10,6 +10,10 @@ namespace ASG.Api.Repositories
     public class MatchRepository : IMatchRepository
     {
         private readonly ApplicationDbContext _context;
+        private static DateTime ChinaNow()
+        {
+            return DateTime.UtcNow;
+        }
 
         public MatchRepository(ApplicationDbContext context)
         {
@@ -66,10 +70,20 @@ namespace ASG.Api.Repositories
 
         public async Task<Match> UpdateMatchAsync(Match match)
         {
-            match.UpdatedAt = DateTime.UtcNow;
+            match.UpdatedAt = ChinaNow();
             _context.Matches.Update(match);
             await _context.SaveChangesAsync();
             return match;
+        }
+
+        public async Task<int> UpdateMatchesAsync(IEnumerable<Match> matches)
+        {
+            var list = matches?.ToList() ?? new List<Match>();
+            if (list.Count == 0) return 0;
+            var now = ChinaNow();
+            foreach (var m in list) m.UpdatedAt = now;
+            _context.Matches.UpdateRange(list);
+            return await _context.SaveChangesAsync();
         }
 
         public async Task<bool> DeleteMatchAsync(Guid id)
@@ -90,6 +104,18 @@ namespace ASG.Api.Repositories
             match.Likes++;
             await _context.SaveChangesAsync();
             return match.Likes;
+        }
+
+        public async Task<IEnumerable<Match>> GetMatchesByIdsAsync(Guid eventId, IEnumerable<Guid> ids)
+        {
+            var set = (ids ?? Array.Empty<Guid>()).ToHashSet();
+            if (set.Count == 0) return new List<Match>();
+            return await _context.Matches
+                .Include(m => m.HomeTeam)
+                .Include(m => m.AwayTeam)
+                .Include(m => m.Event)
+                .Where(m => m.EventId == eventId && set.Contains(m.Id))
+                .ToListAsync();
         }
     }
 }

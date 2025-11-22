@@ -34,6 +34,12 @@ export async function unbindTeam() {
   })
 }
 
+export async function leaveTeam(id) {
+  return apiFetch(`/Teams/${id}/leave`, {
+    method: 'POST',
+  })
+}
+
 export async function getTeam(id) {
   return apiFetch(`/Teams/${id}`)
 }
@@ -66,4 +72,39 @@ export async function deleteTeam(id) {
   })
 }
 
-export default { registerTeam, updateTeam, bindTeam, bindTeamByName, unbindTeam, getTeam, getTeamHonors, searchTeamsByName, likeTeam, uploadTeamLogo, deleteTeam }
+export async function applyTeamLogoFromUrl(id, sourceUrl) {
+  return apiFetch(`/Teams/${id}/logo-from-url`, {
+    method: 'POST',
+    body: JSON.stringify({ sourceUrl }),
+  })
+}
+
+export async function generateInvite(teamId, validDays = 7) {
+  const params = new URLSearchParams()
+  if (validDays) params.set('validDays', validDays)
+  const qs = params.toString()
+  return apiFetch(`/Teams/${teamId}/invite${qs ? `?${qs}` : ''}`, { method: 'POST' })
+}
+
+export async function getInvite(token) {
+  return apiFetch(`/Teams/invites/${token}`)
+}
+
+export async function acceptInvite(token, player) {
+  const init = { method: 'POST' }
+  if (player) init.body = JSON.stringify(player)
+  return apiFetch(`/Teams/invites/${token}/accept`, init)
+}
+
+export async function getMyPlayer() {
+  return apiFetch('/Teams/me/player')
+}
+
+export async function upsertMyPlayer(player) {
+  return apiFetch('/Teams/me/player', {
+    method: 'POST',
+    body: JSON.stringify(player),
+  })
+}
+
+export default { registerTeam, updateTeam, bindTeam, bindTeamByName, unbindTeam, leaveTeam, getTeam, getTeamHonors, searchTeamsByName, likeTeam, uploadTeamLogo, deleteTeam, applyTeamLogoFromUrl, generateInvite, getInvite, acceptInvite, getMyPlayer, upsertMyPlayer }

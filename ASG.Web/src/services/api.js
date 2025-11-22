@@ -48,7 +48,14 @@ export async function apiFetch(path, options = {}) {
     }
 
     const status = response.status
-    const message = errorPayload?.message || response.statusText
+    const root = errorPayload?.error || errorPayload
+    let message = root?.message || errorPayload?.message || response.statusText
+
+    if (status === 400) {
+      const extracted = extractErrorDetails(errorPayload)
+      if (extracted.length) message = `${message}：${extracted.join('；')}`
+      errorPayload = { ...(errorPayload || {}), ...(root || {}), message }
+    }
 
     // 统一处理Token过期/无权限：清理登录、提醒并跳转登录页
     if ((status === 401 || status === 403)) {
@@ -76,7 +83,49 @@ export async function apiFetch(path, options = {}) {
     // 保留原始字节（含BOM），避免Excel中中文乱码
     return response.blob()
   }
+  if (contentType.includes('application/zip') || contentType.includes('application/octet-stream')) {
+    return response.blob()
+  }
   return response.text()
+}
+
+export function extractErrorDetails(payload) {
+  const out = []
+  if (!payload) return out
+  const root = payload.error || payload
+  const normalizeStr = (s) => {
+    try {
+      const str = String(s)
+      const m = str.match(/\{[^}]*message\s*=\s*([^}]*?)\s*\}/i)
+      if (m && m[1]) return m[1].trim()
+      return str.trim()
+    } catch {
+      return String(s)
+    }
+  }
+  const pushFromObj = (obj) => {
+    if (obj && typeof obj === 'object') {
+      for (const k of Object.keys(obj)) {
+        const v = obj[k]
+        const arr = Array.isArray(v) ? v : [v]
+        for (const item of arr) {
+          if (item == null) continue
+          let s
+          if (typeof item === 'string') s = item
+          else if (typeof item === 'object') s = JSON.stringify(item)
+          else s = String(item)
+          s = normalizeStr(s)
+          if (s) out.push(s)
+        }
+      }
+    }
+  }
+  pushFromObj(root.details)
+  pushFromObj(root.errors)
+  if (Array.isArray(root.messages)) {
+    for (const m of root.messages) { if (m != null) out.push(normalizeStr(m)) }
+  }
+  return out
 }
 
 export { API_BASE_URL }

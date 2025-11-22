@@ -22,7 +22,7 @@ namespace ASG.Api.Middleware
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An unhandled exception occurred");
+                _logger.LogError(ex, "发生未处理的异常");
                 await HandleExceptionAsync(context, ex);
             }
         }
@@ -35,7 +35,7 @@ namespace ASG.Api.Middleware
             {
                 error = new
                 {
-                    message = "An error occurred while processing your request.",
+                    message = "处理请求时发生错误",
                     details = exception.Message,
                     timestamp = DateTime.UtcNow
                 }
@@ -49,7 +49,7 @@ namespace ASG.Api.Middleware
                     {
                         error = new
                         {
-                            message = "Invalid request parameters.",
+                            message = "请求参数无效",
                             details = exception.Message,
                             timestamp = DateTime.UtcNow
                         }
@@ -62,7 +62,7 @@ namespace ASG.Api.Middleware
                     {
                         error = new
                         {
-                            message = "Unauthorized access.",
+                            message = "未授权访问",
                             details = exception.Message,
                             timestamp = DateTime.UtcNow
                         }
@@ -75,7 +75,7 @@ namespace ASG.Api.Middleware
                     {
                         error = new
                         {
-                            message = "Resource not found.",
+                            message = "资源未找到",
                             details = exception.Message,
                             timestamp = DateTime.UtcNow
                         }

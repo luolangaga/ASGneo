@@ -41,6 +41,9 @@ namespace ASG.Api.Models
         /// </summary>
         public string? RegisteredByUserId { get; set; }
 
+        public Guid? InviteToken { get; set; }
+        public DateTime? InviteExpiresAt { get; set; }
+
         /// <summary>
         /// 战队导航属性
         /// </summary>

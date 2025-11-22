@@ -25,7 +25,7 @@ namespace ASG.Api.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // 外键 - 属于哪个战队
-        public Guid TeamId { get; set; }
+        public Guid? TeamId { get; set; }
 
         // 外键 - 关联的用户ID（可选）
         public string? UserId { get; set; }

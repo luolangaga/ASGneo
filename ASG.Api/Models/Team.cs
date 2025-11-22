@@ -19,6 +19,9 @@ namespace ASG.Api.Models
         [MaxLength(500)]
         public string? Description { get; set; }
 
+        [MaxLength(20)]
+        public string? QqNumber { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
@@ -27,6 +30,9 @@ public int Likes { get; set; } = 0;
 // 外键 - 战队拥有者的用户ID
         public string? UserId { get; set; }
         public string? OwnerId { get; set; }
+
+        public Guid? InviteToken { get; set; }
+        public DateTime? InviteExpiresAt { get; set; }
 
         // 导航属性 - 一个战队有多个玩家
         public virtual ICollection<Player> Players { get; set; } = new List<Player>();
