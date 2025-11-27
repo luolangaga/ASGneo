@@ -9,7 +9,7 @@ on:
     types: [ published ]
 
 env:
-  DOTNET_VERSION: '10.0.x'
+  DOTNET_VERSION: '10.0.100'
   NODE_VERSION: '20.x'
   PROJECT_PATH: './ASG.Api'
   DOCKER_IMAGE_NAME: 'asg-api'
