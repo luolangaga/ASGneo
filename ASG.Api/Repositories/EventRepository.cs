@@ -309,5 +309,93 @@ namespace ASG.Api.Repositories
         {
             return await _context.EventAdmins.AnyAsync(x => x.EventId == eventId && x.UserId == userId);
         }
+
+        // 规则版本化
+        public async Task<EventRuleRevision> CreateRuleRevisionAsync(EventRuleRevision rev)
+        {
+            // 自动版本号：取该赛事最大版本+1
+            var maxVer = await _context.EventRuleRevisions.Where(r => r.EventId == rev.EventId).MaxAsync(r => (int?)r.Version) ?? 0;
+            rev.Version = maxVer + 1;
+            _context.EventRuleRevisions.Add(rev);
+            await _context.SaveChangesAsync();
+            return rev;
+        }
+
+        public async Task<IEnumerable<EventRuleRevision>> GetRuleRevisionsAsync(Guid eventId)
+        {
+            return await _context.EventRuleRevisions
+                .Where(r => r.EventId == eventId)
+                .OrderByDescending(r => r.Version)
+                .ToListAsync();
+        }
+
+        public async Task<bool> PublishRuleRevisionAsync(Guid eventId, Guid revisionId)
+        {
+            var rev = await _context.EventRuleRevisions.FirstOrDefaultAsync(r => r.Id == revisionId && r.EventId == eventId);
+            var evt = await _context.Events.FirstOrDefaultAsync(e => e.Id == eventId);
+            if (rev == null || evt == null) return false;
+            // 更新赛事当前规则
+            evt.RulesMarkdown = rev.ContentMarkdown;
+            evt.UpdatedAt = ChinaNow();
+            // 标记发布
+            rev.IsPublished = true;
+            rev.PublishedAt = ChinaNow();
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // 报名表 Schema：写入 Event.CustomData.registrationFormSchema
+        public async Task<bool> UpdateRegistrationFormSchemaAsync(Guid eventId, string schemaJson)
+        {
+            var evt = await _context.Events.FirstOrDefaultAsync(e => e.Id == eventId);
+            if (evt == null) return false;
+            var current = string.IsNullOrWhiteSpace(evt.CustomData) ? "{}" : evt.CustomData;
+            Dictionary<string, object?> dict;
+            try { dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object?>>(current) ?? new(); }
+            catch { dict = new(); }
+            dict["registrationFormSchema"] = schemaJson;
+            try
+            {
+                using var sd = System.Text.Json.JsonDocument.Parse(string.IsNullOrWhiteSpace(schemaJson) ? "{}" : schemaJson);
+                var root = sd.RootElement;
+                if (root.ValueKind == System.Text.Json.JsonValueKind.Object)
+                {
+                    if (root.TryGetProperty("playerTypeRequirements", out var req))
+                    {
+                        dict["playerTypeRequirements"] = req.GetRawText();
+                    }
+                }
+            }
+            catch { }
+            evt.CustomData = System.Text.Json.JsonSerializer.Serialize(dict);
+            evt.UpdatedAt = ChinaNow();
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<EventRegistrationAnswer> UpsertRegistrationAnswersAsync(Guid eventId, Guid teamId, string answersJson, string? submittedByUserId)
+        {
+            var existing = await _context.EventRegistrationAnswers.FirstOrDefaultAsync(a => a.EventId == eventId && a.TeamId == teamId);
+            if (existing == null)
+            {
+                var a = new EventRegistrationAnswer { EventId = eventId, TeamId = teamId, AnswersJson = answersJson, SubmittedByUserId = submittedByUserId, SubmittedAt = ChinaNow() };
+                _context.EventRegistrationAnswers.Add(a);
+                await _context.SaveChangesAsync();
+                return a;
+            }
+            else
+            {
+                existing.AnswersJson = answersJson;
+                existing.SubmittedByUserId = submittedByUserId;
+                existing.UpdatedAt = ChinaNow();
+                await _context.SaveChangesAsync();
+                return existing;
+            }
+        }
+
+        public async Task<EventRegistrationAnswer?> GetRegistrationAnswersAsync(Guid eventId, Guid teamId)
+        {
+            return await _context.EventRegistrationAnswers.FirstOrDefaultAsync(a => a.EventId == eventId && a.TeamId == teamId);
+        }
     }
 }

@@ -1,0 +1,79 @@
+name: Build Frontend and Backend
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: 'ASG.Web/package-lock.json'
+      - name: Install deps
+        working-directory: ASG.Web
+        run: npm ci
+      - name: Build
+        working-directory: ASG.Web
+        run: npm run build
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: ASG.Web/dist
+          retention-days: 30
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore
+        run: dotnet restore ./ASG.Api/ASG.Api.csproj
+      - name: Build
+        run: dotnet build ./ASG.Api/ASG.Api.csproj --configuration Release --no-restore
+      - name: Publish
+        run: dotnet publish ./ASG.Api/ASG.Api.csproj -c Release -o ./backend-publish
+      - name: Upload backend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-publish
+          path: backend-publish
+          retention-days: 30
+
+  bundle:
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+    steps:
+      - name: Download frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: ./artifacts/frontend
+      - name: Download backend
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-publish
+          path: ./artifacts/backend
+      - name: Create archive
+        run: |
+          cd artifacts
+          zip -r asg-frontend.zip frontend
+          zip -r asg-backend.zip backend
+      - name: Upload bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: asg-build-bundle
+          path: artifacts/*.zip
+          retention-days: 30

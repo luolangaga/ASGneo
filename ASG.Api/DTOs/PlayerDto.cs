@@ -9,6 +9,7 @@ namespace ASG.Api.DTOs
         public string? GameId { get; set; }
         public string? GameRank { get; set; }
         public string? Description { get; set; }
+        public ASG.Api.Models.PlayerType PlayerType { get; set; } = ASG.Api.Models.PlayerType.Survivor;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public Guid? TeamId { get; set; }
@@ -28,6 +29,7 @@ namespace ASG.Api.DTOs
 
         [StringLength(500, ErrorMessage = "描述不能超过500个字符")]
         public string? Description { get; set; }
+        public ASG.Api.Models.PlayerType? PlayerType { get; set; }
     }
 
     public class UpdatePlayerDto
@@ -46,5 +48,6 @@ namespace ASG.Api.DTOs
 
         [StringLength(500, ErrorMessage = "描述不能超过500个字符")]
         public string? Description { get; set; }
+        public ASG.Api.Models.PlayerType? PlayerType { get; set; }
     }
 }

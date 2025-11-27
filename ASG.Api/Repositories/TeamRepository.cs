@@ -265,5 +265,48 @@ namespace ASG.Api.Repositories
             return team.Likes;
         }
 
+        public async Task<IEnumerable<TeamReview>> GetTeamReviewsAsync(Guid teamId)
+        {
+            return await _context.TeamReviews
+                .Where(r => r.TeamId == teamId && !r.IsDeleted)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<TeamReview> AddTeamReviewAsync(TeamReview review)
+        {
+            review.CreatedAt = DateTime.UtcNow;
+            review.UpdatedAt = DateTime.UtcNow;
+            _context.TeamReviews.Add(review);
+            await _context.SaveChangesAsync();
+            return review;
+        }
+
+        public async Task<(double avg, int count)> GetTeamRatingSummaryAsync(Guid teamId)
+        {
+            var query = _context.TeamReviews.Where(r => r.TeamId == teamId && !r.IsDeleted);
+            var count = await query.CountAsync();
+            var avg = count == 0 ? 0 : await query.AverageAsync(r => r.Rating);
+            return (avg, count);
+        }
+
+        public async Task<bool> SetTeamDisputeAsync(Guid teamId, bool hasDispute, string? disputeDetail = null, Guid? communityPostId = null)
+        {
+            var team = await _context.Teams.FirstOrDefaultAsync(t => t.Id == teamId);
+            if (team == null) return false;
+            team.HasDispute = hasDispute;
+            if (hasDispute)
+            {
+                team.DisputeDetail = disputeDetail;
+                team.CommunityPostId = communityPostId;
+            }
+            else
+            {
+                team.DisputeDetail = null;
+                team.CommunityPostId = null;
+            }
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

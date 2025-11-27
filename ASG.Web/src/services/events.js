@@ -62,8 +62,8 @@ export async function registerTeamToEvent(eventId, { teamId, notes }) {
   })
 }
 
-export async function exportEventTeamLogosZip(eventId) {
-  return apiFetch(`/Events/${eventId}/registrations/export-logos`, { method: 'GET' })
+export async function exportEventTeamLogosZip(eventId, { loading } = {}) {
+  return apiFetch(`/Events/${eventId}/registrations/export-logos`, { method: 'GET', loading })
 }
 
 export async function unregisterTeamFromEvent(eventId, teamId) {
@@ -84,9 +84,9 @@ export async function getMyEvents() {
   return apiFetch('/Events/my-events')
 }
 
-export async function exportEventRegistrationsCsv(eventId) {
+export async function exportEventRegistrationsCsv(eventId, { loading } = {}) {
   // 返回CSV Blob（含BOM），便于直接触发下载
-  return apiFetch(`/Events/${eventId}/registrations/export`)
+  return apiFetch(`/Events/${eventId}/registrations/export`, { loading })
 }
 
 export async function uploadEventLogo(eventId, file) {
@@ -149,6 +149,61 @@ export async function saveBracketCanvas(eventId, canvas) {
   })
 }
 
+export async function updateTournamentConfig(eventId, dto) {
+  return apiFetch(`/Events/${eventId}/tournament-config`, {
+    method: 'PUT',
+    body: JSON.stringify(dto),
+  })
+}
+
+export async function generateTestRegistrations(eventId, { count = 64, namePrefix = '测试战队', approve = true } = {}) {
+  return apiFetch(`/Events/${eventId}/generate-test-registrations`, {
+    method: 'POST',
+    body: JSON.stringify({ count, namePrefix, approve }),
+  })
+}
+
+export async function updateRegistrationFormSchema(eventId, schemaJson) {
+  return apiFetch(`/Events/${eventId}/registration-form-schema`, {
+    method: 'PUT',
+    body: JSON.stringify({ schemaJson }),
+  })
+}
+
+export async function submitRegistrationAnswers(eventId, teamId, answersJson) {
+  return apiFetch(`/Events/${eventId}/registration-answers`, {
+    method: 'POST',
+    body: JSON.stringify({ teamId, answersJson }),
+  })
+}
+
+// 规则版本化
+export async function getRuleRevisions(eventId) {
+  return apiFetch(`/Events/${eventId}/rules/revisions`)
+}
+
+export async function createRuleRevision(eventId, dto) {
+  return apiFetch(`/Events/${eventId}/rules/revisions`, {
+    method: 'POST',
+    body: JSON.stringify(dto),
+  })
+}
+
+export async function publishRuleRevision(eventId, revisionId) {
+  return apiFetch(`/Events/${eventId}/rules/revisions/${revisionId}/publish`, {
+    method: 'POST',
+  })
+}
+
+// 报名自定义字段 Schema 与答案
+export async function getRegistrationFormSchema(eventId) {
+  return apiFetch(`/Events/${eventId}/registration-form-schema`)
+}
+
+export async function getRegistrationAnswers(eventId, teamId) {
+  return apiFetch(`/Events/${eventId}/registration-answers/${teamId}`)
+}
+
 export default {
   getAllEvents,
   getActiveRegistrationEvents,
@@ -174,4 +229,13 @@ export default {
   getUpcomingEventsPaged,
   getBracketCanvas,
   saveBracketCanvas,
+  updateTournamentConfig,
+  generateTestRegistrations,
+  updateRegistrationFormSchema,
+  submitRegistrationAnswers,
+  getRuleRevisions,
+  createRuleRevision,
+  publishRuleRevision,
+  getRegistrationFormSchema,
+  getRegistrationAnswers,
 }

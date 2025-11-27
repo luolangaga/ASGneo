@@ -12,7 +12,14 @@ namespace ASG.Api.DTOs
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public string? LogoUrl { get; set; }
+        public bool HidePlayers { get; set; }
         public List<PlayerDto> Players { get; set; } = new List<PlayerDto>();
+        public bool HasDispute { get; set; }
+        public string? DisputeDetail { get; set; }
+        public Guid? CommunityPostId { get; set; }
+        public double RatingAverage { get; set; }
+        public int RatingCount { get; set; }
+        public List<TeamReviewDto>? Reviews { get; set; }
     }
 
     public class CreateTeamDto
@@ -35,6 +42,30 @@ namespace ASG.Api.DTOs
         [Required(ErrorMessage = "至少需要一个玩家")]
         [MinLength(1, ErrorMessage = "至少需要一个玩家")]
         public List<CreatePlayerDto> Players { get; set; } = new List<CreatePlayerDto>();
+
+        public bool HidePlayers { get; set; }
+    }
+
+    public class TeamReviewDto
+    {
+        public Guid Id { get; set; }
+        public Guid TeamId { get; set; }
+        public Guid? EventId { get; set; }
+        public int Rating { get; set; }
+        public string? CommentMarkdown { get; set; }
+        public Guid? CommunityPostId { get; set; }
+        public string? CreatedByUserId { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+    }
+
+    public class CreateTeamReviewDto
+    {
+        [Range(0, 100, ErrorMessage = "评分必须在0-100之间")]
+        public int Rating { get; set; }
+        public string? CommentMarkdown { get; set; }
+        public Guid? EventId { get; set; }
+        public Guid? CommunityPostId { get; set; }
     }
 
     public class UpdateTeamDto
@@ -49,7 +80,14 @@ namespace ASG.Api.DTOs
         [StringLength(20, ErrorMessage = "QQ号不能超过20个字符")]
         public string? QqNumber { get; set; }
 
+        public bool HidePlayers { get; set; }
         public List<UpdatePlayerDto> Players { get; set; } = new List<UpdatePlayerDto>();
+    }
+
+    public class TransferOwnerDto
+    {
+        [Required]
+        public string TargetUserId { get; set; } = string.Empty;
     }
 
     public class TeamBindDto

@@ -3,6 +3,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ASG.Api.Models
 {
+    public enum PlayerType
+    {
+        Regulator = 1,
+        Survivor = 2
+    }
+
     public class Player
     {
         [Key]
@@ -23,6 +29,9 @@ namespace ASG.Api.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        [Required]
+        public PlayerType PlayerType { get; set; } = PlayerType.Survivor;
 
         // 外键 - 属于哪个战队
         public Guid? TeamId { get; set; }

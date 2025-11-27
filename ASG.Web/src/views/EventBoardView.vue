@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAllEvents, getActiveRegistrationEvents, getUpcomingEvents, registerTeamToEvent, getActiveRegistrationEventsPaged, getUpcomingEventsPaged } from '../services/events'
+import { getAllEvents, getActiveRegistrationEvents, getUpcomingEvents, registerTeamToEvent, getActiveRegistrationEventsPaged, getUpcomingEventsPaged, getRegistrationFormSchema, submitRegistrationAnswers } from '../services/events'
 import { getTeam, uploadTeamLogo } from '../services/teams'
 import { currentUser, isAuthenticated } from '../stores/auth'
 import PageHero from '../components/PageHero.vue'
@@ -45,11 +45,21 @@ const teamLogoFile = ref(null)
 const teamLogoError = ref('')
 const teamLogoUploading = ref(false)
 const pendingEventId = ref(null)
+const regFormDialogOpen = ref(false)
+const regSubmitLoading = ref(false)
+const regSchemaLoading = ref(false)
+const regSchemaObj = ref({})
+const regAnswersMap = ref({})
 const expandedCards = ref({})
 const searchText = ref('')
 
 const loggedIn = computed(() => isAuthenticated.value)
 const teamId = computed(() => currentUser.value?.teamId || null)
+const regSchemaFields = computed(() => {
+  const obj = regSchemaObj.value || {}
+  const arr = obj.fields || obj.Fields || []
+  return Array.isArray(arr) ? arr : []
+})
 
 async function loadActive() {
   loadingActive.value = true
@@ -187,6 +197,12 @@ async function onRegister(eventId) {
   } catch (e) {
     console.warn('获取队伍信息失败，跳过Logo检查', e)
   }
+  await loadRegistrationFormSchema(eventId)
+  if (regSchemaFields.value && regSchemaFields.value.length > 0) {
+    pendingEventId.value = eventId
+    regFormDialogOpen.value = true
+    return
+  }
   registering.value = true
   try {
     await registerTeamToEvent(eventId, { teamId: teamId.value })
@@ -202,6 +218,27 @@ async function onRegister(eventId) {
     if (errorMsg.value) { resultType.value = 'error'; resultMessage.value = errorMsg.value; resultOpen.value = true }
   } finally {
     registering.value = false
+  }
+}
+
+async function loadRegistrationFormSchema(eventId) {
+  regSchemaLoading.value = true
+  try {
+    const res = await getRegistrationFormSchema(eventId)
+    let obj = {}
+    try { obj = typeof res === 'string' ? JSON.parse(res) : (res || {}) } catch { obj = {} }
+    regSchemaObj.value = obj || {}
+    regAnswersMap.value = {}
+    for (const f of regSchemaFields.value) {
+      const key = f.id || f.Id
+      let d = f.default
+      if (d == null && (f.type === 'checkbox' || f.Type === 'checkbox')) d = false
+      regAnswersMap.value[key] = d ?? ''
+    }
+  } catch (e) {
+    regSchemaObj.value = null
+  } finally {
+    regSchemaLoading.value = false
   }
 }
 
@@ -223,6 +260,11 @@ async function confirmUploadAndRegister() {
   try {
     await uploadTeamLogo(teamId.value, teamLogoFile.value)
     showTeamLogoDialog.value = false
+    await loadRegistrationFormSchema(pendingEventId.value)
+    if (regSchemaFields.value && regSchemaFields.value.length > 0) {
+      regFormDialogOpen.value = true
+      return
+    }
     registering.value = true
     await registerTeamToEvent(pendingEventId.value, { teamId: teamId.value })
     successMsg.value = '已上传队伍Logo并报名成功'
@@ -238,6 +280,55 @@ async function confirmUploadAndRegister() {
   } finally {
     teamLogoUploading.value = false
     registering.value = false
+  }
+}
+
+async function onSubmitRegFormAndRegister() {
+  if (!loggedIn.value) { router.push('/login'); return }
+  const eid = pendingEventId.value
+  const tid = teamId.value
+  regSubmitLoading.value = true
+  errorMsg.value = ''
+  successMsg.value = ''
+  try {
+    const missing = []
+    for (const f of regSchemaFields.value) {
+      const required = !!(f.required || f.Required)
+      if (!required) continue
+      const key = f.id || f.Id
+      const type = f.type || f.Type
+      const val = regAnswersMap.value[key]
+      let empty = false
+      if (type === 'checkbox') { empty = !(val === true || val === 'true') }
+      else { empty = (val == null || String(val).trim() === '') }
+      if (empty) missing.push(f.label || f.Label || key)
+    }
+    if (missing.length) {
+      errorMsg.value = `请填写必填项：${missing.join('、')}`
+      resultType.value = 'error'
+      resultMessage.value = errorMsg.value
+      resultDetails.value = missing.map(m => ({ key: m, message: '未填写' }))
+      resultOpen.value = true
+      return
+    }
+    const payload = JSON.stringify(regAnswersMap.value || {})
+    await submitRegistrationAnswers(eid, tid, payload)
+    await registerTeamToEvent(eid, { teamId: tid })
+    regFormDialogOpen.value = false
+    successMsg.value = '报名提交成功，请等待审核'
+    resultType.value = 'success'
+    resultMessage.value = successMsg.value
+    resultDetails.value = []
+    resultOpen.value = true
+    await loadActive()
+  } catch (e) {
+    errorMsg.value = e?.payload?.message || e?.message || '提交报名信息失败'
+    resultType.value = 'error'
+    resultMessage.value = errorMsg.value
+    resultDetails.value = extractErrorDetails(e?.payload)
+    resultOpen.value = true
+  } finally {
+    regSubmitLoading.value = false
   }
 }
 
@@ -319,7 +410,9 @@ const filteredHistoryEvents = computed(() => {
                 <v-avatar size="36" class="mr-2">
                   <v-img v-if="ev.logoUrl || ev.LogoUrl" :src="ev.logoUrl || ev.LogoUrl" alt="event logo" cover>
                     <template #placeholder>
-                      <div class="img-skeleton"></div>
+                      <div class="d-flex align-center justify-center" style="width:100%;height:100%">
+                        <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:64px;height:64px"></lottie-player>
+                      </div>
                     </template>
                   </v-img>
                   <v-icon v-else icon="emoji_events" size="28" />
@@ -377,7 +470,9 @@ const filteredHistoryEvents = computed(() => {
                 <v-avatar size="36" class="mr-2">
                   <v-img v-if="ev.logoUrl || ev.LogoUrl" :src="ev.logoUrl || ev.LogoUrl" alt="event logo" cover>
                     <template #placeholder>
-                      <div class="img-skeleton"></div>
+                      <div class="d-flex align-center justify-center" style="width:100%;height:100%">
+                        <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:64px;height:64px"></lottie-player>
+                      </div>
                     </template>
                   </v-img>
                   <v-icon v-else icon="emoji_events" size="28" />
@@ -430,7 +525,9 @@ const filteredHistoryEvents = computed(() => {
                 <v-avatar size="36" class="mr-2">
                   <v-img v-if="ev.logoUrl || ev.LogoUrl" :src="ev.logoUrl || ev.LogoUrl" alt="event logo" cover>
                     <template #placeholder>
-                      <div class="img-skeleton"></div>
+                      <div class="d-flex align-center justify-center" style="width:100%;height:100%">
+                        <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:64px;height:64px"></lottie-player>
+                      </div>
                     </template>
                   </v-img>
                   <v-icon v-else icon="emoji_events" size="28" />
@@ -494,6 +591,36 @@ const filteredHistoryEvents = computed(() => {
         <v-spacer />
         <v-btn variant="text" @click="showTeamLogoDialog = false">取消</v-btn>
         <v-btn color="primary" :loading="teamLogoUploading || registering" @click="confirmUploadAndRegister" prepend-icon="check_circle">上传并报名</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <v-dialog v-model="regFormDialogOpen" max-width="760">
+    <v-card>
+      <v-card-title>填写报名信息</v-card-title>
+      <v-card-text>
+        <v-progress-linear v-if="regSchemaLoading" indeterminate color="primary" class="mb-3" />
+        <v-row v-else dense>
+          <v-col v-for="f in regSchemaFields" :key="f.id || f.Id" cols="12" md="6">
+            <template v-if="(f.type || f.Type) === 'textarea'">
+              <v-textarea v-model="regAnswersMap[f.id || f.Id]" :label="f.label || f.Label" auto-grow />
+            </template>
+            <template v-else-if="(f.type || f.Type) === 'select'">
+              <v-select v-model="regAnswersMap[f.id || f.Id]" :label="f.label || f.Label" :items="(f.options || f.Options || [])" />
+            </template>
+            <template v-else-if="(f.type || f.Type) === 'checkbox'">
+              <v-checkbox v-model="regAnswersMap[f.id || f.Id]" :label="f.label || f.Label" />
+            </template>
+            <template v-else>
+              <v-text-field v-model="regAnswersMap[f.id || f.Id]" :label="f.label || f.Label" :type="((f.type || f.Type) === 'number' ? 'number' : ((f.type || f.Type) === 'date' ? 'date' : ((f.type || f.Type) === 'datetime' ? 'datetime-local' : 'text')))" />
+            </template>
+          </v-col>
+        </v-row>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn variant="text" @click="regFormDialogOpen = false">关闭</v-btn>
+        <v-btn :loading="regSubmitLoading" color="primary" @click="onSubmitRegFormAndRegister">提交并报名</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

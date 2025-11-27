@@ -22,6 +22,8 @@ const competitionStartTime = ref('')  // datetime-local
 const competitionEndTime = ref('')    // datetime-local, optional
 const maxTeams = ref('')
 const status = ref(0)
+const qqGroup = ref('')
+const rulesMarkdown = ref('')
 const polishing = ref(false)
 
 const statusOptions = [
@@ -52,6 +54,8 @@ async function load() {
     const ev = await getEvent(id)
     name.value = ev.name
     description.value = ev.description || ''
+    qqGroup.value = ev.qqGroup || ''
+    rulesMarkdown.value = ev.rulesMarkdown || ''
     registrationStartTime.value = isoToLocalInput(ev.registrationStartTime)
     registrationEndTime.value = isoToLocalInput(ev.registrationEndTime)
     competitionStartTime.value = isoToLocalInput(ev.competitionStartTime)
@@ -79,6 +83,8 @@ async function onSave() {
     const dto = {
       name: name.value,
       description: description.value || null,
+      qqGroup: qqGroup.value?.trim() || null,
+      rulesMarkdown: rulesMarkdown.value?.trim() || null,
       registrationStartTime: localInputToIso(registrationStartTime.value),
       registrationEndTime: localInputToIso(registrationEndTime.value),
       competitionStartTime: localInputToIso(competitionStartTime.value),
@@ -160,6 +166,9 @@ async function onDelete() {
               <v-text-field v-model="competitionEndTime" label="比赛结束（可选）" type="datetime-local" />
             </v-col>
           </v-row>
+
+          <v-text-field v-model="qqGroup" label="QQ群（可选，群号或邀请链接）" />
+          <MarkdownEditor v-model="rulesMarkdown" label="赛事规则（Markdown，可选）" :rows="10" :maxLength="0" />
 
           <v-row>
             <v-col cols="12" md="6">

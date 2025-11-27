@@ -119,7 +119,8 @@ namespace ASG.Api.Controllers
         {
             try
             {
-                var team = await _teamService.GetTeamByIdAsync(id);
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var team = await _teamService.GetTeamByIdAsync(id, userId);
                 if (team == null)
                 {
                     return NotFound("战队不存在");
@@ -200,7 +201,7 @@ namespace ASG.Api.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return Forbid(ex.Message);
+                return StatusCode(403, new { message = ex.Message });
             }
             catch (Exception ex)
             {
@@ -238,7 +239,7 @@ namespace ASG.Api.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return Forbid(ex.Message);
+                return StatusCode(403, new { message = ex.Message });
             }
             catch (Exception ex)
             {
@@ -387,12 +388,43 @@ namespace ASG.Api.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return Forbid(ex.Message);
+                return StatusCode(403, new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "修改战队密码时发生错误，战队ID: {TeamId}", id);
                 return StatusCode(500, "修改密码失败");
+            }
+        }
+
+        [HttpPost("{id}/transfer-owner")]
+        [Authorize]
+        public async Task<ActionResult> TransferOwner(Guid id, [FromBody] TransferOwnerDto dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized("用户未登录");
+                var ok = await _teamService.TransferTeamOwnershipAsync(id, userId, dto.TargetUserId);
+                if (!ok) return BadRequest(new { message = "转移失败" });
+                return Ok(new { message = "已转移队长" });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(403, new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "转移队长时发生错误，战队ID: {TeamId}", id);
+                return StatusCode(500, new { message = "转移失败", error = ex.Message });
             }
         }
 
@@ -443,6 +475,48 @@ namespace ASG.Api.Controllers
             }
         }
 
+        [HttpGet("{id}/reviews")]
+        public ActionResult<IEnumerable<TeamReviewDto>> GetTeamReviews(Guid id)
+        {
+            return Ok(Array.Empty<TeamReviewDto>());
+        }
+
+        [HttpPost("{id}/reviews")]
+        [Authorize]
+        public ActionResult AddTeamReview(Guid id)
+        {
+            return StatusCode(410, new { message = "评论功能已下线" });
+        }
+
+        public class SetDisputeDto { public bool HasDispute { get; set; } public string? DisputeDetail { get; set; } public Guid? CommunityPostId { get; set; } }
+
+        [HttpPost("{id}/dispute")]
+        [Authorize]
+        public async Task<ActionResult> SetDispute(Guid id, [FromBody] SetDisputeDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized("用户未登录");
+                var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+                var isAdmin = userRole == UserRole.Admin.ToString() || userRole == UserRole.SuperAdmin.ToString();
+                var canManage = isAdmin || await _eventService.CanUserManageAnyEventOfTeamAsync(id, userId);
+            if (!canManage) return StatusCode(403, new { message = "无权设置纠纷状态" });
+                if (dto.HasDispute && !dto.CommunityPostId.HasValue)
+                {
+                    return BadRequest(new { message = "必须绑定社区帖子才能标记为纠纷" });
+                }
+                var ok = await _teamService.SetTeamDisputeAsync(id, dto.HasDispute, dto.DisputeDetail, dto.CommunityPostId);
+                if (!ok) return NotFound(new { message = "战队不存在" });
+                return Ok(new { hasDispute = dto.HasDispute, disputeDetail = dto.DisputeDetail, communityPostId = dto.CommunityPostId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "设置战队纠纷状态失败，战队ID: {TeamId}", id);
+                return StatusCode(500, new { message = "设置失败", error = ex.Message });
+            }
+        }
+
         [HttpPost("{id}/invite")]
         [Authorize]
         public async Task<ActionResult<TeamInviteDto>> GenerateInvite(Guid id, [FromQuery] int validDays = 7)
@@ -456,7 +530,7 @@ namespace ASG.Api.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return Forbid(ex.Message);
+                return StatusCode(403, new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
@@ -627,7 +701,7 @@ namespace ASG.Api.Controllers
                 var isOwner = await _teamService.VerifyTeamOwnershipAsync(id, userId);
                 if (!isOwner)
                 {
-                    return Forbid("您没有权限上传该战队的徽标");
+                    return StatusCode(403, new { message = "您没有权限上传该战队的徽标" });
                 }
 
                 var root = _env.WebRootPath;
@@ -674,7 +748,7 @@ namespace ASG.Api.Controllers
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId)) return Unauthorized("用户未登录");
                 var isOwner = await _teamService.VerifyTeamOwnershipAsync(id, userId);
-                if (!isOwner) return Forbid("您没有权限上传该战队的徽标");
+                if (!isOwner) return StatusCode(403, new { message = "您没有权限上传该战队的徽标" });
                 if (string.IsNullOrWhiteSpace(dto?.SourceUrl)) return BadRequest(new { message = "缺少来源" });
                 var root = _env.WebRootPath;
                 if (string.IsNullOrEmpty(root)) root = Path.Combine(_env.ContentRootPath, "wwwroot");

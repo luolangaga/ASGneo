@@ -29,12 +29,12 @@ namespace ASG.Api.Controllers
         /// <param name="pageSize">每页大小（默认10）</param>
         /// <returns>赛程列表</returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MatchDto>>> GetAllMatches([FromQuery] Guid? eventId = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<ActionResult<IEnumerable<MatchDto>>> GetAllMatches([FromQuery] Guid? eventId = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] int? groupIndex = null, [FromQuery] string? groupLabel = null)
         {
             try
             {
-                var matches = await _matchService.GetAllMatchesAsync(eventId, page, pageSize);
-                var total = await _matchService.GetMatchCountAsync(eventId);
+                var matches = await _matchService.GetAllMatchesAsync(eventId, page, pageSize, groupIndex, groupLabel);
+                var total = await _matchService.GetMatchCountAsync(eventId, groupIndex, groupLabel);
                 Response.Headers["X-Total-Count"] = total.ToString();
                 return Ok(matches);
             }
@@ -126,7 +126,7 @@ namespace ASG.Api.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return Forbid(ex.Message);
+                return StatusCode(403, new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
@@ -160,7 +160,7 @@ namespace ASG.Api.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return Forbid(ex.Message);
+                return StatusCode(403, new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
@@ -199,7 +199,7 @@ namespace ASG.Api.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return Forbid(ex.Message);
+                return StatusCode(403, new { message = ex.Message });
             }
             catch (Exception ex)
             {
@@ -223,6 +223,52 @@ namespace ASG.Api.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "点赞失败", error = ex.Message });
+            }
+        }
+
+        [HttpPost("generate-schedule/{eventId}")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<MatchDto>>> GenerateSchedule(Guid eventId, [FromBody] GenerateScheduleRequestDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized(new { message = "用户未登录" });
+                var created = await _matchService.GenerateScheduleAsync(eventId, dto, userId);
+                return Ok(created);
+            }
+            catch (UnauthorizedAccessException ex) { return StatusCode(403, new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { message = "生成赛程失败", error = ex.Message }); }
+        }
+
+        [HttpPost("next-round/{eventId}")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<MatchDto>>> GenerateNextRound(Guid eventId, [FromBody] GenerateNextRoundRequestDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized(new { message = "用户未登录" });
+                var created = await _matchService.GenerateNextRoundAsync(eventId, dto, userId);
+                return Ok(created);
+            }
+            catch (UnauthorizedAccessException ex) { return StatusCode(403, new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { message = "生成下一轮赛程失败", error = ex.Message }); }
+        }
+
+        [HttpGet("conflicts/{eventId}")]
+        public async Task<ActionResult<IEnumerable<ConflictDto>>> GetConflicts(Guid eventId)
+        {
+            try
+            {
+                var list = await _matchService.GetScheduleConflictsAsync(eventId);
+                return Ok(list);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "检测冲突失败", error = ex.Message });
             }
         }
     }

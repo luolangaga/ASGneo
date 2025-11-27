@@ -1,6 +1,9 @@
-using Microsoft.EntityFrameworkCore;
 using ASG.Api.Data;
 using ASG.Api.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ASG.Api.Repositories
 {
@@ -25,7 +28,7 @@ namespace ASG.Api.Repositories
 
         public async Task<IEnumerable<User>> GetAllAsync()
         {
-            return await _context.Users.Where(u => u.IsActive).ToListAsync();
+            return await _context.Users.ToListAsync();
         }
 
         public async Task<User> CreateAsync(User user)
@@ -37,7 +40,6 @@ namespace ASG.Api.Repositories
 
         public async Task<User> UpdateAsync(User user)
         {
-            user.UpdatedAt = DateTime.UtcNow;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
             return user;
@@ -45,100 +47,129 @@ namespace ASG.Api.Repositories
 
         public async Task DeleteAsync(string id)
         {
-            var user = await GetByIdAsync(id);
+            var user = await _context.Users.FindAsync(id);
             if (user != null)
             {
-                user.IsActive = false;
-                user.UpdatedAt = DateTime.UtcNow;
+                _context.Users.Remove(user);
                 await _context.SaveChangesAsync();
             }
         }
 
         public async Task<bool> ExistsAsync(string id)
         {
-            return await _context.Users.AnyAsync(u => u.Id == id && u.IsActive);
+            return await _context.Users.AnyAsync(u => u.Id == id);
         }
 
-        // 角色管理相关方法实现
         public async Task<IEnumerable<User>> GetUsersByRoleAsync(UserRole role)
         {
-            return await _context.Users
-                .Where(u => u.IsActive && u.Role == role)
-                .OrderBy(u => u.CreatedAt)
-                .ToListAsync();
+            return await _context.Users.Where(u => u.Role == role).ToListAsync();
         }
 
         public async Task<bool> UpdateUserRoleAsync(string userId, UserRole role)
         {
-            var user = await GetByIdAsync(userId);
-            if (user == null || !user.IsActive)
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
                 return false;
+            }
 
             user.Role = role;
-            user.UpdatedAt = DateTime.UtcNow;
+            _context.Users.Update(user);
             await _context.SaveChangesAsync();
             return true;
         }
 
         public async Task<int> GetUserCountByRoleAsync(UserRole role)
         {
-            return await _context.Users
-                .CountAsync(u => u.IsActive && u.Role == role);
-        }
-
-        public async Task<IEnumerable<User>> GetUsersWithPaginationAsync(int pageNumber, int pageSize)
-        {
-            return await _context.Users
-                .Where(u => u.IsActive)
-                .OrderBy(u => u.CreatedAt)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-        }
-
-        public async Task<int> GetTotalUserCountAsync()
-        {
-            return await _context.Users.CountAsync(u => u.IsActive);
+            return await _context.Users.Where(u => u.Role == role && u.IsActive).CountAsync();
         }
 
         public async Task<bool> UpdateEmailCreditsAsync(string userId, int credits)
         {
-            var user = await GetByIdAsync(userId);
+            var user = await _context.Users.FindAsync(userId);
             if (user == null || !user.IsActive)
+            {
                 return false;
+            }
 
-            user.EmailCredits = Math.Max(0, credits);
-            user.UpdatedAt = DateTime.UtcNow;
+            user.EmailCredits = credits < 0 ? 0 : credits;
+            _context.Users.Update(user);
             await _context.SaveChangesAsync();
             return true;
         }
 
         public async Task<bool> AdjustEmailCreditsAsync(string userId, int delta)
         {
-            var user = await GetByIdAsync(userId);
+            var user = await _context.Users.FindAsync(userId);
             if (user == null || !user.IsActive)
+            {
                 return false;
+            }
 
             var newCredits = user.EmailCredits + delta;
-            user.EmailCredits = newCredits < 0 ? 0 : newCredits;
-            user.UpdatedAt = DateTime.UtcNow;
+            if (newCredits < 0) newCredits = 0;
+            user.EmailCredits = newCredits;
+            _context.Users.Update(user);
             await _context.SaveChangesAsync();
             return true;
         }
 
         public async Task<IEnumerable<User>> SearchByNameAsync(string name, int limit = 10)
         {
-            name ??= string.Empty;
-            var q = name.Trim();
-            var query = _context.Users.AsQueryable();
+            var q = (name ?? string.Empty).Trim();
+            var query = _context.Users.Where(u => u.IsActive);
             if (!string.IsNullOrEmpty(q))
             {
-                query = query.Where(u => (u.FirstName + u.LastName).Contains(q) || u.UserName.Contains(q));
+                var pattern = $"%{q}%";
+                query = query.Where(u =>
+                    EF.Functions.Like(u.Email, pattern) ||
+                    EF.Functions.Like(u.FirstName + " " + u.LastName, pattern)
+                );
             }
-            return await query.Where(u => u.IsActive)
-                .OrderBy(u => u.CreatedAt)
-                .Take(limit <= 0 ? 10 : limit)
+
+            return await query
+                .OrderBy(u => u.FirstName)
+                .ThenBy(u => u.LastName)
+                .Take(limit)
                 .ToListAsync();
+        }
+
+        public async Task<IEnumerable<User>> GetUsersWithPaginationAsync(int pageNumber, int pageSize, string? search = null)
+        {
+            var query = _context.Users.Where(u => u.IsActive);
+            
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var q = search.Trim();
+                var pattern = $"%{q}%";
+                query = query.Where(u => 
+                    EF.Functions.Like(u.Email, pattern) || 
+                    EF.Functions.Like(u.FirstName + " " + u.LastName, pattern)
+                );
+            }
+
+            return await query
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetTotalUserCountAsync(string? search = null)
+        {
+            var query = _context.Users.Where(u => u.IsActive);
+            
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var q = search.Trim();
+                var pattern = $"%{q}%";
+                query = query.Where(u => 
+                    EF.Functions.Like(u.Email, pattern) || 
+                    EF.Functions.Like(u.FirstName + " " + u.LastName, pattern)
+                );
+            }
+
+            return await query.CountAsync();
         }
     }
 }

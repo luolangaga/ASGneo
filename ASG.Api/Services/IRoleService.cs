@@ -8,7 +8,7 @@ namespace ASG.Api.Services
         Task<IEnumerable<RoleInfoDto>> GetAllRolesAsync();
         Task<UserResponseDto?> UpdateUserRoleAsync(UpdateUserRoleDto updateRoleDto);
         Task<IEnumerable<UserResponseDto>> GetUsersByRoleAsync(UserRole role);
-        Task<UserListDto> GetUsersWithPaginationAsync(int pageNumber, int pageSize);
+        Task<UserListDto> GetUsersWithPaginationAsync(int pageNumber, int pageSize, string? search = null);
         Task<Dictionary<UserRole, int>> GetRoleStatisticsAsync();
         bool CanAssignRole(UserRole currentUserRole, UserRole targetRole);
         bool HasPermission(UserRole userRole, string permission);

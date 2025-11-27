@@ -104,6 +104,30 @@ body {
   margin: 0.5em auto;
 }
 
+/* Markdown 图片加载动画容器与定位 */
+.md-content .md-img,
+.md-preview .md-img {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+.md-content .md-img img,
+.md-preview .md-img img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+.md-content .md-img .md-img-loader,
+.md-preview .md-img .md-img-loader {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  width: 96px;
+  height: 96px;
+}
+
 @media (prefers-color-scheme: dark) {
   .md-content :not(pre) > code { background: rgba(255,255,255,0.08); }
   .md-content pre { background: rgba(255,255,255,0.08); }
@@ -111,6 +135,15 @@ body {
 
 .v-theme--md3Dark .md-content :not(pre) > code { background: rgba(255,255,255,0.08); }
 .v-theme--md3Dark .md-content pre { background: rgba(255,255,255,0.08); }
+
+.v-theme--tapeFuturism .app-title span { color: var(--v-theme-primary); text-shadow: 0 0 6px var(--v-theme-primary), 0 0 14px var(--v-theme-secondary); letter-spacing: 0.3px; }
+.v-theme--tapeFuturism .v-app-bar { background: radial-gradient(150% 100% at 0% 0%, #0F1A2B 0%, #1A1A2E 40%, #0F1A2B 100%); border-bottom: 1px solid rgba(0,255,255,0.25); }
+.v-theme--tapeFuturism .v-btn { box-shadow: 0 0 12px rgba(0,255,255,0.25), 0 0 20px rgba(255,0,255,0.18); }
+.v-theme--tapeFuturism .v-chip { box-shadow: 0 0 8px rgba(0,255,255,0.15); }
+.v-theme--tapeFuturism .v-card { border: 1px solid rgba(0,255,255,0.12); background: linear-gradient(180deg, rgba(26,26,46,0.9), rgba(26,26,46,0.8)); }
+.v-theme--tapeFuturism .drawer-title span { color: var(--v-theme-primary); text-shadow: 0 0 6px var(--v-theme-primary); }
+.v-theme--tapeFuturism .md-content :not(pre) > code { background: rgba(0,255,255,0.08); }
+.v-theme--tapeFuturism .md-content pre { background: rgba(0,255,255,0.06); }
 
 /* 全站图片加载淡入动画 */
 @keyframes img-fade-in {
@@ -190,4 +223,14 @@ img,
 
 .v-theme--md3Dark .md-content.md-truncate::after {
   background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.75));
+}
+
+.glass-effect {
+  background-color: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.v-theme--md3Dark .glass-effect {
+  background-color: rgba(0, 0, 0, 0.5);
 }

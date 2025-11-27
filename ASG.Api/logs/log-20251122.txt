@@ -1,0 +1,14 @@
+2025-11-22 00:07:40.803 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-22 00:07:40.875 +08:00 [INF] WebApplication built successfully.
+2025-11-22 00:07:40.946 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-22 00:07:40.947 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-22 00:07:41.635 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-22 00:07:41.838 +08:00 [INF] Applied schema patch for Events.CustomData.
+2025-11-22 00:07:41.961 +08:00 [INF] Starting Kestrel...
+2025-11-22 00:10:49.987 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-22 00:10:50.052 +08:00 [INF] WebApplication built successfully.
+2025-11-22 00:10:50.128 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-22 00:10:50.128 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-22 00:10:50.517 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-22 00:10:50.720 +08:00 [INF] Applied schema patch for Events.CustomData.
+2025-11-22 00:10:50.837 +08:00 [INF] Starting Kestrel...

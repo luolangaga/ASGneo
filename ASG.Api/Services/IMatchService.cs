@@ -15,14 +15,14 @@ namespace ASG.Api.Services
         /// <param name="page">页码</param>
         /// <param name="pageSize">每页大小</param>
         /// <returns>赛程DTO列表</returns>
-        Task<IEnumerable<MatchDto>> GetAllMatchesAsync(Guid? eventId = null, int page = 1, int pageSize = 10);
+        Task<IEnumerable<MatchDto>> GetAllMatchesAsync(Guid? eventId = null, int page = 1, int pageSize = 10, int? groupIndex = null, string? groupLabel = null);
 
         /// <summary>
         /// 获取赛程总数
         /// </summary>
         /// <param name="eventId">赛事ID（可选）</param>
         /// <returns>总数</returns>
-        Task<int> GetMatchCountAsync(Guid? eventId = null);
+        Task<int> GetMatchCountAsync(Guid? eventId = null, int? groupIndex = null, string? groupLabel = null);
 
         /// <summary>
         /// 根据ID获取赛程
@@ -64,5 +64,9 @@ namespace ASG.Api.Services
         /// <param name="id">赛程ID</param>
         /// <returns>更新后的点赞数</returns>
         Task<int> LikeMatchAsync(Guid id);
+
+        Task<IEnumerable<MatchDto>> GenerateScheduleAsync(Guid eventId, GenerateScheduleRequestDto dto, string userId);
+        Task<IEnumerable<ConflictDto>> GetScheduleConflictsAsync(Guid eventId);
+        Task<IEnumerable<MatchDto>> GenerateNextRoundAsync(Guid eventId, GenerateNextRoundRequestDto dto, string userId);
     }
 }

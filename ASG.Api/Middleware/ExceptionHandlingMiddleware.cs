@@ -57,12 +57,12 @@ namespace ASG.Api.Middleware
                     break;
 
                 case UnauthorizedAccessException:
-                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
                     response = new
                     {
                         error = new
                         {
-                            message = "未授权访问",
+                            message = "禁止访问",
                             details = exception.Message,
                             timestamp = DateTime.UtcNow
                         }

@@ -81,7 +81,9 @@
                 <template v-if="team.logoUrl">
                   <v-img :src="team.logoUrl" cover>
                     <template #placeholder>
-                      <div class="img-skeleton"></div>
+                      <div class="d-flex align-center justify-center" style="width:100%;height:100%">
+                        <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:28px;height:28px"></lottie-player>
+                      </div>
                     </template>
                   </v-img>
                 </template>
@@ -92,6 +94,13 @@
               <div>
                 <v-card-title class="pa-0">{{ team.name }}</v-card-title>
                 <v-card-subtitle class="pa-0">👍 {{ team.likes ?? 0 }}</v-card-subtitle>
+                <v-chip
+                  v-if="team.hidePlayers || team.HidePlayers"
+                  size="x-small"
+                  color="warning"
+                  class="mt-1"
+                  variant="tonal"
+                >队员已隐藏</v-chip>
               </div>
           </div>
         </v-card-item>
@@ -137,7 +146,9 @@
               <v-avatar size="36" class="mr-2">
               <v-img v-if="ev.logoUrl" :src="ev.logoUrl" alt="event logo" cover>
                 <template #placeholder>
-                  <div class="img-skeleton"></div>
+                  <div class="d-flex align-center justify-center" style="width:100%;height:100%">
+                    <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:64px;height:64px"></lottie-player>
+                  </div>
                 </template>
               </v-img>
               <v-icon v-else icon="grid_view" />

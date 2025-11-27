@@ -9,6 +9,7 @@ const routes = [
   { path: '/roles', name: 'roles', component: () => import('../views/RolesView.vue'), meta: { requiresAdmin: true } },
   { path: '/events', name: 'events', component: () => import('../views/EventsView.vue'), meta: { requiresAdmin: true } },
   { path: '/teams', name: 'teams', component: () => import('../views/TeamsView.vue'), meta: { requiresAdmin: true } },
+  { path: '/team-invite', name: 'team-invite', component: () => import('../views/TeamInviteView.vue'), meta: { requiresAdmin: true } },
   { path: '/matches', name: 'matches', component: () => import('../views/MatchesView.vue'), meta: { requiresAdmin: true } },
   { path: '/articles', name: 'articles', component: () => import('../views/ArticlesView.vue'), meta: { requiresAdmin: true } },
   { path: '/files', name: 'files', component: () => import('../views/FilesView.vue'), meta: { requiresAdmin: true } },

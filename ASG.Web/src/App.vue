@@ -9,6 +9,7 @@ import { notifyOpen, notifyText, notifyColor, notifyTimeout, notify } from './st
 import { unreadCount, refreshUnreadCount } from './stores/notifications'
 import { getConversations } from './services/messages'
 import { executeCommand } from './services/ai'
+import LoadingDialog from './components/LoadingDialog.vue'
 
 const loggedIn = computed(() => isAuthenticated.value)
 const route = useRoute()
@@ -36,11 +37,23 @@ async function refreshMessagesUnread() {
   } catch { messagesUnread.value = 0 }
 }
 function applyThemeName(name) {
-  theme.global.name.value = name
-  isDark.value = name === 'md3Dark'
+  try {
+    if (theme && typeof theme.change === 'function') {
+      theme.change(name)
+    } else if (theme?.global?.name) {
+      theme.global.name.value = name
+    }
+  } catch {
+    try { theme.global.name.value = name } catch {}
+  }
+  isDark.value = name === 'md3Dark' || name === 'tapeFuturism'
 }
 function initTheme() {
   const saved = localStorage.getItem('site-theme')
+  if (saved === 'md3Light' || saved === 'md3Dark' || saved === 'tapeFuturism') {
+    applyThemeName(saved)
+    return
+  }
   if (saved === 'dark' || saved === 'light') {
     applyThemeName(saved === 'dark' ? 'md3Dark' : 'md3Light')
     return
@@ -52,6 +65,10 @@ function toggleTheme() {
   const next = isDark.value ? 'md3Light' : 'md3Dark'
   applyThemeName(next)
   localStorage.setItem('site-theme', next === 'md3Dark' ? 'dark' : 'light')
+}
+function setTheme(name) {
+  applyThemeName(name)
+  localStorage.setItem('site-theme', name)
 }
 onMounted(initTheme)
 onMounted(() => {
@@ -83,6 +100,7 @@ const aiRunning = ref(false)
 const aiResults = ref([])
 const aiInputs = ref({})
 const aiExpanded = ref({})
+const aiTop = computed(() => (smAndDown.value ? '84px' : '96px'))
 const actionLabels = {
   llm_response: 'AI说明',
   request_user_input: '补充参数',
@@ -213,7 +231,7 @@ async function submitMissing(i) {
 
 <template>
   <v-app>
-    <v-app-bar app color="surface" flat :density="smAndDown ? 'compact' : 'comfortable'">
+    <v-app-bar app flat :density="smAndDown ? 'compact' : 'comfortable'" class="glass-effect" style="background-color: transparent !important;">
       <v-toolbar-title class="app-title">
            <router-link to="/">
         <img src="/logo.svg" alt="平台Logo" class="app-logo" />
@@ -225,10 +243,19 @@ async function submitMissing(i) {
       <div class="d-sm-none d-flex align-center mr-1">
         <v-btn icon="home" variant="text" :to="'/'" aria-label="首页" />
         <v-btn icon="grid_view" variant="text" :to="'/events'" aria-label="赛事看板" />
-        <v-btn icon="list_alt" variant="text" :to="'/articles'" aria-label="帖子列表" />
-        <v-btn icon="insights" variant="text" :to="'/stats'" aria-label="数据分析" />
+
         <v-btn icon="search" variant="text" :to="'/teams/search'" aria-label="全站搜索" />
-        <v-btn :icon="isDark ? 'light_mode' : 'dark_mode'" variant="text" aria-label="切换主题" @click="toggleTheme" />
+
+        <v-menu>
+          <template #activator="{ props }">
+            <v-btn v-bind="props" icon="palette" variant="text" aria-label="主题" />
+          </template>
+          <v-list density="compact">
+            <v-list-item @click="setTheme('md3Light')" title="亮色" prepend-icon="light_mode" />
+            <v-list-item @click="setTheme('md3Dark')" title="暗色" prepend-icon="dark_mode" />
+            <v-list-item @click="setTheme('tapeFuturism')" title="磁带未来主义" prepend-icon="auto_awesome" />
+          </v-list>
+        </v-menu>
         <template v-if="loggedIn">
           <v-btn icon="chat" variant="text" :to="'/chat'" aria-label="聊天" />
           <v-btn icon="person" variant="text" :to="'/profile'" aria-label="个人资料" />
@@ -292,11 +319,21 @@ async function submitMissing(i) {
           <v-btn to="/profile" variant="text" prepend-icon="person" :title="'ID: ' + (userId || '')">{{ userName }}</v-btn>
           <v-btn @click="onLogout" variant="text">退出</v-btn>
         </template>
-        <v-btn class="ml-1" :icon="isDark ? 'light_mode' : 'dark_mode'" variant="text" aria-label="切换主题" @click="toggleTheme" />
+
+        <v-menu>
+          <template #activator="{ props }">
+            <v-btn v-bind="props" class="ml-1" icon="palette" variant="text" aria-label="主题" />
+          </template>
+          <v-list density="compact">
+            <v-list-item @click="setTheme('md3Light')" title="亮色" prepend-icon="light_mode" />
+            <v-list-item @click="setTheme('md3Dark')" title="暗色" prepend-icon="dark_mode" />
+            <v-list-item @click="setTheme('tapeFuturism')" title="磁带未来主义" prepend-icon="auto_awesome" />
+          </v-list>
+        </v-menu>
       </div>
     </v-app-bar>
     <!-- 移动端导航抽屉 -->
-    <v-navigation-drawer v-model="drawer" temporary>
+    <v-navigation-drawer v-model="drawer" temporary class="glass-effect" style="background-color: transparent !important;">
       <v-toolbar flat density="compact">
         <v-toolbar-title class="drawer-title">
           <img src="/logo.svg" alt="平台Logo" class="drawer-logo" />
@@ -307,29 +344,30 @@ async function submitMissing(i) {
       </v-toolbar>
       <v-divider />
         <v-list density="comfortable">
-        <v-list-item link :to="'/'" prepend-icon="home" title="首页" @click="drawer=false" />
+          <v-list-item link :to="'/'" prepend-icon="home" title="首页" @click="drawer=false" />
         <!-- 关于页面已移除 -->
         <v-list-subheader>参赛者</v-list-subheader>
         <v-list-item link :to="'/events'" prepend-icon="grid_view" title="赛事看板" @click="drawer=false" />
         <v-list-item link :to="'/teams/create'" prepend-icon="person_add" title="创建战队" @click="drawer=false" />
         <v-list-item v-if="loggedIn" link :to="'/teams/edit'" prepend-icon="edit" title="编辑我的战队" @click="drawer=false" />
-        <v-list-item link :to="'/stats'" prepend-icon="insights" title="数据分析" @click="drawer=false" />
+
         <v-list-item link :to="'/profile'" prepend-icon="person" title="个人资料" @click="drawer=false" />
         <v-list-item link :to="'/teams/search'" prepend-icon="search" title="全站搜索" @click="drawer=false" />
           <v-divider class="my-2" />
           <v-list-subheader>协议</v-list-subheader>
           <v-list-item link :to="'/terms'" prepend-icon="description" title="用户协议" @click="drawer=false" />
           <v-list-item link :to="'/privacy'" prepend-icon="privacy_tip" title="隐私政策" @click="drawer=false" />
-          <v-list-subheader>社区</v-list-subheader>
-          <v-list-item link :to="'/articles'" prepend-icon="list_alt" title="帖子列表" @click="drawer=false" />
+
+          <v-divider class="my-2" />
+          <v-list-subheader>主题</v-list-subheader>
+          <v-list-item @click="setTheme('md3Light'); drawer=false" prepend-icon="light_mode" title="亮色" />
+          <v-list-item @click="setTheme('md3Dark'); drawer=false" prepend-icon="dark_mode" title="暗色" />
+          <v-list-item @click="setTheme('tapeFuturism'); drawer=false" prepend-icon="auto_awesome" title="磁带未来主义" />
           <template v-if="loggedIn">
-            <v-list-item link :to="'/articles/create'" prepend-icon="edit" title="发布帖子" @click="drawer=false" />
-          </template>
-        <template v-if="loggedIn">
-          <v-list-item link :to="'/messages'" prepend-icon="chat" title="信息" @click="drawer=false">
-            <template #append>
-              <v-chip v-if="messagesUnread > 0 && !realtimeDisabled" color="error" size="x-small">{{ messagesUnread }}</v-chip>
-            </template>
+            <v-list-item link :to="'/messages'" prepend-icon="chat" title="信息" @click="drawer=false">
+              <template #append>
+                <v-chip v-if="messagesUnread > 0 && !realtimeDisabled" color="error" size="x-small">{{ messagesUnread }}</v-chip>
+              </template>
           </v-list-item>
           <v-divider class="my-2" />
           <v-list-subheader>赛事主办方</v-list-subheader>
@@ -355,7 +393,7 @@ async function submitMissing(i) {
         {{ notifyText }}
       </div>
     </v-snackbar>
-    <v-btn icon="smart_toy" color="primary" @click="aiOpen = true" style="position: fixed; right: 24px; bottom: 24px; z-index: 1000" />
+    <v-btn icon="smart_toy" color="primary" @click="aiOpen = true" :style="{ position: 'fixed', right: '24px', top: aiTop, zIndex: 1000 }" />
     <v-dialog v-model="aiOpen" max-width="720">
       <v-card>
         <v-card-title class="d-flex align-center">
@@ -391,7 +429,15 @@ async function submitMissing(i) {
                       </div>
                       <div v-else-if="r.action === 'get_team_by_name' && r.data">
                         <div class="d-flex align-center">
-                          <v-avatar v-if="get(r.data, ['logoUrl','LogoUrl'])" size="36"><img :src="get(r.data, ['logoUrl','LogoUrl'])" /></v-avatar>
+                          <v-avatar v-if="get(r.data, ['logoUrl','LogoUrl'])" size="36">
+                            <v-img :src="get(r.data, ['logoUrl','LogoUrl'])" cover>
+                              <template #placeholder>
+                                <div class="d-flex align-center justify-center" style="width:100%;height:100%">
+                                  <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:36px;height:36px"></lottie-player>
+                                </div>
+                              </template>
+                            </v-img>
+                          </v-avatar>
                           <div class="ml-2">
                             <div class="font-weight-medium">{{ get(r.data, ['name','Name']) }}</div>
                             <div class="text-medium-emphasis">{{ get(r.data, ['description','Description']) }}</div>
@@ -403,7 +449,15 @@ async function submitMissing(i) {
                         <v-list density="compact">
                           <v-list-item v-for="t in get(r.data||{}, ['items','Items'])" :key="get(t,['id','Id'])">
                             <template #prepend>
-                              <v-avatar v-if="get(t,['logoUrl','LogoUrl'])" size="28"><img :src="get(t,['logoUrl','LogoUrl'])" /></v-avatar>
+                              <v-avatar v-if="get(t,['logoUrl','LogoUrl'])" size="28">
+                                <v-img :src="get(t,['logoUrl','LogoUrl'])" cover>
+                                  <template #placeholder>
+                                    <div class="d-flex align-center justify-center" style="width:100%;height:100%">
+                                      <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:28px;height:28px"></lottie-player>
+                                    </div>
+                                  </template>
+                                </v-img>
+                              </v-avatar>
                             </template>
                             <v-list-item-title>{{ get(t,['name','Name']) }}</v-list-item-title>
                             <v-list-item-subtitle>
@@ -417,7 +471,15 @@ async function submitMissing(i) {
                         <v-list density="compact">
                           <v-list-item v-for="e in get(r.data||{}, ['items','Items'])" :key="get(e,['id','Id'])">
                             <template #prepend>
-                              <v-avatar v-if="get(e,['logoUrl','LogoUrl'])" size="28"><img :src="get(e,['logoUrl','LogoUrl'])" /></v-avatar>
+                              <v-avatar v-if="get(e,['logoUrl','LogoUrl'])" size="28">
+                                <v-img :src="get(e,['logoUrl','LogoUrl'])" cover>
+                                  <template #placeholder>
+                                    <div class="d-flex align-center justify-center" style="width:100%;height:100%">
+                                      <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:28px;height:28px"></lottie-player>
+                                    </div>
+                                  </template>
+                                </v-img>
+                              </v-avatar>
                             </template>
                             <v-list-item-title>{{ get(e,['name','Name']) }}</v-list-item-title>
                             <v-list-item-subtitle>
@@ -538,6 +600,12 @@ async function submitMissing(i) {
         </v-card-text>
       </v-card>
     </v-dialog>
+    <LoadingDialog />
+    <v-footer app class="px-4 py-2">
+      <div class="text-caption text-medium-emphasis">
+        免责声明：几乎所有赛事都是来自民间玩家自己举办，请各位侦探注意辨别，以防被骗！
+      </div>
+    </v-footer>
   </v-app>
 </template>
 

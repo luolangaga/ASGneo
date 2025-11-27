@@ -44,6 +44,23 @@ const md3Dark = {
   },
 }
 
+const tapeFuturism = {
+  dark: true,
+  colors: {
+    primary: '#00FFFF',
+    secondary: '#FF00FF',
+    tertiary: '#FFFF00',
+    surface: '#1A1A2E',
+    background: '#0F1A2B',
+    surfaceVariant: '#23273A',
+    outline: '#00FFFF',
+    error: '#FF2E63',
+    info: '#00B4D8',
+    success: '#3CFCC5',
+    warning: '#FFC300',
+  },
+}
+
 // Global component defaults to align with M3
 const defaults = {
   VBtn: {
@@ -106,6 +123,7 @@ export const vuetify = createVuetify({
     themes: {
       md3Light,
       md3Dark,
+      tapeFuturism,
     },
   },
   defaults,

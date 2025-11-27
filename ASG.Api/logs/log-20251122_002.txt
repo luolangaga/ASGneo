@@ -1,0 +1,541 @@
+2025-11-22 00:26:29.396 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-22 00:26:29.471 +08:00 [INF] WebApplication built successfully.
+2025-11-22 00:26:29.556 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-22 00:26:29.557 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-22 00:26:29.999 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-22 00:26:30.109 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-22 00:26:30.212 +08:00 [INF] Applied schema patch for Events.CustomData.
+2025-11-22 00:26:30.212 +08:00 [INF] Local heroes import setting: true
+2025-11-22 00:26:30.214 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-22 00:26:30.214 +08:00 [INF] Local stats import setting: true
+2025-11-22 00:26:30.214 +08:00 [INF] Local stats overwrite setting: false
+2025-11-22 00:26:30.216 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Release\net8.0\NeteaseJ
+2025-11-22 00:26:30.525 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-22 00:26:30.527 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Release\net8.0\NeteaseJ
+2025-11-22 00:26:36.657 +08:00 [INF] Netease stats seeding completed: 8568 added; total=20286
+2025-11-22 00:26:36.679 +08:00 [INF] Starting Kestrel...
+2025-11-22 00:26:36.721 +08:00 [ERR] Hosting failed to start
+System.IO.IOException: Failed to bind to address http://127.0.0.1:5250: address already in use.
+ ---> Microsoft.AspNetCore.Connections.AddressInUseException: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。
+ ---> System.Net.Sockets.SocketException (10048): 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。
+   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
+   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.LocalhostListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+2025-11-22 00:26:36.729 +08:00 [FTL] Host terminated unexpectedly during Kestrel startup
+System.IO.IOException: Failed to bind to address http://127.0.0.1:5250: address already in use.
+ ---> Microsoft.AspNetCore.Connections.AddressInUseException: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。
+ ---> System.Net.Sockets.SocketException (10048): 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。
+   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
+   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.LocalhostListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+   at Microsoft.Extensions.Hosting.Internal.Host.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Run(IHost host)
+   at Program.<Main>$(String[] args) in C:\Users\luolan\ASG\ASG.Api\Program.cs:line 409
+2025-11-22 00:30:10.479 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-22 00:30:10.543 +08:00 [INF] WebApplication built successfully.
+2025-11-22 00:30:10.614 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-22 00:30:10.615 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-22 00:30:10.986 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-22 00:30:11.084 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-22 00:30:11.188 +08:00 [INF] Applied schema patch for Events.CustomData.
+2025-11-22 00:30:11.189 +08:00 [INF] Local heroes import setting: true
+2025-11-22 00:30:11.190 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-22 00:30:11.190 +08:00 [INF] Local stats import setting: true
+2025-11-22 00:30:11.190 +08:00 [INF] Local stats overwrite setting: false
+2025-11-22 00:30:11.192 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-22 00:30:11.549 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-22 00:30:11.552 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-22 00:30:15.893 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-22 00:30:15.911 +08:00 [INF] Starting Kestrel...
+2025-11-22 00:35:20.636 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-22 00:35:20.699 +08:00 [INF] WebApplication built successfully.
+2025-11-22 00:35:20.781 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-22 00:35:20.782 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-22 00:35:21.178 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-22 00:35:21.277 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-22 00:35:21.379 +08:00 [INF] Applied schema patch for Events.CustomData.
+2025-11-22 00:35:21.380 +08:00 [INF] Local heroes import setting: true
+2025-11-22 00:35:21.381 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-22 00:35:21.381 +08:00 [INF] Local stats import setting: true
+2025-11-22 00:35:21.381 +08:00 [INF] Local stats overwrite setting: false
+2025-11-22 00:35:21.383 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-22 00:35:21.722 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-22 00:35:21.725 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-22 00:35:25.908 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-22 00:35:25.929 +08:00 [INF] Starting Kestrel...
+2025-11-22 00:45:43.944 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-22 00:46:05.262 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-22 00:46:05.263 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-22 00:46:05.264 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+时间=2025-11-22 13:12:46.229 级别=[INF] 消息=服务地址：http://localhost:5250
+时间=2025-11-22 13:12:46.324 级别=[INF] 消息=Web 应用构建完成。
+时间=2025-11-22 13:12:46.417 级别=[INF] 消息=SignalR Hub 就绪：路径=/hubs/app，认证=JWT Bearer，QueryToken=access_token（/hubs/*）
+时间=2025-11-22 13:12:46.418 级别=[INF] 消息=已应用 CORS 策略 'DevCors'：开发环境允许所有来源/头/方法
+时间=2025-11-22 13:12:46.836 级别=[WRN] 消息=The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+时间=2025-11-22 13:12:46.935 级别=[INF] 消息=EF 提供者：Npgsql.EntityFrameworkCore.PostgreSQL，数据库：idvevent
+时间=2025-11-22 13:12:47.101 级别=[INF] 消息=Applied schema patch for Events.CustomData.
+时间=2025-11-22 13:12:47.106 级别=[INF] 消息=Ownership migration applied: Teams.OwnerId <= Teams.UserId, affected rows=0
+时间=2025-11-22 13:12:47.108 级别=[INF] 消息=本地英雄导入开关：true
+时间=2025-11-22 13:12:47.108 级别=[INF] 消息=英雄覆盖导入开关：false
+时间=2025-11-22 13:12:47.108 级别=[INF] 消息=本地统计导入开关：true
+时间=2025-11-22 13:12:47.108 级别=[INF] 消息=统计覆盖导入开关：false
+时间=2025-11-22 13:12:47.110 级别=[INF] 消息=Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+时间=2025-11-22 13:12:47.371 级别=[INF] 消息=Netease heroes seeding completed: 0 added, 0 updated; total=83
+时间=2025-11-22 13:12:47.373 级别=[INF] 消息=Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+时间=2025-11-22 13:12:51.770 级别=[INF] 消息=Netease stats seeding completed: 0 added; total=20286
+时间=2025-11-22 13:12:51.790 级别=[INF] 消息=正在启动 Kestrel...
+时间=2025-11-22 13:14:05.011 级别=[INF] 消息=User logged in successfully: luolan12323@outlook.com
+时间=2025-11-22 13:14:08.412 级别=[WRN] 消息=Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+时间=2025-11-22 13:16:29.108 级别=[WRN] 消息=Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+时间=2025-11-22 13:16:29.141 级别=[WRN] 消息=Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+时间=2025-11-22 13:16:29.141 级别=[WRN] 消息=Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+时间=2025-11-22 13:16:30.867 级别=[WRN] 消息=Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+时间=2025-11-22 13:25:16.032 级别=[INF] 消息=服务地址：http://localhost:5250
+时间=2025-11-22 13:25:16.093 级别=[INF] 消息=Web 应用构建完成。
+时间=2025-11-22 13:25:16.186 级别=[INF] 消息=SignalR Hub 就绪：路径=/hubs/app，认证=JWT Bearer，QueryToken=access_token（/hubs/*）
+时间=2025-11-22 13:25:16.187 级别=[INF] 消息=已应用 CORS 策略 'DevCors'：开发环境允许所有来源/头/方法
+时间=2025-11-22 13:25:16.560 级别=[WRN] 消息=The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+时间=2025-11-22 13:25:16.650 级别=[INF] 消息=EF 提供者：Npgsql.EntityFrameworkCore.PostgreSQL，数据库：idvevent
+时间=2025-11-22 13:25:16.837 级别=[INF] 消息=Applied schema patch for Events.CustomData.
+时间=2025-11-22 13:25:16.854 级别=[ERR] 消息=Failed executing DbCommand (12ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "AspNetUsers" ADD COLUMN IF NOT EXISTS "DisplayTeamId" uuid NULL
+时间=2025-11-22 13:25:16.856 级别=[WRN] 消息=数据库架构/数据补丁失败；正在尝试执行 EF Core 迁移。
+Npgsql.PostgresException (0x80004005): 42P01: 关系 "AspNetUsers" 不存在
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.ExecuteSqlRaw(DatabaseFacade databaseFacade, String sql, IEnumerable`1 parameters)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.ExecuteSqlRaw(DatabaseFacade databaseFacade, String sql, Object[] parameters)
+   at Program.<Main>$(String[] args) in C:\Users\luolan\ASG\ASG.Api\Program.cs:line 352
+  Exception data:
+    Severity: 错误
+    SqlState: 42P01
+    MessageText: 关系 "AspNetUsers" 不存在
+    File: namespace.c
+    Line: 639
+    Routine: RangeVarGetRelidExtended
+时间=2025-11-22 13:25:17.263 级别=[ERR] 消息=Failed executing DbCommand (9ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "AspNetRoles" (
+    "Id" text NOT NULL,
+    "Name" character varying(256),
+    "NormalizedName" character varying(256),
+    "ConcurrencyStamp" text,
+    CONSTRAINT "PK_AspNetRoles" PRIMARY KEY ("Id")
+);
+时间=2025-11-22 13:25:17.266 级别=[ERR] 消息=在补丁失败后，执行数据库迁移仍失败。将继续启动流程。
+Npgsql.PostgresException (0x80004005): 42P07: 关系 "AspNetRoles" 已经存在
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IEnumerable`1 migrationCommands, IRelationalConnection connection)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal.NpgsqlMigrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Program.<Main>$(String[] args) in C:\Users\luolan\ASG\ASG.Api\Program.cs:line 365
+  Exception data:
+    Severity: 错误
+    SqlState: 42P07
+    MessageText: 关系 "AspNetRoles" 已经存在
+    File: heap.c
+    Line: 1179
+    Routine: heap_create_with_catalog
+时间=2025-11-22 13:25:17.269 级别=[INF] 消息=本地英雄导入开关：true
+时间=2025-11-22 13:25:17.270 级别=[INF] 消息=英雄覆盖导入开关：false
+时间=2025-11-22 13:25:17.270 级别=[INF] 消息=本地统计导入开关：true
+时间=2025-11-22 13:25:17.270 级别=[INF] 消息=统计覆盖导入开关：false
+时间=2025-11-22 13:25:17.274 级别=[INF] 消息=Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+时间=2025-11-22 13:25:17.548 级别=[INF] 消息=Netease heroes seeding completed: 0 added, 0 updated; total=83
+时间=2025-11-22 13:25:17.551 级别=[INF] 消息=Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+时间=2025-11-22 13:25:22.659 级别=[INF] 消息=Netease stats seeding completed: 0 added; total=20286
+时间=2025-11-22 13:25:22.676 级别=[INF] 消息=正在启动 Kestrel...
+时间=2025-11-22 13:25:38.475 级别=[WRN] 消息=Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+时间=2025-11-22 13:25:38.475 级别=[WRN] 消息=Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+时间=2025-11-22 13:25:38.475 级别=[WRN] 消息=Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+时间=2025-11-22 13:25:40.861 级别=[ERR] 消息=Failed executing DbCommand (1ms) [Parameters=[@__id_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT t0."Id", t0."CreatedAt", t0."Description", t0."InviteExpiresAt", t0."InviteToken", t0."Likes", t0."Name", t0."OwnerId", t0."Password", t0."QqNumber", t0."UpdatedAt", t0."UserId", t0."Id0", p."Id", p."CreatedAt", p."Description", p."GameId", p."GameRank", p."Name", p."TeamId", p."UpdatedAt", p."UserId", t0."AccessFailedCount", t0."ConcurrencyStamp", t0."CreatedAt0", t0."DisplayTeamId", t0."Email", t0."EmailConfirmed", t0."EmailCredits", t0."FirstName", t0."IsActive", t0."LastName", t0."LockoutEnabled", t0."LockoutEnd", t0."NormalizedEmail", t0."NormalizedUserName", t0."PasswordHash", t0."PhoneNumber", t0."PhoneNumberConfirmed", t0."Role", t0."SecurityStamp", t0."TeamId", t0."TwoFactorEnabled", t0."UpdatedAt0", t0."UserName"
+FROM (
+    SELECT t."Id", t."CreatedAt", t."Description", t."InviteExpiresAt", t."InviteToken", t."Likes", t."Name", t."OwnerId", t."Password", t."QqNumber", t."UpdatedAt", t."UserId", u."Id" AS "Id0", u."AccessFailedCount", u."ConcurrencyStamp", u."CreatedAt" AS "CreatedAt0", u."DisplayTeamId", u."Email", u."EmailConfirmed", u."EmailCredits", u."FirstName", u."IsActive", u."LastName", u."LockoutEnabled", u."LockoutEnd", u."NormalizedEmail", u."NormalizedUserName", u."PasswordHash", u."PhoneNumber", u."PhoneNumberConfirmed", u."Role", u."SecurityStamp", u."TeamId", u."TwoFactorEnabled", u."UpdatedAt" AS "UpdatedAt0", u."UserName"
+    FROM "Teams" AS t
+    LEFT JOIN "Users" AS u ON t."OwnerId" = u."Id"
+    WHERE t."Id" = @__id_0
+    LIMIT 1
+) AS t0
+LEFT JOIN "Players" AS p ON t0."Id" = p."TeamId"
+ORDER BY t0."Id", t0."Id0"
+时间=2025-11-22 13:25:40.867 级别=[ERR] 消息=An exception occurred while iterating over the results of a query for context type 'ASG.Api.Data.ApplicationDbContext'.
+Npgsql.PostgresException (0x80004005): 42703: 字段 u.DisplayTeamId 不存在
+
+POSITION: 1021
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: 错误
+    SqlState: 42703
+    MessageText: 字段 u.DisplayTeamId 不存在
+    Position: 1021
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+Npgsql.PostgresException (0x80004005): 42703: 字段 u.DisplayTeamId 不存在
+
+POSITION: 1021
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: 错误
+    SqlState: 42703
+    MessageText: 字段 u.DisplayTeamId 不存在
+    Position: 1021
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+时间=2025-11-22 13:25:40.871 级别=[ERR] 消息=获取战队详情时发生错误，战队ID: "c12a1ab8-1a7f-486e-ac8f-de48044ddee3"
+Npgsql.PostgresException (0x80004005): 42703: 字段 u.DisplayTeamId 不存在
+
+POSITION: 1021
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at ASG.Api.Repositories.TeamRepository.GetTeamByIdWithPlayersAsync(Guid id) in C:\Users\luolan\ASG\ASG.Api\Repositories\TeamRepository.cs:line 62
+   at ASG.Api.Services.TeamService.GetTeamByIdAsync(Guid id) in C:\Users\luolan\ASG\ASG.Api\Services\TeamService.cs:line 51
+   at ASG.Api.Controllers.TeamsController.GetTeam(Guid id) in C:\Users\luolan\ASG\ASG.Api\Controllers\TeamsController.cs:line 147
+  Exception data:
+    Severity: 错误
+    SqlState: 42703
+    MessageText: 字段 u.DisplayTeamId 不存在
+    Position: 1021
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+时间=2025-11-22 13:25:40.910 级别=[WRN] 消息=Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+时间=2025-11-22 13:25:40.934 级别=[ERR] 消息=Failed executing DbCommand (2ms) [Parameters=[@__id_0='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT t."Id", t."CreatedAt", t."Description", t."InviteExpiresAt", t."InviteToken", t."Likes", t."Name", t."OwnerId", t."Password", t."QqNumber", t."UpdatedAt", t."UserId", u."Id", u."AccessFailedCount", u."ConcurrencyStamp", u."CreatedAt", u."DisplayTeamId", u."Email", u."EmailConfirmed", u."EmailCredits", u."FirstName", u."IsActive", u."LastName", u."LockoutEnabled", u."LockoutEnd", u."NormalizedEmail", u."NormalizedUserName", u."PasswordHash", u."PhoneNumber", u."PhoneNumberConfirmed", u."Role", u."SecurityStamp", u."TeamId", u."TwoFactorEnabled", u."UpdatedAt", u."UserName"
+FROM "Teams" AS t
+LEFT JOIN "Users" AS u ON t."OwnerId" = u."Id"
+WHERE t."Id" = @__id_0
+LIMIT 1
+时间=2025-11-22 13:25:40.936 级别=[ERR] 消息=An exception occurred while iterating over the results of a query for context type 'ASG.Api.Data.ApplicationDbContext'.
+Npgsql.PostgresException (0x80004005): 42703: 字段 u.DisplayTeamId 不存在
+
+POSITION: 243
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: 错误
+    SqlState: 42703
+    MessageText: 字段 u.DisplayTeamId 不存在
+    Position: 243
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+Npgsql.PostgresException (0x80004005): 42703: 字段 u.DisplayTeamId 不存在
+
+POSITION: 243
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: 错误
+    SqlState: 42703
+    MessageText: 字段 u.DisplayTeamId 不存在
+    Position: 243
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+时间=2025-11-22 13:25:46.917 级别=[ERR] 消息=Failed executing DbCommand (3ms) [Parameters=[@__p_1='?' (DbType = Int32), @__p_0='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+SELECT t."Id", t."AuthorUserId", t."ContentMarkdown", t."CreatedAt", t."Likes", t."Title", t."UpdatedAt", t."Views", u."Id", u."AccessFailedCount", u."ConcurrencyStamp", u."CreatedAt", u."DisplayTeamId", u."Email", u."EmailConfirmed", u."EmailCredits", u."FirstName", u."IsActive", u."LastName", u."LockoutEnabled", u."LockoutEnd", u."NormalizedEmail", u."NormalizedUserName", u."PasswordHash", u."PhoneNumber", u."PhoneNumberConfirmed", u."Role", u."SecurityStamp", u."TeamId", u."TwoFactorEnabled", u."UpdatedAt", u."UserName", c."Id", c."ArticleId", c."AuthorUserId", c."Content", c."CreatedAt", c."ParentId"
+FROM (
+    SELECT a."Id", a."AuthorUserId", a."ContentMarkdown", a."CreatedAt", a."Likes", a."Title", a."UpdatedAt", a."Views"
+    FROM "Articles" AS a
+    ORDER BY a."CreatedAt" DESC
+    LIMIT @__p_1 OFFSET @__p_0
+) AS t
+INNER JOIN "Users" AS u ON t."AuthorUserId" = u."Id"
+LEFT JOIN "Comments" AS c ON t."Id" = c."ArticleId"
+ORDER BY t."CreatedAt" DESC, t."Id", u."Id"
+时间=2025-11-22 13:25:46.919 级别=[ERR] 消息=An exception occurred while iterating over the results of a query for context type 'ASG.Api.Data.ApplicationDbContext'.
+Npgsql.PostgresException (0x80004005): 42703: 字段 u.DisplayTeamId 不存在
+
+POSITION: 186
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: 错误
+    SqlState: 42703
+    MessageText: 字段 u.DisplayTeamId 不存在
+    Position: 186
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+Npgsql.PostgresException (0x80004005): 42703: 字段 u.DisplayTeamId 不存在
+
+POSITION: 186
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: 错误
+    SqlState: 42703
+    MessageText: 字段 u.DisplayTeamId 不存在
+    Position: 186
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+时间=2025-11-22 13:25:46.923 级别=[ERR] 消息=发生未处理的异常
+Npgsql.PostgresException (0x80004005): 42703: 字段 u.DisplayTeamId 不存在
+
+POSITION: 186
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ASG.Api.Repositories.ArticleRepository.GetArticlesAsync(Int32 page, Int32 pageSize, String sortBy, Boolean desc) in C:\Users\luolan\ASG\ASG.Api\Repositories\ArticleRepository.cs:line 37
+   at ASG.Api.Services.ArticleService.GetArticlesAsync(Int32 page, Int32 pageSize, String sortBy, Boolean desc) in C:\Users\luolan\ASG\ASG.Api\Services\ArticleService.cs:line 30
+   at ASG.Api.Controllers.ArticlesController.GetArticles(Int32 page, Int32 pageSize, String sortBy, Boolean desc, String query) in C:\Users\luolan\ASG\ASG.Api\Controllers\ArticlesController.cs:line 33
+   at lambda_method572(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at ASG.Api.Middleware.ExceptionHandlingMiddleware.InvokeAsync(HttpContext context) in C:\Users\luolan\ASG\ASG.Api\Middleware\ExceptionHandlingMiddleware.cs:line 21
+  Exception data:
+    Severity: 错误
+    SqlState: 42703
+    MessageText: 字段 u.DisplayTeamId 不存在
+    Position: 186
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+时间=2025-11-22 13:25:52.609 级别=[ERR] 消息=Failed executing DbCommand (1ms) [Parameters=[@__p_0='?'], CommandType='"Text"', CommandTimeout='30']
+SELECT u."Id", u."AccessFailedCount", u."ConcurrencyStamp", u."CreatedAt", u."DisplayTeamId", u."Email", u."EmailConfirmed", u."EmailCredits", u."FirstName", u."IsActive", u."LastName", u."LockoutEnabled", u."LockoutEnd", u."NormalizedEmail", u."NormalizedUserName", u."PasswordHash", u."PhoneNumber", u."PhoneNumberConfirmed", u."Role", u."SecurityStamp", u."TeamId", u."TwoFactorEnabled", u."UpdatedAt", u."UserName"
+FROM "Users" AS u
+WHERE u."Id" = @__p_0
+LIMIT 1
+时间=2025-11-22 13:25:52.610 级别=[ERR] 消息=An exception occurred while iterating over the results of a query for context type 'ASG.Api.Data.ApplicationDbContext'.
+Npgsql.PostgresException (0x80004005): 42703: 字段 u.DisplayTeamId 不存在
+
+POSITION: 76
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: 错误
+    SqlState: 42703
+    MessageText: 字段 u.DisplayTeamId 不存在
+    Position: 76
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+Npgsql.PostgresException (0x80004005): 42703: 字段 u.DisplayTeamId 不存在
+
+POSITION: 76
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: 错误
+    SqlState: 42703
+    MessageText: 字段 u.DisplayTeamId 不存在
+    Position: 76
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn
+时间=2025-11-22 13:25:52.614 级别=[ERR] 消息=发生未处理的异常
+Npgsql.PostgresException (0x80004005): 42703: 字段 u.DisplayTeamId 不存在
+
+POSITION: 76
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at ASG.Api.Repositories.UserRepository.GetByIdAsync(String id) in C:\Users\luolan\ASG\ASG.Api\Repositories\UserRepository.cs:line 18
+   at ASG.Api.Controllers.UsersController.GetProfile() in C:\Users\luolan\ASG\ASG.Api\Controllers\UsersController.cs:line 64
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at ASG.Api.Middleware.ExceptionHandlingMiddleware.InvokeAsync(HttpContext context) in C:\Users\luolan\ASG\ASG.Api\Middleware\ExceptionHandlingMiddleware.cs:line 21
+  Exception data:
+    Severity: 错误
+    SqlState: 42703
+    MessageText: 字段 u.DisplayTeamId 不存在
+    Position: 76
+    File: parse_relation.c
+    Line: 3827
+    Routine: errorMissingColumn

@@ -23,6 +23,7 @@ const value = computed({
 
 const length = computed(() => (value.value || '').length)
 const rendered = computed(() => renderMarkdown(value.value || ''))
+const limit = computed(() => (props.maxLength && props.maxLength > 0) ? props.maxLength : null)
 
 function toEdit() { tab.value = 'edit' }
 function toPreview() { tab.value = 'preview' }
@@ -92,7 +93,9 @@ async function onUploadImage(e) {
 <template>
   <div>
     <div class="d-flex align-center justify-space-between mb-2">
-      <div class="text-caption text-medium-emphasis">{{ label }}（支持 Markdown，字数需小于 1000）</div>
+      <div class="text-caption text-medium-emphasis">
+        {{ label }}（支持 Markdown<span v-if="limit">，字数上限 {{ limit }}</span>）
+      </div>
       <div>
         <v-btn size="small" variant="text" :class="{ 'text-primary': tab==='edit' }" @click="toEdit">编辑</v-btn>
         <v-btn size="small" variant="text" :class="{ 'text-primary': tab==='preview' }" @click="toPreview">预览</v-btn>
@@ -112,13 +115,15 @@ async function onUploadImage(e) {
         :label="label"
         prepend-inner-icon="text_fields"
         :rows="rows"
-        :counter="maxLength"
-        :maxlength="maxLength"
+        :counter="limit ?? undefined"
+        :maxlength="limit ?? undefined"
         :density="density"
       />
     </div>
     <div v-else class="md-preview text-body-2" v-html="rendered" />
-    <div class="text-caption text-medium-emphasis mt-1">当前字数：{{ length }}（上限 {{ maxLength }}）</div>
+    <div class="text-caption text-medium-emphasis mt-1">
+      当前字数：{{ length }}<template v-if="limit">（上限 {{ limit }}）</template>
+    </div>
   </div>
   
 </template>

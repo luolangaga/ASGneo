@@ -17,6 +17,8 @@ const registrationEndTime = ref('')
 const competitionStartTime = ref('')
 const competitionEndTime = ref('')
 const maxTeams = ref(null)
+const qqGroup = ref('')
+const rulesMarkdown = ref('')
 const logoFile = ref(null)
 const logoError = ref('')
 const polishing = ref(false)
@@ -42,6 +44,8 @@ async function onSubmit() {
     const payload = {
       name: name.value.trim(),
       description: description.value?.trim() || null,
+      qqGroup: qqGroup.value?.trim() || null,
+      rulesMarkdown: rulesMarkdown.value?.trim() || null,
       registrationStartTime: toIso(registrationStartTime.value),
       registrationEndTime: toIso(registrationEndTime.value),
       competitionStartTime: toIso(competitionStartTime.value),
@@ -106,8 +110,8 @@ function onLogoSelected(files) {
 <template>
   <PageHero title="创建赛事" subtitle="填写基本信息并上传赛事Logo" icon="add_box">
     <template #actions>
-      <v-btn variant="text" class="mr-3 mb-3" to="/events" prepend-icon="grid_view">返回看板</v-btn>
-      <v-btn variant="text" class="mb-3" to="/events/manage" prepend-icon="settings">我的赛事</v-btn>
+      <v-btn color="white" variant="text" class="mr-3 mb-3" to="/events" prepend-icon="grid_view">返回看板</v-btn>
+      <v-btn color="white" variant="text" class="mb-3" to="/events/manage" prepend-icon="settings">我的赛事</v-btn>
     </template>
   </PageHero>
   <v-container class="py-8" style="max-width: 860px">
@@ -150,6 +154,8 @@ function onLogoSelected(files) {
               <v-text-field v-model="competitionEndTime" label="比赛结束时间" type="datetime-local" prepend-inner-icon="calendar_month" />
             </v-col>
           </v-row>
+          <v-text-field v-model="qqGroup" label="QQ群（可选，群号或邀请链接）" prepend-inner-icon="groups" />
+          <MarkdownEditor v-model="rulesMarkdown" label="赛事规则（Markdown，可选）" :rows="10" :maxLength="0" />
           <v-text-field v-model="maxTeams" label="最大队伍数" type="number" min="1" max="1000" prepend-inner-icon="group" />
           <div class="d-flex justify-end">
             <v-btn :loading="saving" color="primary" type="submit" prepend-icon="save">创建</v-btn>

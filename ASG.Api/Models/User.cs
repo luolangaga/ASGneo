@@ -25,6 +25,9 @@ namespace ASG.Api.Models
         // 战队关系 - 一个用户可以拥有一个战队
         public Guid? TeamId { get; set; }
 
+        // 用户当前展示的所属战队（成员身份，不等同于拥有者）
+        public Guid? DisplayTeamId { get; set; }
+
         // 导航属性 - 拥有的战队
         [ForeignKey("TeamId")]
         public virtual Team? OwnedTeam { get; set; }

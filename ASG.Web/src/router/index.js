@@ -127,6 +127,18 @@ const routes = [
     meta: { title: '登录', description: '登录统一赛事平台账户', noindex: true },
   },
   {
+    path: '/login/callback',
+    name: 'login-callback',
+    component: () => import('../views/LoginCallbackView.vue'),
+    meta: { title: '登录回调', description: '第三方登录回调处理', noindex: true },
+  },
+  {
+    path: '/oauth/new-account',
+    name: 'oauth-new-account',
+    component: () => import('../views/OAuthNewAccountView.vue'),
+    meta: { title: '完善账号信息', description: '第三方登录后完善资料并绑定', noindex: true },
+  },
+  {
     path: '/forgot-password',
     name: 'forgot-password',
     component: () => import('../views/ForgotPasswordView.vue'),
@@ -149,6 +161,12 @@ const routes = [
     name: 'privacy',
     component: () => import('../views/PrivacyView.vue'),
     meta: { title: '隐私政策', description: '隐私政策与数据使用说明' },
+  },
+  {
+    path: '/embed',
+    name: 'embed',
+    component: () => import('../views/WebEmbedView.vue'),
+    meta: { title: '网页嵌入', description: '内嵌浏览器打开外部网页' },
   },
   {
     path: '/register',

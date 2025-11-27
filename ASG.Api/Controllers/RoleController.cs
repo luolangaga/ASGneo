@@ -43,11 +43,11 @@ namespace ASG.Api.Controllers
             // 获取当前用户角色
             var currentUserRoleStr = User.FindFirst(ClaimTypes.Role)?.Value;
             if (!Enum.TryParse<UserRole>(currentUserRoleStr, out var currentUserRole))
-                return Forbid("无法确定当前用户角色");
+                return StatusCode(403, new { message = "无法确定当前用户角色" });
 
             // 检查是否有权限分配目标角色
             if (!_roleService.CanAssignRole(currentUserRole, updateRoleDto.Role))
-                return Forbid("您没有权限分配此角色");
+                return StatusCode(403, new { message = "您没有权限分配此角色" });
 
             var result = await _roleService.UpdateUserRoleAsync(updateRoleDto);
             if (result == null)
@@ -74,12 +74,13 @@ namespace ASG.Api.Controllers
         [Authorize(Policy = AuthorizationPolicies.CanManageUsers)]
         public async Task<ActionResult<UserListDto>> GetUsersWithPagination(
             [FromQuery] int pageNumber = 1, 
-            [FromQuery] int pageSize = 10)
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? search = null)
         {
             if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 1 || pageSize > 100) pageSize = 10;
 
-            var result = await _roleService.GetUsersWithPaginationAsync(pageNumber, pageSize);
+            var result = await _roleService.GetUsersWithPaginationAsync(pageNumber, pageSize, search);
             return Ok(result);
         }
 

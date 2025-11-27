@@ -1,0 +1,192 @@
+2025-11-24 00:23:45.862 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-24 00:23:45.938 +08:00 [INF] WebApplication built successfully.
+2025-11-24 00:23:46.019 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-24 00:23:46.020 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-24 00:23:46.474 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-24 00:23:46.594 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-24 00:23:46.727 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-24 00:23:46.728 +08:00 [INF] Local heroes import setting: true
+2025-11-24 00:23:46.729 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-24 00:23:46.729 +08:00 [INF] Local stats import setting: true
+2025-11-24 00:23:46.729 +08:00 [INF] Local stats overwrite setting: false
+2025-11-24 00:23:46.732 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-24 00:23:47.133 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-24 00:23:47.135 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-24 00:23:52.008 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-24 00:23:52.030 +08:00 [INF] Starting Kestrel...
+2025-11-24 00:23:52.081 +08:00 [ERR] Hosting failed to start
+System.IO.IOException: Failed to bind to address http://127.0.0.1:5250: address already in use.
+ ---> Microsoft.AspNetCore.Connections.AddressInUseException: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。
+ ---> System.Net.Sockets.SocketException (10048): 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。
+   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
+   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.LocalhostListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+2025-11-24 00:23:52.093 +08:00 [FTL] Host terminated unexpectedly during Kestrel startup
+System.IO.IOException: Failed to bind to address http://127.0.0.1:5250: address already in use.
+ ---> Microsoft.AspNetCore.Connections.AddressInUseException: 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。
+ ---> System.Net.Sockets.SocketException (10048): 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。
+   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
+   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.LocalhostListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+   at Microsoft.Extensions.Hosting.Internal.Host.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Run(IHost host)
+   at Program.<Main>$(String[] args) in C:\Users\luolan\ASG\ASG.Api\Program.cs:line 490
+2025-11-24 00:42:58.654 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-24 00:42:58.729 +08:00 [INF] WebApplication built successfully.
+2025-11-24 00:42:58.812 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-24 00:42:58.813 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-24 00:42:59.515 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-24 00:42:59.635 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-24 00:42:59.772 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-24 00:42:59.773 +08:00 [INF] Local heroes import setting: true
+2025-11-24 00:42:59.774 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-24 00:42:59.774 +08:00 [INF] Local stats import setting: true
+2025-11-24 00:42:59.774 +08:00 [INF] Local stats overwrite setting: false
+2025-11-24 00:42:59.777 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-24 00:43:00.078 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-24 00:43:00.080 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-24 00:43:05.165 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-24 00:43:05.188 +08:00 [INF] Starting Kestrel...
+2025-11-24 00:43:24.896 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-24 00:45:16.685 +08:00 [INF] UpdateRegistrationFormSchema EventId="7a969545-69da-4071-8882-bfedc99b191f" Size=298
+2025-11-24 00:46:59.495 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-24 00:46:59.495 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-24 00:46:59.495 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-24 00:47:31.020 +08:00 [INF] UpdateRegistrationFormSchema EventId="7a969545-69da-4071-8882-bfedc99b191f" Size=298
+2025-11-24 00:47:58.598 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-24 10:28:16.675 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-24 10:28:16.768 +08:00 [INF] WebApplication built successfully.
+2025-11-24 10:28:16.854 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-24 10:28:16.854 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-24 10:28:17.485 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-24 10:28:17.590 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-24 10:28:17.771 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-24 10:28:17.772 +08:00 [INF] Local heroes import setting: true
+2025-11-24 10:28:17.774 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-24 10:28:17.774 +08:00 [INF] Local stats import setting: true
+2025-11-24 10:28:17.774 +08:00 [INF] Local stats overwrite setting: false
+2025-11-24 10:28:17.776 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-24 10:28:18.082 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-24 10:28:18.084 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-24 10:28:22.618 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-24 10:28:22.650 +08:00 [INF] Starting Kestrel...
+2025-11-24 10:28:32.905 +08:00 [INF] User logged in successfully: luolan12323@outlook.com
+2025-11-24 10:28:40.254 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-24 10:28:40.254 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-24 10:28:40.254 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-24 10:28:42.263 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-24 10:29:04.589 +08:00 [INF] UpdateRegistrationFormSchema EventId="7a969545-69da-4071-8882-bfedc99b191f" Size=298
+2025-11-24 10:35:37.870 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-24 10:41:56.618 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-24 10:41:56.677 +08:00 [INF] WebApplication built successfully.
+2025-11-24 10:41:56.751 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-24 10:41:56.751 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-24 10:41:57.151 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-24 10:41:57.259 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-24 10:41:57.365 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-24 10:41:57.366 +08:00 [INF] Local heroes import setting: true
+2025-11-24 10:41:57.367 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-24 10:41:57.367 +08:00 [INF] Local stats import setting: true
+2025-11-24 10:41:57.367 +08:00 [INF] Local stats overwrite setting: false
+2025-11-24 10:41:57.370 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-24 10:41:57.668 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-24 10:41:57.671 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-24 10:42:02.113 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-24 10:42:02.132 +08:00 [INF] Starting Kestrel...
+2025-11-24 10:42:47.388 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-24 10:42:59.455 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-24 10:42:59.458 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-24 10:42:59.459 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-24 10:43:01.058 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-24 10:50:10.084 +08:00 [ERR] Failed executing DbCommand (6ms) [Parameters=[@__eventId_0='?' (DbType = Guid), @__teamId_1='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT e."Id", e."AnswersJson", e."EventId", e."SubmittedAt", e."SubmittedByUserId", e."TeamId", e."UpdatedAt"
+FROM "EventRegistrationAnswers" AS e
+WHERE e."EventId" = @__eventId_0 AND e."TeamId" = @__teamId_1
+LIMIT 1
+2025-11-24 10:50:10.097 +08:00 [ERR] An exception occurred while iterating over the results of a query for context type 'ASG.Api.Data.ApplicationDbContext'.
+Npgsql.PostgresException (0x80004005): 42P01: 关系 "EventRegistrationAnswers" 不存在
+
+POSITION: 118
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: 错误
+    SqlState: 42P01
+    MessageText: 关系 "EventRegistrationAnswers" 不存在
+    Position: 118
+    File: parse_relation.c
+    Line: 1469
+    Routine: parserOpenTable
+Npgsql.PostgresException (0x80004005): 42P01: 关系 "EventRegistrationAnswers" 不存在
+
+POSITION: 118
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: 错误
+    SqlState: 42P01
+    MessageText: 关系 "EventRegistrationAnswers" 不存在
+    Position: 118
+    File: parse_relation.c
+    Line: 1469
+    Routine: parserOpenTable

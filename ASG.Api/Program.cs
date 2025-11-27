@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+// using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
-using Microsoft.AspNetCore.OpenApi;
+// using Microsoft.AspNetCore.OpenApi;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 using System.Text;
@@ -21,6 +21,7 @@ using ASG.Api.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 // 应用启动入口：配置日志、端口、服务、认证与授权、数据库、路由以及数据导入开关
 var builder = WebApplication.CreateBuilder(args);
@@ -101,7 +102,11 @@ builder.Services.AddControllers(options =>
                 }
             };
 
-            return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(payload);
+            return new Microsoft.AspNetCore.Mvc.JsonResult(payload)
+            {
+                StatusCode = 400,
+                ContentType = "application/json"
+            };
         };
     });
 
@@ -121,17 +126,17 @@ builder.Services.AddCors(options =>
     {
         if (builder.Environment.IsDevelopment())
         {
-            // 开发环境：开放所有跨域（来源/方法/头）
             policy.AllowAnyOrigin()
                   .AllowAnyHeader()
-                  .AllowAnyMethod();
+                  .AllowAnyMethod()
+                  .WithExposedHeaders("X-Total-Count", "Content-Range");
         }
         else
         {
-            // 非开发环境：可根据需要限制来源
             policy.WithOrigins("https://idvevent.cn","https://admin.idvevent.cn","https://person.idvevent.cn")
                   .AllowAnyHeader()
-                  .AllowAnyMethod();
+                  .AllowAnyMethod()
+                  .WithExposedHeaders("X-Total-Count", "Content-Range");
         }
     });
 });
@@ -210,7 +215,10 @@ builder.Services.AddScoped<IRecruitmentService, RecruitmentService>();
 builder.Services.AddScoped<IApplicationService, ApplicationService>();
 builder.Services.AddScoped<IPayrollService, PayrollService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IExternalAuthService, ExternalAuthService>();
 builder.Services.AddHttpClient();
+builder.Services.Configure<ASG.Api.Services.BotOptions>(builder.Configuration.GetSection("Bot"));
+builder.Services.AddHostedService<ASG.Api.Services.QqBotHostedService>();
 // 远端数据抓取 HttpClient：网易接口（自动解压 gzip/deflate/br）
 builder.Services.AddHttpClient("netease", c =>
 {
@@ -236,41 +244,7 @@ AuthorizationPolicies.ConfigurePolicies(builder.Services);
 
 // OpenAPI 与文档：Swagger 输出 JSON + Scalar UI 展示
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "ASG API Framework", Version = "v1" });
-
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    if (File.Exists(xmlPath))
-    {
-        c.IncludeXmlComments(xmlPath);
-    }
-
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
-});
+builder.Services.AddSwaggerGen();
 
 // 构建 Web 应用（依赖注入容器已就绪）
 var app = builder.Build();
@@ -324,9 +298,9 @@ else
 }
 
 // 数据库初始化：打印提供者信息、打补丁/迁移、按配置执行本地数据导入
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     // 打印当前使用的 EF 提供者与数据库名（便于排查导入目标库）
     try
     {
@@ -338,23 +312,156 @@ using (var scope = app.Services.CreateScope())
     // 先尝试直接给 Events 表添加 CustomData 列（幂等），失败则走 EF Migrate
     try
     {
-        // 尝试直接为 Events 表添加 CustomData 列（幂等）
         context.Database.ExecuteSqlRaw("ALTER TABLE \"Events\" ADD COLUMN IF NOT EXISTS \"CustomData\" text NOT NULL DEFAULT json_build_object()::text ");
-        Log.Information("Applied schema patch for Events.CustomData.");
+        context.Database.ExecuteSqlRaw("ALTER TABLE \"Teams\" ADD COLUMN IF NOT EXISTS \"HidePlayers\" boolean NOT NULL DEFAULT false");
+        context.Database.ExecuteSqlRaw("ALTER TABLE \"Users\" ADD COLUMN IF NOT EXISTS \"DisplayTeamId\" uuid NULL");
+        context.Database.ExecuteSqlRaw("ALTER TABLE \"Events\" ADD COLUMN IF NOT EXISTS \"QqGroup\" character varying(50) NULL");
+        context.Database.ExecuteSqlRaw("ALTER TABLE \"Events\" ADD COLUMN IF NOT EXISTS \"RulesMarkdown\" text NULL");
+        context.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS ""TeamReviews"" (
+            ""Id"" uuid PRIMARY KEY,
+            ""TeamId"" uuid NOT NULL,
+            ""EventId"" uuid NULL,
+            ""Rating"" integer NOT NULL DEFAULT 0,
+            ""CommentMarkdown"" text NULL,
+            ""CommunityPostId"" uuid NULL,
+            ""CreatedByUserId"" text NULL,
+            ""CreatedAt"" timestamp with time zone NOT NULL DEFAULT now(),
+            ""UpdatedAt"" timestamp with time zone NOT NULL DEFAULT now(),
+            ""IsDeleted"" boolean NOT NULL DEFAULT false,
+            CONSTRAINT ""FK_TeamReviews_Teams_TeamId"" FOREIGN KEY (""TeamId"") REFERENCES ""Teams""(""Id"") ON DELETE CASCADE,
+            CONSTRAINT ""FK_TeamReviews_Events_EventId"" FOREIGN KEY (""EventId"") REFERENCES ""Events""(""Id"") ON DELETE SET NULL
+        )");
+        context.Database.ExecuteSqlRaw("ALTER TABLE \"TeamReviews\" ADD COLUMN IF NOT EXISTS \"CommunityPostId\" uuid NULL");
+        context.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_TeamReviews_TeamId"" ON ""TeamReviews""(""TeamId"")");
+        context.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_TeamReviews_EventId"" ON ""TeamReviews""(""EventId"")");
+        context.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS ""EventRegistrationAnswers"" (
+            ""Id"" uuid PRIMARY KEY,
+            ""EventId"" uuid NOT NULL,
+            ""TeamId"" uuid NOT NULL,
+            ""AnswersJson"" text NOT NULL,
+            ""SubmittedByUserId"" text NULL,
+            ""SubmittedAt"" timestamp with time zone NOT NULL DEFAULT now(),
+            ""UpdatedAt"" timestamp with time zone NULL,
+            CONSTRAINT ""FK_EventRegistrationAnswers_Events_EventId"" FOREIGN KEY (""EventId"") REFERENCES ""Events""(""Id"") ON DELETE CASCADE,
+            CONSTRAINT ""FK_EventRegistrationAnswers_Teams_TeamId"" FOREIGN KEY (""TeamId"") REFERENCES ""Teams""(""Id"") ON DELETE CASCADE
+        )");
+        context.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_EventRegistrationAnswers_TeamId"" ON ""EventRegistrationAnswers""(""TeamId"")");
+        context.Database.ExecuteSqlRaw(@"CREATE UNIQUE INDEX IF NOT EXISTS ""IX_EventRegistrationAnswers_EventId_TeamId"" ON ""EventRegistrationAnswers""(""EventId"", ""TeamId"")");
+        context.Database.ExecuteSqlRaw("ALTER TABLE \"Players\" ADD COLUMN IF NOT EXISTS \"PlayerType\" integer NOT NULL DEFAULT 2");
+        context.Database.ExecuteSqlRaw("ALTER TABLE \"Teams\" ADD COLUMN IF NOT EXISTS \"HasDispute\" boolean NOT NULL DEFAULT false");
+        context.Database.ExecuteSqlRaw("ALTER TABLE \"Teams\" ADD COLUMN IF NOT EXISTS \"DisputeDetail\" text NULL");
+        context.Database.ExecuteSqlRaw("ALTER TABLE \"Teams\" ADD COLUMN IF NOT EXISTS \"CommunityPostId\" uuid NULL");
+        Log.Information("Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.");
     }
     catch (Exception patchEx)
     {
         Log.Warning(patchEx, "Schema patch failed; attempting EF Core migrations for new databases.");
         try
         {
+            var conn = context.Database.GetDbConnection();
+            await conn.OpenAsync();
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "CREATE TABLE IF NOT EXISTS \"__EFMigrationsHistory\" (\"MigrationId\" character varying(150) NOT NULL, \"ProductVersion\" character varying(32) NOT NULL, CONSTRAINT \"PK___EFMigrationsHistory\" PRIMARY KEY (\"MigrationId\"))";
+                await cmd.ExecuteNonQueryAsync();
+            }
+            long historyCount = 0;
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "SELECT COUNT(*) FROM \"__EFMigrationsHistory\"";
+                var r = await cmd.ExecuteScalarAsync();
+                historyCount = r == null || r == DBNull.Value ? 0 : Convert.ToInt64(r);
+            }
+            bool hasSchema = false;
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'AspNetRoles')";
+                var r = await cmd.ExecuteScalarAsync();
+                hasSchema = r is bool b && b;
+            }
+            if (historyCount == 0 && hasSchema)
+            {
+                var v = typeof(DbContext).Assembly.GetName().Version;
+                var pv = v == null ? "8.0.0" : $"{v.Major}.{v.Minor}.{v.Build}";
+                foreach (var id in context.Database.GetMigrations())
+                {
+                    using var cmdIns = conn.CreateCommand();
+                    cmdIns.CommandText = "INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\") VALUES ($id, $pv) ON CONFLICT (\"MigrationId\") DO NOTHING";
+                    var pId = cmdIns.CreateParameter();
+                    pId.ParameterName = "$id";
+                    pId.Value = id;
+                    cmdIns.Parameters.Add(pId);
+                    var pPv = cmdIns.CreateParameter();
+                    pPv.ParameterName = "$pv";
+                    pPv.Value = pv;
+                    cmdIns.Parameters.Add(pPv);
+                    await cmdIns.ExecuteNonQueryAsync();
+                }
+                Log.Information("Seeded EF migrations history for existing schema.");
+            }
+            await conn.CloseAsync();
+            try
+            {
+                var pending = context.Database.GetPendingMigrations().ToList();
+                var applied = context.Database.GetAppliedMigrations().ToList();
+                Log.Information("EF Migrations: Pending={PendingCount}, Applied={AppliedCount}", pending.Count, applied.Count);
+                if (pending.Count > 0)
+                {
+                    Log.Information("Pending migrations: {PendingList}", string.Join(", ", pending));
+                    try
+                    {
+                        var migrator = context.Database.GetService<IMigrator>();
+                        var script = migrator.GenerateScript();
+                        var logsDir = Path.Combine(AppContext.BaseDirectory, "logs");
+                        Directory.CreateDirectory(logsDir);
+                        var stamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+                        var scriptPath = Path.Combine(logsDir, $"ef-migrate-{stamp}.sql");
+                        File.WriteAllText(scriptPath, script);
+                        Log.Information("Generated idempotent migration script: {Path} (Length={Length} chars)", scriptPath, script?.Length ?? 0);
+                    }
+                    catch (Exception genEx)
+                    {
+                        Log.Warning(genEx, "Failed to generate migration script; continuing with Database.Migrate().");
+                    }
+                }
+            }
+            catch (Exception preEx)
+            {
+                Log.Warning(preEx, "Failed to enumerate pending/applied migrations; proceeding to migrate.");
+            }
+
             context.Database.Migrate();
+
+            try
+            {
+                var nowApplied = context.Database.GetAppliedMigrations().ToList();
+                Log.Information("EF Migrations applied successfully. Total applied now: {Count}. Last={Last}", nowApplied.Count, nowApplied.LastOrDefault());
+            }
+            catch { }
             Log.Information("Database migrated successfully after patch failure.");
         }
         catch (Exception migEx)
         {
             Log.Error(migEx, "Database migration failed after patch failure.");
-            // 不中断启动（部分环境可能已有旧库），继续后续流程
         }
+    }
+
+    try
+    {
+        var pendingNormal = context.Database.GetPendingMigrations().ToList();
+        var appliedNormal = context.Database.GetAppliedMigrations().ToList();
+        Log.Information("EF Migrations (normal path): Pending={PendingCount}, Applied={AppliedCount}", pendingNormal.Count, appliedNormal.Count);
+        if (pendingNormal.Count > 0)
+        {
+            Log.Information("Pending migrations (normal path): {PendingList}", string.Join(", ", pendingNormal));
+            context.Database.Migrate();
+            var nowAppliedNormal = context.Database.GetAppliedMigrations().ToList();
+            Log.Information("EF Migrations applied (normal path). Total applied now: {Count}. Last={Last}", nowAppliedNormal.Count, nowAppliedNormal.LastOrDefault());
+        }
+    }
+    catch (Exception migEx)
+    {
+        Log.Warning(migEx, "Database migration failed on normal path.");
     }
 
     // 本地导入参数（支持 appsettings / 环境变量 DataSeed__* / 命令行）：
@@ -402,6 +509,59 @@ using (var scope = app.Services.CreateScope())
     else
     {
         Log.Information("Local stats import skipped by setting.");
+    }
+
+    // 身份角色同步：确保 Identity 角色与用户的枚举角色一致
+    try
+    {
+        var rolesSet = context.Set<IdentityRole>();
+        var userRolesSet = context.Set<IdentityUserRole<string>>();
+        foreach (var rn in new[] { "User", "Admin" })
+        {
+            var existing = await rolesSet.FirstOrDefaultAsync(x => x.Name == rn);
+            if (existing == null)
+            {
+                rolesSet.Add(new IdentityRole { Id = Guid.NewGuid().ToString(), Name = rn, NormalizedName = rn.ToUpperInvariant() });
+            }
+        }
+        await context.SaveChangesAsync();
+        var roleMap = await rolesSet.ToDictionaryAsync(r => r.Name!, r => r.Id);
+        var userIds = await context.Users.Select(u => u.Id).ToListAsync();
+        foreach (var uid in userIds)
+        {
+            var u = await context.Users.FindAsync(uid);
+            if (u == null) continue;
+            var desired = u.RoleName;
+            if (!roleMap.TryGetValue(desired, out var desiredRoleId))
+            {
+                var newRole = new IdentityRole { Id = Guid.NewGuid().ToString(), Name = desired, NormalizedName = desired.ToUpperInvariant() };
+                rolesSet.Add(newRole);
+                await context.SaveChangesAsync();
+                roleMap[desired] = newRole.Id;
+                desiredRoleId = newRole.Id;
+            }
+            var currentRoleIds = await userRolesSet.Where(x => x.UserId == uid).Select(x => x.RoleId).ToListAsync();
+            var currentNames = roleMap.Where(kv => currentRoleIds.Contains(kv.Value)).Select(kv => kv.Key).ToList();
+            foreach (var name in currentNames)
+            {
+                if ((name == "User" || name == "Admin") && name != desired)
+                {
+                    var rid = roleMap[name];
+                    var link = await userRolesSet.FirstOrDefaultAsync(x => x.UserId == uid && x.RoleId == rid);
+                    if (link != null) userRolesSet.Remove(link);
+                }
+            }
+            if (!currentRoleIds.Contains(desiredRoleId))
+            {
+                userRolesSet.Add(new IdentityUserRole<string> { UserId = uid, RoleId = desiredRoleId });
+            }
+        }
+        await context.SaveChangesAsync();
+        Log.Information("Synchronized Identity roles with Users table roles: Count={Count}", userIds.Count);
+    }
+    catch (Exception syncEx)
+    {
+        Log.Warning(syncEx, "Identity roles synchronization failed; continuing startup.");
     }
 
     // 开发环境演示数据（赛事/战队/管理员），生产环境不执行

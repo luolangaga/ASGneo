@@ -64,6 +64,8 @@ namespace ASG.Api.Services
                 Id = Guid.NewGuid(),
                 Name = createEventDto.Name,
                 Description = createEventDto.Description,
+                QqGroup = createEventDto.QqGroup,
+                RulesMarkdown = createEventDto.RulesMarkdown,
                 RegistrationStartTime = regStart,
                 RegistrationEndTime = regEnd,
                 CompetitionStartTime = compStart,
@@ -110,6 +112,8 @@ namespace ASG.Api.Services
             // 更新赛事信息
             eventEntity.Name = updateEventDto.Name;
             eventEntity.Description = updateEventDto.Description;
+            eventEntity.QqGroup = updateEventDto.QqGroup;
+            eventEntity.RulesMarkdown = updateEventDto.RulesMarkdown;
             eventEntity.RegistrationStartTime = regStart;
             eventEntity.RegistrationEndTime = regEnd;
             eventEntity.CompetitionStartTime = compStart;
@@ -128,7 +132,7 @@ namespace ASG.Api.Services
                 return false;
 
             var user = await _userManager.FindByIdAsync(userId);
-            var isAdmin = user != null && await _userManager.IsInRoleAsync(user, "Admin");
+            var isAdmin = user != null && (user.Role == UserRole.Admin || user.Role == UserRole.SuperAdmin);
             if (!(eventEntity.CreatedByUserId == userId || isAdmin))
             {
                 throw new UnauthorizedAccessException("您没有权限删除此赛事");
@@ -189,6 +193,63 @@ namespace ASG.Api.Services
                 }
             }
 
+            var (minReg, maxReg, minSur, maxSur) = GetPlayerTypeRequirements(eventEntity);
+            if (minReg.HasValue || minSur.HasValue)
+            {
+                var teamPlayers = await _teamRepository.GetTeamPlayersAsync(registerDto.TeamId);
+                var regulatorCount = teamPlayers.Count(p => p.PlayerType == PlayerType.Regulator);
+                var survivorCount = teamPlayers.Count(p => p.PlayerType == PlayerType.Survivor || (int)p.PlayerType == 0);
+                if (minReg.HasValue && regulatorCount < minReg.Value)
+                {
+                    throw new InvalidOperationException($"不满足报名要求：监管者至少 {minReg.Value} 名");
+                }
+                if (minSur.HasValue && survivorCount < minSur.Value)
+                {
+                    throw new InvalidOperationException($"不满足报名要求：求生者至少 {minSur.Value} 名");
+                }
+                if ((maxReg.HasValue && regulatorCount > (maxReg.Value)) || (maxSur.HasValue && survivorCount > (maxSur.Value)))
+                {
+                    var answers = await _eventRepository.GetRegistrationAnswersAsync(eventId, registerDto.TeamId);
+                    var json = answers?.AnswersJson ?? "{}";
+                    List<Guid> selected = new List<Guid>();
+                    try
+                    {
+                        using var docSel = System.Text.Json.JsonDocument.Parse(string.IsNullOrWhiteSpace(json) ? "{}" : json);
+                        var rootSel = docSel.RootElement;
+                        if (rootSel.ValueKind == System.Text.Json.JsonValueKind.Object)
+                        {
+                            System.Text.Json.JsonElement sel;
+                            if (rootSel.TryGetProperty("selectedPlayerIds", out sel)) { }
+                            else if (rootSel.TryGetProperty("SelectedPlayerIds", out sel)) { }
+                            if (sel.ValueKind == System.Text.Json.JsonValueKind.Array)
+                            {
+                                foreach (var e in sel.EnumerateArray())
+                                {
+                                    if (e.ValueKind == System.Text.Json.JsonValueKind.String && Guid.TryParse(e.GetString(), out var gid)) selected.Add(gid);
+                                }
+                            }
+                        }
+                    }
+                    catch { }
+                    if (selected.Count == 0)
+                    {
+                        throw new InvalidOperationException("队员人数超过上限，请在报名信息中选择参赛队员后再提交");
+                    }
+                    var idSet = new HashSet<Guid>(teamPlayers.Select(p => p.Id));
+                    // 仅统计选择的队员类型数量
+                    var selReg = teamPlayers.Count(p => selected.Contains(p.Id) && p.PlayerType == PlayerType.Regulator);
+                    var selSur = teamPlayers.Count(p => selected.Contains(p.Id) && (p.PlayerType == PlayerType.Survivor || (int)p.PlayerType == 0));
+                    if (maxReg.HasValue && selReg > maxReg.Value)
+                    {
+                        throw new InvalidOperationException($"已选择的监管者超过上限：最多 {maxReg.Value} 名");
+                    }
+                    if (maxSur.HasValue && selSur > maxSur.Value)
+                    {
+                        throw new InvalidOperationException($"已选择的求生者超过上限：最多 {maxSur.Value} 名");
+                    }
+                }
+            }
+
             var teamEvent = new TeamEvent
             {
                 TeamId = registerDto.TeamId,
@@ -201,6 +262,88 @@ namespace ASG.Api.Services
 
             var createdTeamEvent = await _eventRepository.RegisterTeamToEventAsync(teamEvent);
             return MapToTeamEventDto(createdTeamEvent, team.Name, eventEntity.Name);
+        }
+
+        private static (int? minReg, int? maxReg, int? minSur, int? maxSur) GetPlayerTypeRequirements(Event ev)
+        {
+            if (string.IsNullOrWhiteSpace(ev.CustomData)) return (null, null, null, null);
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(ev.CustomData);
+                var root = doc.RootElement;
+                if (root.ValueKind != System.Text.Json.JsonValueKind.Object) return (null, null, null, null);
+                System.Text.Json.JsonElement cfg;
+                if (root.TryGetProperty("playerTypeRequirements", out cfg))
+                {
+                    if (cfg.ValueKind == System.Text.Json.JsonValueKind.String)
+                    {
+                        var s = cfg.GetString();
+                        if (!string.IsNullOrWhiteSpace(s))
+                        {
+                            try
+                            {
+                                using var inner = System.Text.Json.JsonDocument.Parse(s);
+                                cfg = inner.RootElement.Clone();
+                            }
+                            catch { }
+                        }
+                    }
+                    int? ReadInt(System.Text.Json.JsonElement obj, string key)
+                    {
+                        if (obj.ValueKind != System.Text.Json.JsonValueKind.Object) return null;
+                        if (obj.TryGetProperty(key, out var v))
+                        {
+                            if (v.ValueKind == System.Text.Json.JsonValueKind.Number && v.TryGetInt32(out var i)) return i;
+                            if (v.ValueKind == System.Text.Json.JsonValueKind.String && int.TryParse(v.GetString(), out var si)) return si;
+                        }
+                        foreach (var p in obj.EnumerateObject())
+                        {
+                            if (string.Equals(p.Name, key, StringComparison.OrdinalIgnoreCase))
+                            {
+                                var el = p.Value;
+                                if (el.ValueKind == System.Text.Json.JsonValueKind.Number && el.TryGetInt32(out var ii)) return ii;
+                                if (el.ValueKind == System.Text.Json.JsonValueKind.String && int.TryParse(el.GetString(), out var sii)) return sii;
+                            }
+                        }
+                        return null;
+                    }
+
+                    int? minReg = null, maxReg = null, minSur = null, maxSur = null;
+                    if (cfg.ValueKind == System.Text.Json.JsonValueKind.Object)
+                    {
+                        if (cfg.TryGetProperty("regulator", out var reg))
+                        {
+                            minReg = ReadInt(reg, "min");
+                            maxReg = ReadInt(reg, "max");
+                        }
+                        foreach (var p in cfg.EnumerateObject())
+                        {
+                            if (string.Equals(p.Name, "regulator", StringComparison.OrdinalIgnoreCase))
+                            {
+                                minReg ??= ReadInt(p.Value, "min");
+                                maxReg ??= ReadInt(p.Value, "max");
+                            }
+                            if (string.Equals(p.Name, "survivor", StringComparison.OrdinalIgnoreCase))
+                            {
+                                minSur ??= ReadInt(p.Value, "min");
+                                maxSur ??= ReadInt(p.Value, "max");
+                            }
+                        }
+                        if (!cfg.TryGetProperty("survivor", out var sur))
+                        {
+                            // already tried case-insensitive above
+                        }
+                        else
+                        {
+                            minSur ??= ReadInt(sur, "min");
+                            maxSur ??= ReadInt(sur, "max");
+                        }
+                    }
+                    return (minReg, maxReg, minSur, maxSur);
+                }
+            }
+            catch { }
+            return (null, null, null, null);
         }
 
         public async Task<bool> UnregisterTeamFromEventAsync(Guid eventId, Guid teamId, string userId)
@@ -349,7 +492,19 @@ namespace ASG.Api.Services
         public async Task<IEnumerable<TeamEventDto>> GetEventRegistrationsAsync(Guid eventId)
         {
             var registrations = await _eventRepository.GetEventRegistrationsAsync(eventId);
-            return registrations.Select(te => MapToTeamEventDto(te, te.Team?.Name ?? "", te.Event?.Name ?? ""));
+            var list = new List<TeamEventDto>();
+            foreach (var te in registrations)
+            {
+                var dto = MapToTeamEventDto(te, te.Team?.Name ?? "", te.Event?.Name ?? "");
+                dto.TeamHasDispute = te.Team?.HasDispute ?? false;
+                dto.TeamDisputeDetail = te.Team?.DisputeDetail;
+                dto.TeamCommunityPostId = te.Team?.CommunityPostId;
+                var (avg, count) = await _teamRepository.GetTeamRatingSummaryAsync(te.TeamId);
+                dto.TeamRatingAverage = avg;
+                dto.TeamRatingCount = count;
+                list.Add(dto);
+            }
+            return list;
         }
 
         public async Task<IEnumerable<TeamEventDto>> GetEventRegistrationsWithSensitiveAsync(Guid eventId, string? userId)
@@ -372,14 +527,22 @@ namespace ASG.Api.Services
                 return $"{prefix}****{suffix}";
             }
 
-            return registrations.Select(te =>
+            var list = new List<TeamEventDto>();
+            foreach (var te in registrations)
             {
                 var dto = MapToTeamEventDto(te, te.Team?.Name ?? "", te.Event?.Name ?? "");
                 var qq = te.Team?.QqNumber;
                 dto.QqNumberMasked = Mask(qq);
                 dto.QqNumberFull = canViewFull ? qq : null;
-                return dto;
-            });
+                dto.TeamHasDispute = te.Team?.HasDispute ?? false;
+                dto.TeamDisputeDetail = te.Team?.DisputeDetail;
+                dto.TeamCommunityPostId = te.Team?.CommunityPostId;
+                var (avg, count) = await _teamRepository.GetTeamRatingSummaryAsync(te.TeamId);
+                dto.TeamRatingAverage = avg;
+                dto.TeamRatingCount = count;
+                list.Add(dto);
+            }
+            return list;
         }
 
         public async Task<IEnumerable<TeamEventDto>> GetTeamRegistrationsAsync(Guid teamId)
@@ -502,7 +665,7 @@ namespace ASG.Api.Services
 
             // 管理员可以管理
             var user = await _userManager.FindByIdAsync(userId);
-            if (user != null && await _userManager.IsInRoleAsync(user, "Admin"))
+            if (user != null && (user.Role == UserRole.Admin || user.Role == UserRole.SuperAdmin))
                 return true;
 
             if (eventEntity.EventAdmins != null && eventEntity.EventAdmins.Any(a => a.UserId == userId))
@@ -521,9 +684,18 @@ namespace ASG.Api.Services
             if (team.OwnerId == userId)
                 return true;
 
+            // 兼容旧数据：旧字段 UserId 表示拥有者
+            if (string.IsNullOrEmpty(team.OwnerId) && team.UserId == userId)
+                return true;
+
             // 战队成员可以管理
             var players = await _teamRepository.GetTeamPlayersAsync(teamId);
             if (players.Any(p => p.UserId == userId))
+                return true;
+
+            // 系统管理员也可管理（用于紧急处理）
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null && (user.Role == UserRole.Admin || user.Role == UserRole.SuperAdmin))
                 return true;
 
             return false;
@@ -531,7 +703,6 @@ namespace ASG.Api.Services
 
         public async Task<byte[]> ExportEventRegistrationsCsvAsync(Guid eventId, string userId)
         {
-            // 权限校验：赛事创建者或管理员
             if (!await CanUserManageEventAsync(eventId, userId))
             {
                 throw new UnauthorizedAccessException("您没有权限导出此赛事的报名信息");
@@ -545,48 +716,158 @@ namespace ASG.Api.Services
 
             var registrations = await _eventRepository.GetEventRegistrationsAsync(eventId);
 
-            var sb = new StringBuilder();
-            // 表头
-            sb.AppendLine(string.Join(",",
-                new[]
+            var schemaFields = new List<(string key, string label)>();
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(eventEntity.CustomData))
                 {
-                    "EventName","EventId","TeamName","TeamId","QQNumber","RegistrationStatus","RegistrationTime","Notes",
-                    "PlayerId","PlayerName","GameId","GameRank","PlayerDescription"
-                }));
+                    using var doc = System.Text.Json.JsonDocument.Parse(eventEntity.CustomData);
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("registrationFormSchema", out var sf))
+                    {
+                        var schemaJson = sf.ValueKind == System.Text.Json.JsonValueKind.String ? (sf.GetString() ?? "{}") : sf.GetRawText();
+                        using var sd = System.Text.Json.JsonDocument.Parse(string.IsNullOrWhiteSpace(schemaJson) ? "{}" : schemaJson);
+                        if (sd.RootElement.TryGetProperty("fields", out var fields) && fields.ValueKind == System.Text.Json.JsonValueKind.Array)
+                        {
+                            foreach (var f in fields.EnumerateArray())
+                            {
+                                string? key = null; string? label = null;
+                                if (f.TryGetProperty("id", out var pid)) key = pid.GetString();
+                                else if (f.TryGetProperty("Id", out var pId)) key = pId.GetString();
+                                if (f.TryGetProperty("label", out var pl)) label = pl.GetString();
+                                else if (f.TryGetProperty("Label", out var pL)) label = pL.GetString();
+                                if (!string.IsNullOrWhiteSpace(key)) schemaFields.Add((key!, string.IsNullOrWhiteSpace(label) ? key! : label!));
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
 
-            foreach (var te in registrations)
+            var header = new List<string>
+            {
+                "EventName","EventId","TeamName","TeamId","QQNumber","RegistrationStatus","RegistrationTime","Notes",
+                "PlayerId","PlayerName","GameId","GameRank","PlayerDescription"
+            };
+            foreach (var f in schemaFields) header.Add(f.label);
+
+            var sb = new StringBuilder();
+            sb.AppendLine(string.Join(",", header.Select(CsvEscape)));
+
+            foreach (var te in registrations.OrderBy(te => te.Team?.Name ?? string.Empty))
             {
                 var teamName = te.Team?.Name ?? string.Empty;
                 var teamQq = te.Team?.QqNumber ?? string.Empty;
                 var players = await _teamRepository.GetTeamPlayersAsync(te.TeamId);
 
+                string[] answerCols;
+                List<Guid> selectedPlayerIds = new List<Guid>();
+                try
+                {
+                    var ans = await _eventRepository.GetRegistrationAnswersAsync(eventId, te.TeamId);
+                    var json = ans?.AnswersJson ?? "{}";
+                    using var docAns = System.Text.Json.JsonDocument.Parse(string.IsNullOrWhiteSpace(json) ? "{}" : json);
+                    var rootAns = docAns.RootElement;
+                    if (rootAns.ValueKind == System.Text.Json.JsonValueKind.Object)
+                    {
+                        System.Text.Json.JsonElement sel;
+                        if (rootAns.TryGetProperty("selectedPlayerIds", out sel) || rootAns.TryGetProperty("SelectedPlayerIds", out sel))
+                        {
+                            if (sel.ValueKind == System.Text.Json.JsonValueKind.Array)
+                            {
+                                foreach (var e in sel.EnumerateArray())
+                                {
+                                    if (e.ValueKind == System.Text.Json.JsonValueKind.String)
+                                    {
+                                        if (Guid.TryParse(e.GetString(), out var gid)) selectedPlayerIds.Add(gid);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    string ToStr(System.Text.Json.JsonElement el)
+                    {
+                        switch (el.ValueKind)
+                        {
+                            case System.Text.Json.JsonValueKind.String:
+                                return el.GetString() ?? string.Empty;
+                            case System.Text.Json.JsonValueKind.Number:
+                                return el.ToString();
+                            case System.Text.Json.JsonValueKind.True:
+                                return "true";
+                            case System.Text.Json.JsonValueKind.False:
+                                return "false";
+                            case System.Text.Json.JsonValueKind.Array:
+                                var arr = el.EnumerateArray().Select(e => ToStr(e));
+                                return string.Join(";", arr);
+                            case System.Text.Json.JsonValueKind.Object:
+                                return el.GetRawText();
+                            case System.Text.Json.JsonValueKind.Null:
+                                return string.Empty;
+                            default:
+                                return el.GetRawText();
+                        }
+                    }
+                    answerCols = schemaFields.Select(f =>
+                    {
+                        string val = string.Empty;
+                        if (rootAns.ValueKind == System.Text.Json.JsonValueKind.Object)
+                        {
+                            if (rootAns.TryGetProperty(f.key, out var v)) val = ToStr(v);
+                            else
+                            {
+                                foreach (var p in rootAns.EnumerateObject())
+                                {
+                                    if (string.Equals(p.Name, f.key, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        val = ToStr(p.Value);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        return CsvEscape(val);
+                    }).ToArray();
+                }
+                catch
+                {
+                    answerCols = schemaFields.Select(f => CsvEscape(string.Empty)).ToArray();
+                }
+
+                if (selectedPlayerIds.Count > 0)
+                {
+                    players = players.Where(p => selectedPlayerIds.Contains(p.Id)).ToList();
+                }
+
                 if (players == null || !players.Any())
                 {
-                    // 没有队员时也输出一行，队员字段为空
-                        sb.AppendLine(string.Join(",",
-                            new[]
-                            {
-                            CsvEscape(eventEntity.Name), CsvEscape(eventEntity.Id.ToString()), CsvEscape(teamName), CsvEscape(te.TeamId.ToString()), CsvEscape(teamQq),
-                            CsvEscape(te.Status.ToString()), CsvEscape(te.RegistrationTime.ToString("yyyy-MM-ddTHH:mm:ss")), CsvEscape(te.Notes ?? string.Empty),
-                            CsvEscape(string.Empty), CsvEscape(string.Empty), CsvEscape(string.Empty), CsvEscape(string.Empty), CsvEscape(string.Empty)
-                            }));
+                    var row = new List<string>
+                    {
+                        CsvEscape(eventEntity.Name), CsvEscape(eventEntity.Id.ToString()), CsvEscape(teamName), CsvEscape(te.TeamId.ToString()), CsvEscape(teamQq),
+                        CsvEscape(te.Status.ToString()), CsvEscape(te.RegistrationTime.ToString("yyyy-MM-ddTHH:mm:ss")), CsvEscape(te.Notes ?? string.Empty),
+                        CsvEscape(string.Empty), CsvEscape(string.Empty), CsvEscape(string.Empty), CsvEscape(string.Empty), CsvEscape(string.Empty)
+                    };
+                    row.AddRange(answerCols);
+                    sb.AppendLine(string.Join(",", row));
+                    sb.AppendLine("");
                 }
                 else
                 {
                     foreach (var p in players)
                     {
-                        sb.AppendLine(string.Join(",",
-                            new[]
-                            {
-                                CsvEscape(eventEntity.Name), CsvEscape(eventEntity.Id.ToString()), CsvEscape(teamName), CsvEscape(te.TeamId.ToString()), CsvEscape(teamQq),
-                                CsvEscape(te.Status.ToString()), CsvEscape(te.RegistrationTime.ToString("yyyy-MM-ddTHH:mm:ss")), CsvEscape(te.Notes ?? string.Empty),
-                                CsvEscape(p.Id.ToString()), CsvEscape(p.Name ?? string.Empty), CsvEscape(p.GameId ?? string.Empty), CsvEscape(p.GameRank ?? string.Empty), CsvEscape(p.Description ?? string.Empty)
-                            }));
+                        var row = new List<string>
+                        {
+                            CsvEscape(eventEntity.Name), CsvEscape(eventEntity.Id.ToString()), CsvEscape(teamName), CsvEscape(te.TeamId.ToString()), CsvEscape(teamQq),
+                            CsvEscape(te.Status.ToString()), CsvEscape(te.RegistrationTime.ToString("yyyy-MM-ddTHH:mm:ss")), CsvEscape(te.Notes ?? string.Empty),
+                            CsvEscape(p.Id.ToString()), CsvEscape(p.Name ?? string.Empty), CsvEscape(p.GameId ?? string.Empty), CsvEscape(p.GameRank ?? string.Empty), CsvEscape(p.Description ?? string.Empty)
+                        };
+                        row.AddRange(answerCols);
+                        sb.AppendLine(string.Join(",", row));
                     }
+                    sb.AppendLine("");
                 }
             }
 
-            // 使用UTF-8 BOM以利于Excel正确识别中文
             var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
             return encoding.GetBytes(sb.ToString());
         }
@@ -629,6 +910,8 @@ namespace ASG.Api.Services
                 Id = eventEntity.Id,
                 Name = eventEntity.Name,
                 Description = eventEntity.Description,
+                QqGroup = eventEntity.QqGroup,
+                RulesMarkdown = eventEntity.RulesMarkdown,
                 RegistrationStartTime = eventEntity.RegistrationStartTime,
                 RegistrationEndTime = eventEntity.RegistrationEndTime,
                 CompetitionStartTime = eventEntity.CompetitionStartTime,
@@ -642,7 +925,8 @@ namespace ASG.Api.Services
                 ChampionTeamName = eventEntity.ChampionTeam?.Name,
                 RegisteredTeamsCount = eventEntity.TeamEvents?.Count ?? 0,
                 RegisteredTeams = eventEntity.TeamEvents?.Select(te => MapToTeamEventDto(te, te.Team?.Name ?? "", eventEntity.Name)).ToList(),
-                AdminUserIds = eventEntity.EventAdmins?.Select(a => a.UserId).ToList()
+                AdminUserIds = eventEntity.EventAdmins?.Select(a => a.UserId).ToList(),
+                CustomData = eventEntity.CustomData
             };
         }
 
@@ -714,6 +998,11 @@ namespace ASG.Api.Services
             return await _eventRepository.RemoveEventAdminAsync(eventId, targetUserId);
         }
 
+        public async Task<bool> IsEventAdminAsync(Guid eventId, string userId)
+        {
+            return await _eventRepository.IsEventAdminAsync(eventId, userId);
+        }
+
         // 赛程图画布持久化
         public async Task<bool> SaveBracketCanvasAsync(Guid eventId, string userId, string canvasJson)
         {
@@ -762,6 +1051,184 @@ namespace ASG.Api.Services
             }
             catch { }
             return "{}";
+        }
+
+        public async Task<bool> CanUserManageAnyEventOfTeamAsync(Guid teamId, string userId)
+        {
+            var regs = await _eventRepository.GetTeamRegistrationsAsync(teamId);
+            foreach (var te in regs)
+            {
+                if (await CanUserManageEventAsync(te.EventId, userId)) return true;
+            }
+            return false;
+        }
+
+        // 规则版本化
+        public async Task<RuleRevisionDto> CreateRuleRevisionAsync(Guid eventId, CreateRuleRevisionDto dto, string userId)
+        {
+            if (!await CanUserManageEventAsync(eventId, userId)) throw new UnauthorizedAccessException("无权限");
+            var rev = await _eventRepository.CreateRuleRevisionAsync(new EventRuleRevision
+            {
+                EventId = eventId,
+                ContentMarkdown = dto.ContentMarkdown,
+                ChangeNotes = dto.ChangeNotes,
+                CreatedByUserId = userId,
+                CreatedAt = ChinaNow()
+            });
+            _logger?.LogInformation("CreateRuleRevision EventId={EventId} RevId={RevId} Version={Version}", eventId, rev.Id, rev.Version);
+            return MapToRuleRevisionDto(rev);
+        }
+
+        public async Task<IEnumerable<RuleRevisionDto>> GetRuleRevisionsAsync(Guid eventId)
+        {
+            var list = await _eventRepository.GetRuleRevisionsAsync(eventId);
+            return list.Select(MapToRuleRevisionDto);
+        }
+
+        public async Task<bool> PublishRuleRevisionAsync(Guid eventId, Guid revisionId, string userId)
+        {
+            if (!await CanUserManageEventAsync(eventId, userId)) throw new UnauthorizedAccessException("无权限");
+            var ok = await _eventRepository.PublishRuleRevisionAsync(eventId, revisionId);
+            if (ok) _logger?.LogInformation("PublishRuleRevision EventId={EventId} RevId={RevId}", eventId, revisionId);
+            return ok;
+        }
+
+        // 报名表 Schema 与答案
+        public async Task<bool> UpdateRegistrationFormSchemaAsync(Guid eventId, UpdateRegistrationFormSchemaDto dto, string userId)
+        {
+            if (!await CanUserManageEventAsync(eventId, userId)) throw new UnauthorizedAccessException("无权限");
+            var ok = await _eventRepository.UpdateRegistrationFormSchemaAsync(eventId, dto.SchemaJson);
+            if (ok) _logger?.LogInformation("UpdateRegistrationFormSchema EventId={EventId} Size={Size}", eventId, dto.SchemaJson?.Length);
+            return ok;
+        }
+
+        public async Task<bool> SubmitRegistrationAnswersAsync(Guid eventId, SubmitRegistrationAnswersDto dto, string userId)
+        {
+            if (!await CanUserManageTeamRegistrationAsync(dto.TeamId, userId)) throw new UnauthorizedAccessException("无权限");
+            var ans = await _eventRepository.UpsertRegistrationAnswersAsync(eventId, dto.TeamId, dto.AnswersJson, userId);
+            _logger?.LogInformation("SubmitRegistrationAnswers EventId={EventId} TeamId={TeamId} Size={Size}", eventId, dto.TeamId, dto.AnswersJson?.Length);
+            return ans != null;
+        }
+
+        public async Task<string> GetRegistrationFormSchemaAsync(Guid eventId)
+        {
+            var ev = await _eventRepository.GetEventByIdAsync(eventId);
+            if (ev == null) throw new InvalidOperationException("赛事不存在");
+            var current = string.IsNullOrWhiteSpace(ev.CustomData) ? "{}" : ev.CustomData;
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(current);
+                var root = doc.RootElement;
+                if (root.TryGetProperty("registrationFormSchema", out var schema))
+                {
+                    if (schema.ValueKind == System.Text.Json.JsonValueKind.String)
+                        return schema.GetString() ?? "{}";
+                    return schema.GetRawText();
+                }
+            }
+            catch { }
+            return "{}";
+        }
+
+        public async Task<string> GetRegistrationAnswersAsync(Guid eventId, Guid teamId, string userId)
+        {
+            var can = await CanUserManageTeamRegistrationAsync(teamId, userId) || await CanUserManageEventAsync(eventId, userId);
+            if (!can) throw new UnauthorizedAccessException("无权限");
+            var ans = await _eventRepository.GetRegistrationAnswersAsync(eventId, teamId);
+            return ans?.AnswersJson ?? "{}";
+        }
+
+        public async Task<bool> UpdateTournamentConfigAsync(Guid eventId, UpdateTournamentConfigDto dto, string userId)
+        {
+            if (!await CanUserManageEventAsync(eventId, userId)) throw new UnauthorizedAccessException("无权限");
+            var ev = await _eventRepository.GetEventByIdAsync(eventId);
+            if (ev == null) throw new InvalidOperationException("赛事不存在");
+            System.Text.Json.Nodes.JsonObject node;
+            try { node = (!string.IsNullOrWhiteSpace(ev.CustomData) ? System.Text.Json.Nodes.JsonNode.Parse(ev.CustomData) as System.Text.Json.Nodes.JsonObject : null) ?? new System.Text.Json.Nodes.JsonObject(); }
+            catch { node = new System.Text.Json.Nodes.JsonObject(); }
+            var json = System.Text.Json.JsonSerializer.Serialize(dto, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase });
+            node["tournamentConfig"] = System.Text.Json.Nodes.JsonNode.Parse(json);
+            ev.CustomData = node.ToJsonString();
+            await _eventRepository.UpdateEventAsync(ev);
+            _logger?.LogInformation("UpdateTournamentConfig EventId={EventId} Format={Format}", eventId, dto.Format);
+            return true;
+        }
+
+        public async Task<IEnumerable<TeamEventDto>> GenerateTestRegistrationsAsync(Guid eventId, int count, string userId, string? namePrefix = null, bool approve = true)
+        {
+            var ev = await _eventRepository.GetEventByIdAsync(eventId);
+            if (ev == null) throw new InvalidOperationException("赛事不存在");
+            if (!await CanUserManageEventAsync(eventId, userId)) throw new UnauthorizedAccessException("无权限");
+
+            var now = ChinaNow();
+            var created = new List<TeamEventDto>();
+            var prefix = string.IsNullOrWhiteSpace(namePrefix) ? "测试战队" : namePrefix!.Trim();
+
+            for (int i = 1; i <= count; i++)
+            {
+                var baseName = $"{prefix} {i.ToString("D3")}";
+                var name = baseName;
+                var suffix = 0;
+                while (await _teamRepository.TeamNameExistsAsync(name))
+                {
+                    suffix++;
+                    name = $"{baseName}-{suffix}";
+                    if (suffix > 5) break;
+                }
+
+                var team = new Models.Team
+                {
+                    Id = Guid.NewGuid(),
+                    Name = name,
+                    Password = BCrypt.Net.BCrypt.HashPassword("123456"),
+                    Description = "测试生成",
+                    QqNumber = ($"1{i:D3}000"),
+                    OwnerId = userId,
+                    UserId = userId,
+                    Players = new List<Models.Player>
+                    {
+                        new Models.Player
+                        {
+                            Id = Guid.NewGuid(),
+                            Name = $"选手{i:D3}",
+                            GameId = $"G{i:D5}",
+                            GameRank = "",
+                            Description = "",
+                        }
+                    }
+                };
+
+                var createdTeam = await _teamRepository.CreateTeamAsync(team);
+                var te = new Models.TeamEvent
+                {
+                    TeamId = createdTeam.Id,
+                    EventId = eventId,
+                    RegistrationTime = now,
+                    Status = approve ? Models.RegistrationStatus.Approved : Models.RegistrationStatus.Pending,
+                    Notes = "测试生成",
+                    RegisteredByUserId = userId
+                };
+                var createdTe = await _eventRepository.RegisterTeamToEventAsync(te);
+                created.Add(MapToTeamEventDto(createdTe, createdTeam.Name, ev.Name));
+            }
+
+            return created;
+        }
+
+        private static RuleRevisionDto MapToRuleRevisionDto(EventRuleRevision r)
+        {
+            return new RuleRevisionDto
+            {
+                Id = r.Id,
+                EventId = r.EventId,
+                Version = r.Version,
+                ContentMarkdown = r.ContentMarkdown,
+                ChangeNotes = r.ChangeNotes,
+                CreatedByUserId = r.CreatedByUserId,
+                CreatedAt = r.CreatedAt,
+                IsPublished = r.IsPublished,
+                PublishedAt = r.PublishedAt
+            };
         }
     }
 }

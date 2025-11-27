@@ -26,6 +26,11 @@ namespace ASG.Api.Models
         [MaxLength(1000)]
         public string? Description { get; set; }
 
+        [MaxLength(50)]
+        public string? QqGroup { get; set; }
+
+        public string? RulesMarkdown { get; set; }
+
         /// <summary>
         /// 开始报名时间
         /// </summary>

@@ -20,6 +20,7 @@ namespace ASG.Api.Data
     public DbSet<Match> Matches { get; set; }
     public DbSet<Article> Articles { get; set; }
     public DbSet<Comment> Comments { get; set; }
+    public DbSet<TeamReview> TeamReviews { get; set; }
     public DbSet<RecruitmentTask> RecruitmentTasks { get; set; }
     public DbSet<RecruitmentApplication> RecruitmentApplications { get; set; }
     public DbSet<RecruitmentTaskMatch> RecruitmentTaskMatches { get; set; }
@@ -31,6 +32,10 @@ namespace ASG.Api.Data
     public DbSet<UserBlock> UserBlocks { get; set; }
     public DbSet<NeteaseHero> NeteaseHeroes { get; set; }
     public DbSet<NeteaseHeroStat> NeteaseHeroStats { get; set; }
+    public DbSet<DeviceToken> DeviceTokens { get; set; }
+    public DbSet<EventRuleRevision> EventRuleRevisions { get; set; }
+    public DbSet<EventRegistrationAnswer> EventRegistrationAnswers { get; set; }
+    public DbSet<OperationLog> OperationLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -67,12 +72,7 @@ namespace ASG.Api.Data
                 entity.Property(e => e.EmailCredits)
                     .HasDefaultValue(0);
 
-                // 配置与 Team 的关系
-                entity.HasOne(u => u.OwnedTeam)
-                    .WithOne(t => t.Owner)
-                    .HasForeignKey<User>(u => u.TeamId)
-                    .OnDelete(DeleteBehavior.SetNull);
-
+                
                 entity.ToTable("Users");
             });
 
@@ -102,6 +102,17 @@ namespace ASG.Api.Data
                     .HasDefaultValueSql("CURRENT_TIMESTAMP")
                     .IsConcurrencyToken();
 
+                entity.Property(e => e.HidePlayers)
+                    .HasDefaultValue(false);
+
+                entity.Property(e => e.HasDispute)
+                    .HasDefaultValue(false);
+
+                entity.HasOne(t => t.Owner)
+                    .WithOne(u => u.OwnedTeam)
+                    .HasForeignKey<Team>(t => t.OwnerId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
                 // 配置与 Player 的一对多关系（玩家可游离，删除战队不删除玩家）
                 entity.HasMany(t => t.Players)
                     .WithOne(p => p.Team)
@@ -109,6 +120,24 @@ namespace ASG.Api.Data
                     .OnDelete(DeleteBehavior.SetNull);
 
                 entity.ToTable("Teams");
+            });
+
+            builder.Entity<TeamReview>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Rating).HasDefaultValue(0);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+                entity.HasOne(e => e.Team)
+                    .WithMany()
+                    .HasForeignKey(e => e.TeamId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Event)
+                    .WithMany()
+                    .HasForeignKey(e => e.EventId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                entity.ToTable("TeamReviews");
             });
 
             // Configure Player entity
@@ -191,6 +220,9 @@ namespace ASG.Api.Data
                 entity.Property(e => e.Description)
                     .HasMaxLength(1000);
 
+                entity.Property(e => e.QqGroup)
+                    .HasMaxLength(50);
+
                 entity.Property(e => e.Status)
                     .HasConversion<string>()
                     .IsRequired();
@@ -212,6 +244,44 @@ namespace ASG.Api.Data
                     .OnDelete(DeleteBehavior.SetNull);
 
                 entity.ToTable("Events");
+            });
+
+            // Configure EventRuleRevision entity
+            builder.Entity<EventRuleRevision>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.ChangeNotes).HasMaxLength(500);
+                entity.HasOne(e => e.Event)
+                    .WithMany()
+                    .HasForeignKey(e => e.EventId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(e => new { e.EventId, e.Version }).IsUnique();
+                entity.ToTable("EventRuleRevisions");
+            });
+
+            // Configure EventRegistrationAnswer entity
+            builder.Entity<EventRegistrationAnswer>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.Event)
+                    .WithMany()
+                    .HasForeignKey(e => e.EventId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Team)
+                    .WithMany()
+                    .HasForeignKey(e => e.TeamId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(e => new { e.EventId, e.TeamId }).IsUnique();
+                entity.ToTable("EventRegistrationAnswers");
+            });
+
+            // Configure OperationLog entity
+            builder.Entity<OperationLog>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Action).HasMaxLength(64);
+                entity.Property(e => e.EntityType).HasMaxLength(64);
+                entity.ToTable("OperationLogs");
             });
 
             builder.Entity<EventAdmin>(entity =>
@@ -457,6 +527,18 @@ namespace ASG.Api.Data
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.HasIndex(e => new { e.BlockerUserId, e.BlockedUserId }).IsUnique();
                 entity.ToTable("UserBlocks");
+            });
+
+            builder.Entity<DeviceToken>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.UserId).IsRequired();
+                entity.Property(e => e.Token).IsRequired();
+                entity.Property(e => e.Platform).HasMaxLength(20).HasDefaultValue("");
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.IsActive).HasDefaultValue(true);
+                entity.HasIndex(e => new { e.UserId, e.Token }).IsUnique();
+                entity.ToTable("DeviceTokens");
             });
 
             builder.Entity<NeteaseHero>(entity =>

@@ -22,5 +22,9 @@ namespace ASG.Api.Repositories
         Task<Player?> GetPlayerByUserIdAsync(string userId);
         Task<Player> UpdatePlayerAsync(Player player);
         Task<int> LikeTeamAsync(Guid id);
+        Task<IEnumerable<TeamReview>> GetTeamReviewsAsync(Guid teamId);
+        Task<TeamReview> AddTeamReviewAsync(TeamReview review);
+        Task<(double avg, int count)> GetTeamRatingSummaryAsync(Guid teamId);
+        Task<bool> SetTeamDisputeAsync(Guid teamId, bool hasDispute, string? disputeDetail = null, Guid? communityPostId = null);
     }
 }

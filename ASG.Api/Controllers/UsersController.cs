@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ASG.Api.DTOs;
 using ASG.Api.Repositories;
 using ASG.Api.Authorization;
+using ASG.Api.Services;
 using System.Security.Claims;
 
 namespace ASG.Api.Controllers
@@ -13,14 +14,40 @@ namespace ASG.Api.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
+        private readonly IAuthService _authService;
         private readonly ILogger<UsersController> _logger;
         private readonly IWebHostEnvironment _env;
 
-        public UsersController(IUserRepository userRepository, ILogger<UsersController> logger, IWebHostEnvironment env)
+        public UsersController(IUserRepository userRepository, IAuthService authService, ILogger<UsersController> logger, IWebHostEnvironment env)
         {
             _userRepository = userRepository;
+            _authService = authService;
             _logger = logger;
             _env = env;
+        }
+
+        /// <summary>
+        /// 创建新用户（管理员）
+        /// </summary>
+        [HttpPost]
+        [Authorize(Policy = AuthorizationPolicies.CanManageUsers)]
+        public async Task<IActionResult> CreateUser([FromBody] UserRegistrationDto registrationDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                // 使用 AuthService 注册用户，但我们不需要返回 token，只需要返回用户详情
+                var authResult = await _authService.RegisterAsync(registrationDto);
+                return Ok(authResult.User);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpGet("search")]
@@ -39,7 +66,7 @@ namespace ASG.Api.Controllers
                 UpdatedAt = user.UpdatedAt,
                 IsActive = user.IsActive,
                 AvatarUrl = GetAvatarUrl(user.Id),
-                TeamId = user.TeamId,
+                TeamId = user.DisplayTeamId ?? user.TeamId,
                 EmailCredits = user.EmailCredits
             });
             return Ok(results);
@@ -76,7 +103,9 @@ namespace ASG.Api.Controllers
                 UpdatedAt = user.UpdatedAt,
                 IsActive = user.IsActive,
                 AvatarUrl = GetAvatarUrl(user.Id),
-                TeamId = user.TeamId,
+                TeamId = user.DisplayTeamId ?? user.TeamId,
+                DisplayTeamId = user.DisplayTeamId,
+                OwnedTeamId = user.TeamId,
                 EmailCredits = user.EmailCredits
             };
 
@@ -104,7 +133,9 @@ namespace ASG.Api.Controllers
                 UpdatedAt = user.UpdatedAt,
                 IsActive = user.IsActive,
                 EmailCredits = user.EmailCredits,
-                TeamId = user.TeamId
+                TeamId = user.DisplayTeamId ?? user.TeamId,
+                DisplayTeamId = user.DisplayTeamId,
+                OwnedTeamId = user.TeamId
             });
 
             return Ok(userResponses);
@@ -136,7 +167,9 @@ namespace ASG.Api.Controllers
                 UpdatedAt = user.UpdatedAt,
                 IsActive = user.IsActive,
                 AvatarUrl = GetAvatarUrl(user.Id),
-                TeamId = user.TeamId,
+                TeamId = user.DisplayTeamId ?? user.TeamId,
+                DisplayTeamId = user.DisplayTeamId,
+                OwnedTeamId = user.TeamId,
                 EmailCredits = user.EmailCredits
             };
 
@@ -179,7 +212,9 @@ namespace ASG.Api.Controllers
                 UpdatedAt = user.UpdatedAt,
                 IsActive = user.IsActive,
                 AvatarUrl = GetAvatarUrl(user.Id),
-                TeamId = user.TeamId,
+                TeamId = user.DisplayTeamId ?? user.TeamId,
+                DisplayTeamId = user.DisplayTeamId,
+                OwnedTeamId = user.TeamId,
                 EmailCredits = user.EmailCredits
             };
 
@@ -222,7 +257,7 @@ namespace ASG.Api.Controllers
                 UpdatedAt = user.UpdatedAt,
                 IsActive = user.IsActive,
                 AvatarUrl = GetAvatarUrl(user.Id),
-                TeamId = user.TeamId
+                TeamId = user.DisplayTeamId ?? user.TeamId
             };
 
             return Ok(userResponse);

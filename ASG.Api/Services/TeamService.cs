@@ -10,12 +10,16 @@ namespace ASG.Api.Services
         private readonly ITeamRepository _teamRepository;
         private readonly IUserRepository _userRepository;
         private readonly INotificationService _notify;
+        private readonly IEventService _eventService;
+        private readonly IArticleRepository _articleRepository;
 
-        public TeamService(ITeamRepository teamRepository, IUserRepository userRepository, INotificationService notify)
+        public TeamService(ITeamRepository teamRepository, IUserRepository userRepository, INotificationService notify, IEventService eventService, IArticleRepository articleRepository)
         {
             _teamRepository = teamRepository;
             _userRepository = userRepository;
             _notify = notify;
+            _eventService = eventService;
+            _articleRepository = articleRepository;
         }
 
         public async Task<PagedResult<TeamDto>> GetAllTeamsAsync(int page = 1, int pageSize = 10)
@@ -25,7 +29,7 @@ namespace ASG.Api.Services
 
             return new PagedResult<TeamDto>
             {
-                Items = teams.Select(MapToTeamDto),
+                Items = teams.Select(t => MapToTeamDto(t, !t.HidePlayers)),
                 TotalCount = totalCount,
                 Page = page,
                 PageSize = pageSize
@@ -39,17 +43,39 @@ namespace ASG.Api.Services
 
             return new PagedResult<TeamDto>
             {
-                Items = teams.Select(MapToTeamDto),
+                Items = teams.Select(t => MapToTeamDto(t, !t.HidePlayers)),
                 TotalCount = totalCount,
                 Page = page,
                 PageSize = pageSize
             };
         }
 
-        public async Task<TeamDto?> GetTeamByIdAsync(Guid id)
+        public async Task<TeamDto?> GetTeamByIdAsync(Guid id, string? userId = null)
         {
             var team = await _teamRepository.GetTeamByIdWithPlayersAsync(id);
-            return team != null ? MapToTeamDto(team) : null;
+            if (team == null) return null;
+            var includePlayers = true;
+            if (team.HidePlayers)
+            {
+                includePlayers = false;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var user = await _userRepository.GetByIdAsync(userId);
+                    if (user != null)
+                    {
+                        var isAdmin = user.Role == UserRole.Admin || user.Role == UserRole.SuperAdmin;
+                        var isOwner = team.OwnerId == userId;
+                        var canEventManage = await _eventService.CanUserManageAnyEventOfTeamAsync(team.Id, userId);
+                        includePlayers = isAdmin || isOwner || canEventManage;
+                    }
+                }
+            }
+            var dto = MapToTeamDto(team, includePlayers);
+            dto.HasDispute = team.HasDispute;
+            var (avg, count) = await _teamRepository.GetTeamRatingSummaryAsync(team.Id);
+            dto.RatingAverage = avg;
+            dto.RatingCount = count;
+            return dto;
         }
 
         public async Task<TeamDto> CreateTeamAsync(CreateTeamDto createTeamDto, string? userId = null)
@@ -77,6 +103,7 @@ namespace ASG.Api.Services
                         GameId = firstPayload.GameId,
                         GameRank = firstPayload.GameRank,
                         Description = firstPayload.Description,
+                        PlayerType = firstPayload.PlayerType ?? PlayerType.Survivor,
                         UserId = userId
                     });
                 }
@@ -89,7 +116,8 @@ namespace ASG.Api.Services
                         Name = p.Name,
                         GameId = p.GameId,
                         GameRank = p.GameRank,
-                        Description = p.Description
+                        Description = p.Description,
+                        PlayerType = p.PlayerType ?? PlayerType.Survivor
                     });
                 }
             }
@@ -101,7 +129,8 @@ namespace ASG.Api.Services
                     Name = p.Name,
                     GameId = p.GameId,
                     GameRank = p.GameRank,
-                    Description = p.Description
+                    Description = p.Description,
+                    PlayerType = p.PlayerType ?? PlayerType.Survivor
                 }).ToList();
             }
 
@@ -112,6 +141,7 @@ namespace ASG.Api.Services
                 Password = BCrypt.Net.BCrypt.HashPassword(createTeamDto.Password),
                 Description = createTeamDto.Description,
                 QqNumber = createTeamDto.QqNumber,
+                HidePlayers = createTeamDto.HidePlayers,
                 // 记录创建者（兼容旧字段）
                 UserId = userId,
                 OwnerId = userId,
@@ -120,13 +150,14 @@ namespace ASG.Api.Services
 
             var createdTeam = await _teamRepository.CreateTeamAsync(team);
 
-            // 自动将用户绑定到新创建的战队（建立 User.TeamId -> Team.Id 的一对一关系）
+            // 自动将用户绑定到新创建的战队（拥有关系 + 展示绑定）
             if (!string.IsNullOrEmpty(userId))
             {
                 var user = await _userRepository.GetByIdAsync(userId);
                 if (user != null && user.TeamId != createdTeam.Id)
                 {
                     user.TeamId = createdTeam.Id;
+                    user.DisplayTeamId = createdTeam.Id;
                     await _userRepository.UpdateAsync(user);
                 }
                 // 如果创建者已有玩家，则迁移到该战队并更新为第一个队员信息
@@ -136,13 +167,14 @@ namespace ASG.Api.Services
                     creatorExistingPlayer.GameId = firstPayload.GameId;
                     creatorExistingPlayer.GameRank = firstPayload.GameRank;
                     creatorExistingPlayer.Description = firstPayload.Description;
+                    if (firstPayload.PlayerType.HasValue) creatorExistingPlayer.PlayerType = firstPayload.PlayerType.Value;
                     creatorExistingPlayer.TeamId = createdTeam.Id;
                     creatorExistingPlayer.UpdatedAt = DateTime.UtcNow;
                     await _teamRepository.UpdatePlayerAsync(creatorExistingPlayer);
                 }
             }
 
-            var dto = MapToTeamDto(createdTeam);
+            var dto = MapToTeamDto(createdTeam, true);
             if (!string.IsNullOrEmpty(userId))
             {
                 var payload = System.Text.Json.JsonSerializer.Serialize(new { teamId = dto.Id, teamName = dto.Name });
@@ -181,11 +213,13 @@ namespace ASG.Api.Services
                 team.QqNumber = updateTeamDto.QqNumber;
             }
 
+            team.HidePlayers = updateTeamDto.HidePlayers;
+
             // 更新玩家信息
             await UpdatePlayersAsync(team, updateTeamDto.Players);
 
             var updatedTeam = await _teamRepository.UpdateTeamAsync(team);
-            return MapToTeamDto(updatedTeam);
+            return MapToTeamDto(updatedTeam, true);
         }
 
         public async Task<bool> DeleteTeamAsync(Guid id, string? userId = null, bool isAdmin = false)
@@ -223,8 +257,8 @@ namespace ASG.Api.Services
                 return false;
             }
 
-            // 绑定战队
-            user.TeamId = teamId;
+            // 展示绑定战队（成员身份）
+            user.DisplayTeamId = teamId;
             await _userRepository.UpdateAsync(user);
 
             // 将“我的玩家”添加/迁移到该战队（如果存在）
@@ -256,7 +290,7 @@ namespace ASG.Api.Services
             var user = await _userRepository.GetByIdAsync(userId);
             if (user == null) return false;
 
-            user.TeamId = team.Id;
+            user.DisplayTeamId = team.Id;
             await _userRepository.UpdateAsync(user);
 
             // 将“我的玩家”添加/迁移到该战队（如果存在）
@@ -277,9 +311,9 @@ namespace ASG.Api.Services
         {
             var user = await _userRepository.GetByIdAsync(userId);
             if (user == null) return false;
-            if (user.TeamId == null) return false;
+            if (user.DisplayTeamId == null) return false;
 
-            user.TeamId = null;
+            user.DisplayTeamId = null;
             await _userRepository.UpdateAsync(user);
             return true;
         }
@@ -313,8 +347,17 @@ namespace ASG.Api.Services
 
         public async Task<bool> VerifyTeamOwnershipAsync(Guid teamId, string userId)
         {
+            var team = await _teamRepository.GetTeamByIdAsync(teamId);
+            if (team == null) return false;
+            if (!string.IsNullOrEmpty(team.OwnerId) && team.OwnerId == userId) return true;
+            if (string.IsNullOrEmpty(team.OwnerId) && team.UserId == userId) return true;
             var user = await _userRepository.GetByIdAsync(userId);
-            return user != null && user.TeamId == teamId;
+            if (user != null)
+            {
+                var isAdmin = user.Role == UserRole.Admin || user.Role == UserRole.SuperAdmin;
+                if (isAdmin) return true;
+            }
+            return false;
         }
 
         public async Task<bool> TeamExistsAsync(Guid id)
@@ -354,6 +397,10 @@ namespace ASG.Api.Services
                         existingPlayer.GameId = updatePlayerDto.GameId;
                         existingPlayer.GameRank = updatePlayerDto.GameRank;
                         existingPlayer.Description = updatePlayerDto.Description;
+                        if (updatePlayerDto.PlayerType.HasValue)
+                        {
+                            existingPlayer.PlayerType = updatePlayerDto.PlayerType.Value;
+                        }
                         existingPlayer.UpdatedAt = DateTime.UtcNow;
                     }
                     else
@@ -365,6 +412,7 @@ namespace ASG.Api.Services
                             GameId = updatePlayerDto.GameId,
                             GameRank = updatePlayerDto.GameRank,
                             Description = updatePlayerDto.Description,
+                            PlayerType = updatePlayerDto.PlayerType ?? PlayerType.Survivor,
                             TeamId = team.Id,
                             CreatedAt = DateTime.UtcNow,
                             UpdatedAt = DateTime.UtcNow
@@ -381,6 +429,7 @@ namespace ASG.Api.Services
                         GameId = updatePlayerDto.GameId,
                         GameRank = updatePlayerDto.GameRank,
                         Description = updatePlayerDto.Description,
+                        PlayerType = updatePlayerDto.PlayerType ?? PlayerType.Survivor,
                         TeamId = team.Id,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow
@@ -395,7 +444,7 @@ namespace ASG.Api.Services
             return await _teamRepository.LikeTeamAsync(id);
         }
 
-        private static TeamDto MapToTeamDto(Team team)
+        private static TeamDto MapToTeamDto(Team team, bool includePlayers)
         {
             return new TeamDto
             {
@@ -406,18 +455,90 @@ namespace ASG.Api.Services
                 CreatedAt = team.CreatedAt,
                 UpdatedAt = team.UpdatedAt,
                 Likes = team.Likes,
-                Players = team.Players.Select(p => new PlayerDto
+                HidePlayers = team.HidePlayers,
+                HasDispute = team.HasDispute,
+                DisputeDetail = team.DisputeDetail,
+                CommunityPostId = team.CommunityPostId,
+                Players = includePlayers ? team.Players.Select(p => new PlayerDto
                 {
                     Id = p.Id,
                     Name = p.Name,
                     GameId = p.GameId,
                     GameRank = p.GameRank,
                     Description = p.Description,
+                    PlayerType = p.PlayerType,
                     CreatedAt = p.CreatedAt,
                     UpdatedAt = p.UpdatedAt,
                     TeamId = p.TeamId
-                }).ToList()
+                }).ToList() : new List<PlayerDto>()
             };
+        }
+
+        public async Task<IEnumerable<TeamReviewDto>> GetTeamReviewsAsync(Guid teamId)
+        {
+            var list = await _teamRepository.GetTeamReviewsAsync(teamId);
+            return list.Select(r => new TeamReviewDto
+            {
+                Id = r.Id,
+                TeamId = r.TeamId,
+                EventId = r.EventId,
+                Rating = r.Rating,
+                CommentMarkdown = r.CommentMarkdown,
+                CommunityPostId = r.CommunityPostId,
+                CreatedByUserId = r.CreatedByUserId,
+                CreatedAt = r.CreatedAt,
+                UpdatedAt = r.UpdatedAt
+            });
+        }
+
+        public async Task<TeamReviewDto> AddTeamReviewAsync(Guid teamId, string userId, CreateTeamReviewDto dto)
+        {
+            var team = await _teamRepository.GetTeamByIdAsync(teamId);
+            if (team == null) throw new InvalidOperationException("战队不存在");
+            if (dto.CommunityPostId.HasValue)
+            {
+                var article = await _articleRepository.GetArticleByIdAsync(dto.CommunityPostId.Value);
+                if (article == null) throw new InvalidOperationException("关联的社区帖子不存在");
+            }
+            var review = new TeamReview
+            {
+                Id = Guid.NewGuid(),
+                TeamId = teamId,
+                EventId = dto.EventId,
+                Rating = dto.Rating,
+                CommentMarkdown = dto.CommentMarkdown,
+                CommunityPostId = dto.CommunityPostId,
+                CreatedByUserId = userId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            var saved = await _teamRepository.AddTeamReviewAsync(review);
+            return new TeamReviewDto
+            {
+                Id = saved.Id,
+                TeamId = saved.TeamId,
+                EventId = saved.EventId,
+                Rating = saved.Rating,
+                CommentMarkdown = saved.CommentMarkdown,
+                CommunityPostId = saved.CommunityPostId,
+                CreatedByUserId = saved.CreatedByUserId,
+                CreatedAt = saved.CreatedAt,
+                UpdatedAt = saved.UpdatedAt
+            };
+        }
+
+        public async Task<bool> SetTeamDisputeAsync(Guid teamId, bool hasDispute, string? disputeDetail = null, Guid? communityPostId = null)
+        {
+            if (hasDispute && !communityPostId.HasValue)
+            {
+                throw new InvalidOperationException("必须绑定社区帖子才能标记为纠纷");
+            }
+            if (communityPostId.HasValue)
+            {
+                var article = await _articleRepository.GetArticleByIdAsync(communityPostId.Value);
+                if (article == null) throw new InvalidOperationException("关联的社区帖子不存在");
+            }
+            return await _teamRepository.SetTeamDisputeAsync(teamId, hasDispute, disputeDetail, communityPostId);
         }
 
         public async Task<TeamInviteDto> GenerateTeamInviteAsync(Guid teamId, string userId, int validDays = 7)
@@ -490,11 +611,11 @@ namespace ASG.Api.Services
                     await _teamRepository.UpdatePlayerAsync(existingGlobal);
                 }
 
-                // 将用户绑定到当前战队
+                // 展示绑定到当前战队（成员身份）
                 var user = await _userRepository.GetByIdAsync(userId);
-                if (user != null && user.TeamId != team.Id)
+                if (user != null && user.DisplayTeamId != team.Id)
                 {
-                    user.TeamId = team.Id;
+                    user.DisplayTeamId = team.Id;
                     await _userRepository.UpdateAsync(user);
                 }
 
@@ -532,11 +653,11 @@ namespace ASG.Api.Services
 
             var updatedTeam = await _teamRepository.UpdateTeamAsync(team);
 
-            // 绑定用户到战队（建立一对一的团队绑定关系）
+            // 展示绑定到战队（成员身份）
             var bindUser = await _userRepository.GetByIdAsync(userId);
-            if (bindUser != null && bindUser.TeamId != team.Id)
+            if (bindUser != null && bindUser.DisplayTeamId != team.Id)
             {
-                bindUser.TeamId = team.Id;
+                bindUser.DisplayTeamId = team.Id;
                 await _userRepository.UpdateAsync(bindUser);
             }
 
@@ -577,11 +698,11 @@ namespace ASG.Api.Services
                 await _teamRepository.UpdatePlayerAsync(p);
             }
 
-            // 同步解除用户绑定关系
+            // 同步解除用户展示绑定关系（成员身份）
             var user = await _userRepository.GetByIdAsync(userId);
-            if (user != null && user.TeamId == teamId)
+            if (user != null && user.DisplayTeamId == teamId)
             {
-                user.TeamId = null;
+                user.DisplayTeamId = null;
                 await _userRepository.UpdateAsync(user);
             }
 
@@ -599,6 +720,7 @@ namespace ASG.Api.Services
                 GameId = p.GameId,
                 GameRank = p.GameRank,
                 Description = p.Description,
+                PlayerType = p.PlayerType,
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt,
                 TeamId = p.TeamId
@@ -612,7 +734,7 @@ namespace ASG.Api.Services
             {
                 throw new InvalidOperationException("用户不存在");
             }
-            if (!user.TeamId.HasValue)
+            if (!user.DisplayTeamId.HasValue)
             {
                 throw new InvalidOperationException("请先绑定或创建战队");
             }
@@ -624,6 +746,7 @@ namespace ASG.Api.Services
                 existing.GameId = playerDto.GameId;
                 existing.GameRank = playerDto.GameRank;
                 existing.Description = playerDto.Description;
+                existing.PlayerType = playerDto.PlayerType ?? PlayerType.Survivor;
                 existing.UpdatedAt = DateTime.UtcNow;
                 var updated = await _teamRepository.UpdatePlayerAsync(existing);
                 return new PlayerDto
@@ -633,13 +756,14 @@ namespace ASG.Api.Services
                     GameId = updated.GameId,
                     GameRank = updated.GameRank,
                     Description = updated.Description,
+                    PlayerType = updated.PlayerType,
                     CreatedAt = updated.CreatedAt,
                     UpdatedAt = updated.UpdatedAt,
                     TeamId = updated.TeamId
                 };
             }
 
-            var team = await _teamRepository.GetTeamByIdWithPlayersAsync(user.TeamId.Value);
+            var team = await _teamRepository.GetTeamByIdWithPlayersAsync(user.DisplayTeamId.Value);
             if (team == null)
             {
                 throw new InvalidOperationException("战队不存在");
@@ -651,6 +775,7 @@ namespace ASG.Api.Services
                 GameId = playerDto.GameId,
                 GameRank = playerDto.GameRank,
                 Description = playerDto.Description,
+                PlayerType = playerDto.PlayerType ?? PlayerType.Survivor,
                 TeamId = team.Id,
                 UserId = userId,
                 CreatedAt = DateTime.UtcNow,
@@ -666,10 +791,60 @@ namespace ASG.Api.Services
                 GameId = created.GameId,
                 GameRank = created.GameRank,
                 Description = created.Description,
+                PlayerType = created.PlayerType,
                 CreatedAt = created.CreatedAt,
                 UpdatedAt = created.UpdatedAt,
                 TeamId = created.TeamId
             };
+        }
+
+        public async Task<bool> TransferTeamOwnershipAsync(Guid teamId, string currentUserId, string targetUserId)
+        {
+            var team = await _teamRepository.GetTeamByIdAsync(teamId);
+            if (team == null)
+            {
+                throw new InvalidOperationException("战队不存在");
+            }
+            if (team.OwnerId != currentUserId)
+            {
+                throw new UnauthorizedAccessException("只有队长可以转移战队所有权");
+            }
+
+            var target = await _userRepository.GetByIdAsync(targetUserId);
+            if (target == null)
+            {
+                throw new InvalidOperationException("目标用户不存在");
+            }
+
+            team.OwnerId = targetUserId;
+            await _teamRepository.UpdateTeamAsync(team);
+
+            if (target.TeamId != teamId || target.DisplayTeamId != teamId)
+            {
+                target.TeamId = teamId;
+                target.DisplayTeamId = teamId;
+                await _userRepository.UpdateAsync(target);
+            }
+
+            // 清理旧队长的拥有关系
+            var prev = await _userRepository.GetByIdAsync(currentUserId);
+            if (prev != null && prev.TeamId == teamId)
+            {
+                prev.TeamId = null;
+                await _userRepository.UpdateAsync(prev);
+            }
+
+            // 通知双方
+            try
+            {
+                var payload = System.Text.Json.JsonSerializer.Serialize(new { teamId, teamName = team.Name, fromUserId = currentUserId, toUserId = targetUserId });
+                await _notify.NotifyUserAsync(targetUserId, "team.owner.transferred", payload);
+                if (!string.IsNullOrEmpty(currentUserId))
+                    await _notify.NotifyUserAsync(currentUserId, "team.owner.transferred", payload);
+            }
+            catch { }
+
+            return true;
         }
     }
 }

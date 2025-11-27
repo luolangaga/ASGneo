@@ -22,6 +22,7 @@ namespace ASG.Api.DTOs
         public int Likes { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public bool IsToday { get; set; }
     }
 
     public class CreateMatchDto

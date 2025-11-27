@@ -14,14 +14,14 @@ namespace ASG.Api.Repositories
         /// <param name="page">页码</param>
         /// <param name="pageSize">每页大小</param>
         /// <returns>赛程列表</returns>
-        Task<IEnumerable<Match>> GetAllMatchesAsync(Guid? eventId = null, int page = 1, int pageSize = 10);
+        Task<IEnumerable<Match>> GetAllMatchesAsync(Guid? eventId = null, int page = 1, int pageSize = 10, int? groupIndex = null, string? groupLabel = null);
 
         /// <summary>
         /// 获取赛程总数（用于分页）
         /// </summary>
         /// <param name="eventId">赛事ID（可选）</param>
         /// <returns>总数</returns>
-        Task<int> GetMatchCountAsync(Guid? eventId = null);
+        Task<int> GetMatchCountAsync(Guid? eventId = null, int? groupIndex = null, string? groupLabel = null);
 
         /// <summary>
         /// 根据ID获取赛程

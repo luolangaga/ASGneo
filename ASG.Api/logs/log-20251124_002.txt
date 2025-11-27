@@ -1,0 +1,71 @@
+2025-11-24 10:51:48.548 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-24 10:51:49.016 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-24 10:51:49.177 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-24 10:52:17.539 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-24 10:52:17.600 +08:00 [INF] WebApplication built successfully.
+2025-11-24 10:52:17.678 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-24 10:52:17.678 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-24 10:52:18.087 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-24 10:52:18.188 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-24 10:52:18.302 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-24 10:52:18.302 +08:00 [INF] Local heroes import setting: true
+2025-11-24 10:52:18.303 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-24 10:52:18.304 +08:00 [INF] Local stats import setting: true
+2025-11-24 10:52:18.304 +08:00 [INF] Local stats overwrite setting: false
+2025-11-24 10:52:18.306 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-24 10:52:18.600 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-24 10:52:18.602 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-24 10:52:22.977 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-24 10:52:22.996 +08:00 [INF] Starting Kestrel...
+2025-11-24 10:52:26.839 +08:00 [ERR] Failed executing DbCommand (2ms) [Parameters=[@__eventId_0='?' (DbType = Guid), @__teamId_1='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT e."Id", e."AnswersJson", e."EventId", e."SubmittedAt", e."SubmittedByUserId", e."TeamId", e."UpdatedAt"
+FROM "EventRegistrationAnswers" AS e
+WHERE e."EventId" = @__eventId_0 AND e."TeamId" = @__teamId_1
+LIMIT 1
+2025-11-24 10:52:26.852 +08:00 [ERR] An exception occurred while iterating over the results of a query for context type 'ASG.Api.Data.ApplicationDbContext'.
+Npgsql.PostgresException (0x80004005): 42P01: 关系 "EventRegistrationAnswers" 不存在
+
+POSITION: 118
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: 错误
+    SqlState: 42P01
+    MessageText: 关系 "EventRegistrationAnswers" 不存在
+    Position: 118
+    File: parse_relation.c
+    Line: 1469
+    Routine: parserOpenTable
+Npgsql.PostgresException (0x80004005): 42P01: 关系 "EventRegistrationAnswers" 不存在
+
+POSITION: 118
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: 错误
+    SqlState: 42P01
+    MessageText: 关系 "EventRegistrationAnswers" 不存在
+    Position: 118
+    File: parse_relation.c
+    Line: 1469
+    Routine: parserOpenTable

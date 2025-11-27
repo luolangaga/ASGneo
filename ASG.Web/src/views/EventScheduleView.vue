@@ -2,8 +2,8 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PageHero from '../components/PageHero.vue'
-import { getEvent, getEventRegistrations } from '../services/events'
-import { getMatches, createMatch, deleteMatch, updateMatch, updateMatchScores } from '../services/matches'
+import { getEvent, getEventRegistrations, updateTournamentConfig, generateTestRegistrations } from '../services/events'
+import { getMatchesPaged, createMatch, deleteMatch, updateMatch, updateMatchScores, generateSchedule, getScheduleConflicts, generateNextRound } from '../services/matches'
 import { currentUser, isAuthenticated } from '../stores/auth'
 import { getTeam } from '../services/teams'
 import ResultDialog from '../components/ResultDialog.vue'
@@ -18,6 +18,7 @@ const registrations = ref([])
 const matches = ref([])
 const loadingEvent = ref(false)
 const loadingTeams = ref(false)
+const generatingTestTeams = ref(false)
 const loadingMatches = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
@@ -27,6 +28,8 @@ const errorDetails = ref([])
 
 const page = ref(1)
 const pageSize = ref(20)
+const totalCount = ref(0)
+const maxPage = computed(() => Math.max(1, Math.ceil((totalCount.value || 0) / (pageSize.value || 1))))
 
 const heroTitle = computed(() => `赛事赛程`)
 
@@ -64,6 +67,14 @@ const parseCustom = m => {
 }
 const getStage = m => (m?.stage || m?.Stage || parseCustom(m).stage || '')
 const getReplayLink = m => (m?.replayLink || m?.ReplayLink || parseCustom(m).replayLink || '')
+const getGroupLabel = m => {
+  const d = parseCustom(m)
+  const label = d.groupLabel
+  if (label) return label
+  const gi = d.groupIndex
+  if (gi == null || gi < 0) return ''
+  return gi < 26 ? String.fromCharCode('A'.charCodeAt(0) + gi) : `G${gi + 1}`
+}
 function getWinnerName(m) {
   const d = parseCustom(m)
   const n = m?.winnerTeamName || m?.WinnerTeamName || d.winnerTeamName
@@ -79,10 +90,19 @@ function getWinnerName(m) {
 
 // 分组预览与动画
 const previewOpen = ref(false)
-const previewItems = ref([]) // { homeId, awayId, matchTime, homeName, awayName }
+const previewItems = ref([])
 const previewVisibleCount = ref(0)
 const previewAnimating = ref(false)
 const previewCreating = ref(false)
+
+const ceremonyOpen = ref(false)
+const ceremonyItems = ref([])
+const ceremonyIndex = ref(0)
+const ceremonyProgress = ref(0)
+const ceremonyRunning = ref(false)
+const ceremonyCelebrating = ref(false)
+const currentCeremonyItem = computed(() => ceremonyItems.value[ceremonyIndex.value])
+let ceremonyTimer = null
 
 function buildPairs(teamIds) {
   const shuffled = shuffle(teamIds)
@@ -143,7 +163,6 @@ async function onPreviewGenerate() {
   previewVisibleCount.value = 0
   previewAnimating.value = true
   previewOpen.value = true
-  // 逐项动画（每350ms展示一个）
   for (let i = 1; i <= previewItems.value.length; i++) {
     await new Promise(res => setTimeout(res, 350))
     previewVisibleCount.value = i
@@ -155,6 +174,7 @@ async function onConfirmGenerateFromPreview() {
   previewCreating.value = true
   try {
     const eventGuid = ev.value?.id || ev.value?.Id
+    const created = []
     for (const item of previewItems.value) {
       const payload = {
         homeTeamId: item.homeId,
@@ -163,10 +183,12 @@ async function onConfirmGenerateFromPreview() {
         eventId: eventGuid,
         customData: '{}',
       }
-      await createMatch(payload)
+      const m = await createMatch(payload)
+      created.push(m)
     }
     successMsg.value = `已生成 ${previewItems.value.length} 场赛程`
     previewOpen.value = false
+    await showCeremonyForCreated(created)
     await loadMatches()
   } catch (e) {
     errorMsg.value = e?.payload?.message || e?.message || '生成赛程失败'
@@ -227,6 +249,50 @@ const matchesByDay = computed(() => {
   }))
 })
 
+// 小组阶段元信息与积分榜
+const groupStageGroups = computed(() => {
+  try {
+    const cd = ev.value?.customData || ev.value?.CustomData
+    if (!cd) return []
+    const obj = JSON.parse(cd) || {}
+    const gs = obj.groupStage || obj.GroupStage
+    const arr = gs?.groups || gs?.Groups
+    if (!Array.isArray(arr)) return []
+    return arr.map(o => ({
+      index: o.index ?? o.Index,
+      label: o.label ?? o.Label,
+      teamIds: (o.teamIds || o.TeamIds || []).map(x => (typeof x === 'string' ? x : String(x))),
+      teamNames: o.teamNames || o.TeamNames || []
+    }))
+  } catch { return [] }
+})
+
+const groupStageStandings = computed(() => {
+  try {
+    const cd = ev.value?.customData || ev.value?.CustomData
+    if (!cd) return []
+    const obj = JSON.parse(cd) || {}
+    const gs = obj.groupStage || obj.GroupStage
+    const arr = gs?.standings || gs?.Standings
+    if (!Array.isArray(arr)) return []
+    return arr.map(o => ({
+      groupIndex: o.groupIndex ?? o.GroupIndex,
+      items: (o.items || o.Items || []).map(it => ({ teamId: it.teamId || it.TeamId, points: Number(it.points || it.Points || 0) }))
+    }))
+  } catch { return [] }
+})
+
+// 小组筛选
+const selectedGroupIndex = ref(null)
+const groupFilterItems = computed(() => {
+  const items = [{ title: '全部小组', value: null }]
+  for (const g of groupStageGroups.value || []) {
+    const lab = g.label ?? (g.index < 26 ? String.fromCharCode('A'.charCodeAt(0) + (g.index ?? 0)) : `G${(g.index ?? 0) + 1}`)
+    items.push({ title: `组 ${lab}`, value: g.index })
+  }
+  return items
+})
+
 function formatDateLabel(dateStr) {
   try {
     const [y, m, d] = dateStr.split('-').map(Number)
@@ -280,6 +346,42 @@ function toLocalDateTimeInput(value) {
   const d = new Date(value)
   const pad = n => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+function toDateInput(value) {
+  if (!value) return ''
+  const d = new Date(value)
+  const pad = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
+}
+
+function applyTournamentConfigFrom(e) {
+  if (!e) return
+  const cd = e?.customData || e?.CustomData
+  if (!cd) return
+  try {
+    const obj = JSON.parse(cd) || {}
+    const tc = obj?.tournamentConfig || obj?.TournamentConfig
+    if (!tc || typeof tc !== 'object') return
+    const fmt = tc.format || tc.Format
+    const bo = tc.bestOf ?? tc.BestOf
+    const rounds = tc.rounds ?? tc.Rounds
+    const gsize = tc.groupSize ?? tc.GroupSize
+    const adv = tc.advancePerGroup ?? tc.AdvancePerGroup
+    const itv = tc.intervalMinutes ?? tc.IntervalMinutes
+    const sdate = tc.startDate || tc.StartDate
+    const dstart = tc.dailyStartTime || tc.DailyStartTime
+    const maxpd = tc.maxMatchesPerDay ?? tc.MaxMatchesPerDay
+    if (fmt) tournamentFormat.value = String(fmt)
+    if (bo != null) tournamentBestOf.value = Number(bo) || 1
+    if (rounds != null) swissRounds.value = Number(rounds) || swissRounds.value
+    if (gsize != null) groupsCount.value = Number(gsize) || groupsCount.value
+    if (adv != null) advancePerGroup.value = Number(adv) || advancePerGroup.value
+    if (itv != null) scheduleIntervalMinutes.value = Number(itv) || scheduleIntervalMinutes.value
+    if (sdate) generateStartDate.value = toDateInput(sdate)
+    if (dstart) dailyStartTime.value = String(dstart)
+    if (maxpd != null) maxMatchesPerDay.value = Number(maxpd) || null
+  } catch {}
 }
 
 async function onCreateMatch() {
@@ -381,6 +483,7 @@ async function onGenerateRandom() {
     const eventGuid = ev.value?.id || ev.value?.Id
     const intervalMs = (generateIntervalMinutes.value || 60) * 60 * 1000
     const perDay = maxMatchesPerDay.value ? Number(maxMatchesPerDay.value) : null
+    const created = []
     for (let idx = 0; idx < pairs.length; idx++) {
       const [homeId, awayId] = pairs[idx]
       let scheduled
@@ -399,9 +502,11 @@ async function onGenerateRandom() {
         eventId: eventGuid,
         customData: '{}',
       }
-      await createMatch(payload)
+      const m = await createMatch(payload)
+      created.push(m)
     }
     successMsg.value = `已生成 ${pairs.length} 场赛程`
+    await showCeremonyForCreated(created)
     await loadMatches()
     generateOpen.value = false
   } catch (e) {
@@ -409,6 +514,177 @@ async function onGenerateRandom() {
     errorDetails.value = extractErrorDetails(e?.payload)
   } finally {
     generating.value = false
+  }
+}
+
+const tournamentFormat = ref('single_elim')
+const tournamentBestOf = ref(1)
+const swissRounds = ref(3)
+const groupsCount = ref(4)
+const advancePerGroup = ref(2)
+const scheduleIntervalMinutes = ref(60)
+const savingTournamentConfig = ref(false)
+const generatingTournament = ref(false)
+const generatingNextRound = ref(false)
+const loadingConflicts = ref(false)
+const conflictItems = ref([])
+const conflictError = ref('')
+
+async function onSaveTournamentConfig() {
+  errorMsg.value = ''
+  successMsg.value = ''
+  if (!canManageMatches.value) { errorMsg.value = '没有权限'; return }
+  const dto = {
+    format: tournamentFormat.value,
+    bestOf: Number(tournamentBestOf.value || 0) || 1,
+    rounds: tournamentFormat.value === 'swiss' ? Number(swissRounds.value || 0) || 1 : null,
+    groupSize: tournamentFormat.value === 'groups' ? Number(groupsCount.value || 0) || 1 : null,
+    advancePerGroup: tournamentFormat.value === 'groups' ? Number(advancePerGroup.value || 0) || 1 : null,
+    intervalMinutes: Number(scheduleIntervalMinutes.value || 60),
+    startDate: generateStartDate.value ? new Date(generateStartDate.value).toISOString() : null,
+    dailyStartTime: dailyStartTime.value || null,
+    maxMatchesPerDay: maxMatchesPerDay.value ? Number(maxMatchesPerDay.value) : null
+  }
+  savingTournamentConfig.value = true
+  try {
+    await updateTournamentConfig(eventId.value, dto)
+    successMsg.value = '赛制配置已保存'
+  } catch (e) {
+    errorMsg.value = e?.payload?.message || e?.message || '保存赛制配置失败'
+    errorDetails.value = extractErrorDetails(e?.payload)
+  } finally {
+    savingTournamentConfig.value = false
+  }
+}
+
+async function onGenerateTournamentSchedule() {
+  errorMsg.value = ''
+  successMsg.value = ''
+  if (!canManageMatches.value) { errorMsg.value = '没有权限生成赛程'; return }
+  const stage = tournamentFormat.value
+  const dto = {
+    stage,
+    bestOf: Number(tournamentBestOf.value || 0) || 1,
+    round: tournamentFormat.value === 'swiss' ? Number(swissRounds.value || 0) || 1 : null,
+    intervalMinutes: Number(scheduleIntervalMinutes.value || 60),
+    startDate: generateStartDate.value ? new Date(generateStartDate.value).toISOString() : null,
+    dailyStartTime: dailyStartTime.value || null,
+    maxMatchesPerDay: maxMatchesPerDay.value ? Number(maxMatchesPerDay.value) : null,
+    groupSize: stage === 'groups' ? (Number(groupsCount.value || 0) || 1) : null,
+    advancePerGroup: stage === 'groups' ? (Number(advancePerGroup.value || 0) || 1) : null
+  }
+  generatingTournament.value = true
+  try {
+    const created = await generateSchedule(eventId.value, dto)
+    const list = Array.isArray(created) ? created : []
+    successMsg.value = `赛程生成成功（${list.length} 场）`
+    if (stage === 'groups') {
+      await playGroupRevealFromCreated(list)
+    }
+    await showCeremonyForCreated(list)
+    await loadMatches()
+  } catch (e) {
+    errorMsg.value = e?.payload?.message || e?.message || '生成赛程失败'
+    errorDetails.value = extractErrorDetails(e?.payload)
+  } finally {
+    generatingTournament.value = false
+  }
+}
+
+async function onGenerateNextRound() {
+  errorMsg.value = ''
+  successMsg.value = ''
+  if (!canManageMatches.value) { errorMsg.value = '没有权限生成下一轮'; return }
+  const stage = tournamentFormat.value
+  const dto = {
+    stage,
+    bestOf: Number(tournamentBestOf.value || 0) || 1,
+    intervalMinutes: Number(scheduleIntervalMinutes.value || 60),
+    startDate: generateStartDate.value ? new Date(generateStartDate.value).toISOString() : null,
+    dailyStartTime: dailyStartTime.value || null,
+    maxMatchesPerDay: maxMatchesPerDay.value ? Number(maxMatchesPerDay.value) : null
+  }
+  generatingNextRound.value = true
+  try {
+    const created = await generateNextRound(eventId.value, dto)
+    const list = Array.isArray(created) ? created : []
+    successMsg.value = `已添加下一轮赛程（${list.length} 场）`
+    await showCeremonyForCreated(list)
+    await loadMatches()
+  } catch (e) {
+    errorMsg.value = e?.payload?.message || e?.message || '生成下一轮失败'
+    errorDetails.value = extractErrorDetails(e?.payload)
+  } finally {
+    generatingNextRound.value = false
+  }
+}
+
+function toCeremonyItemFromMatch(m) {
+  const homeId = m.homeTeamId || m.HomeTeamId
+  const awayId = m.awayTeamId || m.AwayTeamId
+  const homeName = m.homeTeamName || m.HomeTeamName || ''
+  const awayName = m.awayTeamName || m.AwayTeamName || ''
+  const matchTime = m.matchTime || m.MatchTime
+  return { homeId, awayId, homeName, awayName, matchTime }
+}
+
+function startCeremonyTimer() {
+  if (ceremonyTimer) { clearInterval(ceremonyTimer); ceremonyTimer = null }
+  ceremonyRunning.value = true
+  ceremonyProgress.value = 0
+  ceremonyCelebrating.value = true
+  setTimeout(() => { ceremonyCelebrating.value = false }, 1000)
+  const durationMs = 8000
+  const start = Date.now()
+  ceremonyTimer = setInterval(() => {
+    const elapsed = Date.now() - start
+    const p = Math.min(100, Math.floor((elapsed / durationMs) * 100))
+    ceremonyProgress.value = p
+    if (elapsed >= durationMs) advanceCeremony()
+  }, 50)
+}
+
+function stopCeremonyTimer() {
+  if (ceremonyTimer) { clearInterval(ceremonyTimer); ceremonyTimer = null }
+  ceremonyRunning.value = false
+}
+
+function advanceCeremony() {
+  stopCeremonyTimer()
+  if (ceremonyIndex.value + 1 < ceremonyItems.value.length) {
+    ceremonyIndex.value += 1
+    startCeremonyTimer()
+  } else {
+    ceremonyProgress.value = 100
+    ceremonyRunning.value = false
+  }
+}
+
+async function showCeremonyForCreated(list) {
+  const items = (Array.isArray(list) ? list : []).map(toCeremonyItemFromMatch)
+  ceremonyItems.value = items
+  await Promise.all(items.flatMap(it => [ensureTeamDetail(it.homeId), ensureTeamDetail(it.awayId)]))
+  ceremonyIndex.value = 0
+  ceremonyProgress.value = 0
+  ceremonyOpen.value = true
+  startCeremonyTimer()
+}
+
+watch(ceremonyOpen, (v) => { if (!v) stopCeremonyTimer() })
+
+async function onCheckConflicts() {
+  conflictError.value = ''
+  loadingConflicts.value = true
+  try {
+    const items = await getScheduleConflicts(eventId.value)
+    conflictItems.value = Array.isArray(items) ? items : (items?.items || items?.Items || [])
+    if (!Array.isArray(items) && conflictItems.value.length === 0) {
+      conflictItems.value = items ? [items] : []
+    }
+  } catch (e) {
+    conflictError.value = e?.payload?.message || e?.message || '冲突检测失败'
+  } finally {
+    loadingConflicts.value = false
   }
 }
 
@@ -436,10 +712,31 @@ async function loadRegistrations() {
   }
 }
 
+async function onGenerateTestTeams() {
+  errorMsg.value = ''
+  successMsg.value = ''
+  if (!canManageEvent.value) { errorMsg.value = '没有权限生成测试队伍'; return }
+  generatingTestTeams.value = true
+  try {
+    await generateTestRegistrations(eventId.value, { count: 64, namePrefix: '测试战队', approve: true })
+    successMsg.value = '已生成64个测试队伍并报名'
+    showSuccess.value = true
+    await loadRegistrations()
+  } catch (e) {
+    errorMsg.value = e?.payload?.message || e?.message || '生成测试队伍失败'
+    errorDetails.value = extractErrorDetails(e?.payload)
+    errorOpen.value = true
+  } finally {
+    generatingTestTeams.value = false
+  }
+}
+
 async function loadMatches() {
   loadingMatches.value = true
   try {
-    matches.value = await getMatches({ eventId: eventId.value, page: page.value, pageSize: pageSize.value })
+    const res = await getMatchesPaged({ eventId: eventId.value, page: page.value, pageSize: pageSize.value, groupIndex: selectedGroupIndex.value })
+    matches.value = res.items || []
+    totalCount.value = res.totalCount || (matches.value || []).length
   } catch (e) {
     errorMsg.value = e?.payload?.message || e?.message || '获取赛程失败'
   } finally {
@@ -534,6 +831,7 @@ async function onSaveEdit() {
     await updateMatch(id, payload)
     successMsg.value = '赛程更新成功'
     editOpen.value = false
+    await loadEvent()
     await loadMatches()
   } catch (e) {
     errorMsg.value = e?.payload?.message || e?.message || '更新赛程失败'
@@ -581,6 +879,7 @@ async function onSaveEditScore() {
     await updateMatchScores(id, { bestOf: bo > 0 ? bo : cleaned.length, games: cleaned })
     successMsg.value = '赛果更新成功'
     editScoreOpen.value = false
+    await loadEvent()
     await loadMatches()
   } catch (e) {
     errorMsg.value = e?.payload?.message || e?.message || '赛果更新失败'
@@ -633,18 +932,133 @@ function goBackDetail() {
 
 onMounted(async () => {
   await loadEvent()
+  applyTournamentConfigFrom(ev.value)
   await loadRegistrations()
   await loadMatches()
-  // 默认生成开始时间为赛事比赛开始时间
   const compStart = ev.value?.competitionStartTime || ev.value?.CompetitionStartTime
   if (compStart) {
     const d = new Date(compStart)
-    // 将ISO转为本地datetime-local兼容字符串
     const pad = n => String(n).padStart(2, '0')
     const s = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
-    generateStartTime.value = s
-    matchTime.value = s
+    if (!generateStartTime.value) generateStartTime.value = s
+    if (!matchTime.value) matchTime.value = s
   }
+})
+
+const groupRevealOpen = ref(false)
+const groupRevealPlaying = ref(false)
+const groupRevealColumnsData = ref([])
+const groupRevealDisplayed = ref({})
+const groupRevealQueue = ref([])
+let groupRevealTimer = null
+let groupRevealResolver = null
+const groupRevealIntervalMs = 2000
+
+function buildGroupRevealColumnsFromMatches(list) {
+  const map = {}
+  for (const m of (list || [])) {
+    const s = String(getStage(m)).toLowerCase()
+    if (s !== 'groups') continue
+    const lab = getGroupLabel(m) || '未标注'
+    if (!map[lab]) map[lab] = new Set()
+    const hid = String(m.homeTeamId || m.HomeTeamId || '')
+    const aid = String(m.awayTeamId || m.AwayTeamId || '')
+    if (hid) map[lab].add(hid)
+    if (aid) map[lab].add(aid)
+  }
+  const labels = Object.keys(map).sort((a,b)=>a.localeCompare(b))
+  const nameMap = teamNameById.value || {}
+  return labels.map(lab => ({ label: lab, names: Array.from(map[lab]).map(id => nameMap[id] || ('#' + id)) }))
+}
+
+function labelFromIndex(i) { return i < 26 ? String.fromCharCode('A'.charCodeAt(0) + i) : `G${i + 1}` }
+
+function buildGroupRevealColumnsFromConfigOrRegistrations() {
+  const nameMap = teamNameById.value || {}
+  const groups = groupStageGroups.value || []
+  if (Array.isArray(groups) && groups.length) {
+    return groups.map((g, idx) => {
+      const lab = g.label ?? labelFromIndex(Number(g.index ?? idx) || idx)
+      const names = (Array.isArray(g.teamNames) && g.teamNames.length)
+        ? g.teamNames
+        : (Array.isArray(g.teamIds) ? g.teamIds.map(id => nameMap[id] || ('#' + id)) : [])
+      return { label: lab, names }
+    })
+  }
+  const count = Number(groupsCount.value || 0) || 1
+  const arr = new Array(count).fill(0).map(() => [])
+  const baseTeams = eligibleTeams.value || []
+  const ordered = baseTeams.slice().sort((a, b) => {
+    const an = (a.teamName || a.TeamName || '').toLowerCase()
+    const bn = (b.teamName || b.TeamName || '').toLowerCase()
+    return an.localeCompare(bn)
+  })
+  ordered.forEach((t, idx) => {
+    const gid = idx % count
+    const id = t.teamId || t.TeamId
+    const nm = nameMap[id] || (t.teamName || t.TeamName || ('#' + id))
+    arr[gid].push(nm)
+  })
+  return arr.map((names, i) => ({ label: labelFromIndex(i), names }))
+}
+
+function openGroupReveal(columns) {
+  groupRevealColumnsData.value = columns || []
+  const obj = {}
+  for (const col of groupRevealColumnsData.value) obj[col.label] = []
+  groupRevealDisplayed.value = obj
+  groupRevealQueue.value = []
+  for (const col of groupRevealColumnsData.value) {
+    for (const name of (col.names || [])) groupRevealQueue.value.push({ label: col.label, name })
+  }
+  groupRevealOpen.value = true
+}
+
+function startGroupReveal() {
+  if (groupRevealPlaying.value) return
+  groupRevealPlaying.value = true
+  if (groupRevealTimer) { clearInterval(groupRevealTimer); groupRevealTimer = null }
+  let idx = 0
+  groupRevealTimer = setInterval(() => {
+    const step = groupRevealQueue.value[idx]
+    if (!step) {
+      clearInterval(groupRevealTimer)
+      groupRevealTimer = null
+      groupRevealPlaying.value = false
+      groupRevealOpen.value = false
+      const resolve = groupRevealResolver; groupRevealResolver = null; if (resolve) resolve()
+      return
+    }
+    const lab = step.label
+    const name = step.name
+    const arr = groupRevealDisplayed.value[lab] || []
+    arr.push({ name, key: Math.random().toString(36).slice(2) })
+    groupRevealDisplayed.value[lab] = arr
+    idx += 1
+  }, groupRevealIntervalMs)
+}
+
+function stopGroupReveal() { if (groupRevealTimer) { clearInterval(groupRevealTimer); groupRevealTimer = null } groupRevealPlaying.value = false }
+function resetGroupReveal() {
+  const obj = {}
+  for (const col of groupRevealColumnsData.value || []) obj[col.label] = []
+  groupRevealDisplayed.value = obj
+  groupRevealQueue.value = []
+}
+
+async function playGroupRevealFromCreated(list) {
+  let columns = buildGroupRevealColumnsFromConfigOrRegistrations()
+  if (!columns.length) {
+    columns = buildGroupRevealColumnsFromMatches(list)
+  }
+  if (!columns.length) return
+  openGroupReveal(columns)
+  return new Promise(resolve => { groupRevealResolver = resolve; startGroupReveal() })
+}
+
+watch(selectedGroupIndex, async () => {
+  page.value = 1
+  await loadMatches()
 })
 </script>
 
@@ -658,7 +1072,6 @@ onMounted(async () => {
         返回赛事详情
       </v-btn>
       <v-btn class="mb-3 ml-2" variant="text" prepend-icon="account_tree" :to="{ name: 'event-bracket', params: { id: eventId } }">查看赛程图</v-btn>
-      <v-btn v-if="canManageMatches" class="mb-3 ml-2" variant="outlined" prepend-icon="shuffle" @click="generateOpen = true">随机分组生成</v-btn>
     </template>
   </PageHero>
 
@@ -678,13 +1091,25 @@ onMounted(async () => {
             <v-icon class="mr-2" color="primary" icon="timeline" />
             <span>赛程时间轴</span>
             <v-spacer />
+            <v-select
+              v-model="selectedGroupIndex"
+              :items="groupFilterItems"
+              density="compact"
+              style="max-width: 180px"
+              label="筛选小组"
+            />
             <v-chip v-if="loadingMatches" label color="default" variant="tonal">加载中…</v-chip>
-            <v-chip v-else label color="default" variant="tonal">共 {{ matches.length }} 场</v-chip>
+            <v-chip v-else label color="default" variant="tonal">共 {{ totalCount }} 场</v-chip>
             <v-btn v-if="canManageMatches" class="ml-2" variant="text" prepend-icon="select_all" @click="selectionMode = !selectionMode">{{ selectionMode ? '取消批量删除' : '批量删除' }}</v-btn>
             <v-btn v-if="selectionMode && canManageMatches" class="ml-1" variant="text" @click="selectAll">全选</v-btn>
             <v-btn v-if="selectionMode && canManageMatches" class="ml-1" color="error" variant="tonal" :disabled="!selectedIds.length" :loading="batchDeleting" @click="onBatchDelete">删除已选</v-btn>
           </v-card-title>
           <v-card-text>
+            <div class="d-flex align-center mb-3">
+              <div class="text-medium-emphasis">第 {{ page }} 页 / 每页 {{ pageSize }} 条</div>
+              <v-spacer />
+              <v-select v-model.number="pageSize" :items="[10,20,50,100]" density="compact" style="max-width: 140px" label="每页" @update:modelValue="() => { page = 1; loadMatches() }" />
+            </div>
             <v-row dense v-if="loadingMatches">
               <v-col v-for="n in 6" :key="n" cols="12" sm="6" md="4" lg="3"><v-skeleton-loader type="card" /></v-col>
             </v-row>
@@ -707,6 +1132,7 @@ onMounted(async () => {
                           </span>
                           <v-spacer />
                           <v-chip v-if="getStage(m)" size="small" color="primary" variant="tonal">{{ getStage(m) }}</v-chip>
+                          <v-chip v-if="getGroupLabel(m)" size="small" color="secondary" variant="tonal" class="ml-2">组 {{ getGroupLabel(m) }}</v-chip>
                           <v-chip v-if="m.liveLink || m.LiveLink" size="small" color="secondary" variant="tonal" prepend-icon="videocam">直播</v-chip>
                         </div>
                         <div class="entry-main d-flex align-center">
@@ -797,12 +1223,150 @@ onMounted(async () => {
                   </div>
                 </div>
               </div>
+              <div class="d-flex align-center justify-center mt-4">
+                <v-pagination v-model="page" :length="maxPage" total-visible="7" @update:modelValue="loadMatches" />
+              </div>
             </template>
             <v-card v-else class="pa-8 text-center">
               <v-icon size="40" color="primary" icon="calendar_month" />
               <div class="text-h6 mt-3">尚未创建任何赛程</div>
               <div class="text-medium-emphasis">您可以手动创建或使用随机分组生成</div>
             </v-card>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <v-row v-if="canManageMatches" dense>
+      <v-col cols="12">
+        <v-card>
+          <v-card-title class="d-flex align-center">
+            <v-icon class="mr-2" color="primary" icon="account_tree" />
+            赛制配置与自动生成
+          </v-card-title>
+          <v-card-text>
+            <v-row dense>
+              <v-col cols="12" md="4">
+                <v-select
+                  v-model="tournamentFormat"
+                  :items="[
+                    { title: '单淘', value: 'single_elim' },
+                    { title: '双淘', value: 'double_elim' },
+                    { title: '瑞士轮', value: 'swiss' },
+                    { title: '小组赛', value: 'groups' }
+                  ]"
+                  label="赛制"
+                  prepend-inner-icon="sports_martial_arts"
+                />
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-select v-model.number="tournamentBestOf" :items="[1,3,5,7]" label="BO 局数" prepend-inner-icon="grid_on" />
+              </v-col>
+              <v-col cols="12" md="4" v-if="tournamentFormat === 'swiss'">
+                <v-text-field v-model.number="swissRounds" label="轮次" type="number" min="1" prepend-inner-icon="format_list_numbered" />
+              </v-col>
+              <v-col cols="12" md="4" v-if="tournamentFormat === 'groups'">
+                <v-text-field v-model.number="groupsCount" label="小组数量" type="number" min="1" prepend-inner-icon="group" />
+              </v-col>
+              <v-col cols="12" md="4" v-if="tournamentFormat === 'groups'">
+                <v-text-field v-model.number="advancePerGroup" label="每组出线数" type="number" min="1" prepend-inner-icon="emoji_events" />
+              </v-col>
+            </v-row>
+            <v-divider class="my-4" />
+            <v-row dense>
+              <v-col cols="12" md="6">
+                <v-text-field v-model.number="scheduleIntervalMinutes" label="间隔（分钟）" type="number" min="1" prepend-inner-icon="timer" />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field v-model="generateStartDate" label="开始日期（跨天排程）" type="date" prepend-inner-icon="calendar_month" />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field v-model="dailyStartTime" label="每天起始时间" type="time" prepend-inner-icon="schedule" />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field v-model.number="maxMatchesPerDay" label="每天最多场次" type="number" min="1" prepend-inner-icon="format_list_numbered" />
+              </v-col>
+            </v-row>
+            <v-alert v-if="conflictError" type="error" :text="conflictError" class="mt-2" />
+            <div v-if="conflictItems.length" class="mt-4">
+              <div class="text-subtitle-2 mb-2">检测到冲突</div>
+              <v-table density="comfortable">
+                <thead>
+                  <tr>
+                    <th class="text-left">队伍</th>
+                    <th class="text-left">起始</th>
+                    <th class="text-left">结束</th>
+                    <th class="text-left">涉及场次</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(c, i) in conflictItems" :key="i">
+                    <td>{{ teamNameById[c.teamId || c.TeamId] || (c.teamId || c.TeamId) }}</td>
+                    <td>{{ new Date(c.start || c.Start).toLocaleString() }}</td>
+                    <td>{{ new Date(c.end || c.End).toLocaleString() }}</td>
+                    <td>{{ (c.matchIds || c.MatchIds || []).length }}</td>
+                  </tr>
+                </tbody>
+              </v-table>
+            </div>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn :loading="savingTournamentConfig" variant="tonal" prepend-icon="save" color="secondary" @click="onSaveTournamentConfig">保存配置</v-btn>
+            <v-spacer />
+            <v-btn :loading="generatingTournament" color="primary" prepend-icon="account_tree" @click="onGenerateTournamentSchedule">生成赛程</v-btn>
+            <v-btn :loading="generatingNextRound" class="ml-2" color="primary" prepend-icon="forward" @click="onGenerateNextRound">添加下一轮</v-btn>
+            <v-btn :loading="loadingConflicts" class="ml-2" color="orange" prepend-icon="warning" @click="onCheckConflicts">冲突检测</v-btn>
+            <v-btn v-if="canManageEvent" :loading="generatingTestTeams" class="ml-2" color="secondary" prepend-icon="handshake" @click="onGenerateTestTeams">生成64个测试队伍</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <v-row v-if="tournamentFormat === 'groups' && groupStageGroups.length" dense>
+      <v-col cols="12">
+        <v-card>
+          <v-card-title class="d-flex align-center">
+            <v-icon class="mr-2" color="primary" icon="groups" />
+            小组信息与积分
+          </v-card-title>
+          <v-card-text>
+            <div class="text-subtitle-2 mb-2">分组</div>
+            <v-row>
+              <v-col v-for="g in groupStageGroups" :key="g.index" cols="12" md="6" lg="4">
+                <v-sheet class="pa-3" variant="tonal">
+                  <div class="d-flex align-center mb-2">
+                    <v-chip color="primary" label>组 {{ g.label ?? (g.index < 26 ? String.fromCharCode('A'.charCodeAt(0) + (g.index ?? 0)) : `G${(g.index ?? 0) + 1}`) }}</v-chip>
+                    <v-spacer />
+                    <span class="text-caption text-medium-emphasis">队伍数：{{ (g.teamIds || []).length }}</span>
+                  </div>
+                  <div class="text-body-2">
+                    {{ (g.teamNames && g.teamNames.length ? g.teamNames : (g.teamIds || []).map(id => teamNameById[id] || id)).join('、') }}
+                  </div>
+                </v-sheet>
+              </v-col>
+            </v-row>
+            <v-divider class="my-4" v-if="tournamentFormat === 'groups' && groupStageStandings.length" />
+            <template v-if="tournamentFormat === 'groups' && groupStageStandings.length">
+              <div class="text-subtitle-2 mb-2">积分榜</div>
+              <v-row>
+                <v-col v-for="st in groupStageStandings" :key="st.groupIndex" cols="12" md="6" lg="4">
+                  <v-table density="comfortable">
+                    <thead>
+                      <tr><th class="text-left">队伍</th><th class="text-right">积分</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(it, idx) in st.items" :key="it.teamId" :class="{ 'top-advance': idx < (advancePerGroup || 0) }">
+                        <td>{{ teamNameById[it.teamId] || it.teamId }}</td>
+                        <td class="text-right">
+                          <span>{{ it.points }}</span>
+                          <v-icon v-if="idx < (advancePerGroup || 0)" size="18" color="orange" class="ml-1" icon="emoji_events" />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </v-table>
+                </v-col>
+              </v-row>
+            </template>
           </v-card-text>
         </v-card>
       </v-col>
@@ -933,6 +1497,83 @@ onMounted(async () => {
           <v-spacer />
           <v-btn :loading="previewCreating" color="primary" prepend-icon="save" @click="onConfirmGenerateFromPreview">确认生成赛程</v-btn>
         </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- 生成仪式弹窗 -->
+    <v-dialog v-model="ceremonyOpen" max-width="960">
+      <v-card theme="dark">
+        <v-card-title class="d-flex align-center">
+          <v-icon class="mr-2" icon="celebration" /> 赛程生成仪式
+          <v-spacer />
+          <v-chip color="default" variant="tonal">{{ ceremonyIndex + 1 }} / {{ ceremonyItems.length }}</v-chip>
+        </v-card-title>
+        <v-card-text>
+          <v-sheet rounded="lg" class="ceremony-sheet">
+            <v-fade-transition>
+              <div v-if="currentCeremonyItem" :key="ceremonyIndex" class="d-flex align-center">
+                <v-avatar size="120" class="mr-3">
+                  <template v-if="teamDetails[currentCeremonyItem.homeId]?.logoUrl || teamDetails[currentCeremonyItem.homeId]?.LogoUrl">
+                    <v-img :src="teamDetails[currentCeremonyItem.homeId].logoUrl || teamDetails[currentCeremonyItem.homeId].LogoUrl" cover />
+                  </template>
+                  <template v-else>
+                    <span class="text-subtitle-1">{{ getAvatarLetter(currentCeremonyItem.homeName) }}</span>
+                  </template>
+                </v-avatar>
+                <v-chip label variant="outlined" class="mx-3 font-weight-bold">VS</v-chip>
+                <v-avatar size="120" class="mr-3">
+                  <template v-if="teamDetails[currentCeremonyItem.awayId]?.logoUrl || teamDetails[currentCeremonyItem.awayId]?.LogoUrl">
+                    <v-img :src="teamDetails[currentCeremonyItem.awayId].logoUrl || teamDetails[currentCeremonyItem.awayId].LogoUrl" cover />
+                  </template>
+                  <template v-else>
+                    <span class="text-subtitle-1">{{ getAvatarLetter(currentCeremonyItem.awayName) }}</span>
+                  </template>
+                </v-avatar>
+                <div class="text-subtitle-1 font-weight-bold">{{ currentCeremonyItem.homeName }} VS {{ currentCeremonyItem.awayName }}</div>
+                <v-spacer />
+                <div class="text-medium-emphasis ml-2">{{ new Date(currentCeremonyItem.matchTime).toLocaleString() }}</div>
+              </div>
+            </v-fade-transition>
+            <div v-if="ceremonyCelebrating" class="ceremony-confetti">
+              <lottie-player src="/animations/Ribbon.json" autoplay loop style="width:200px;height:200px"></lottie-player>
+            </div>
+          </v-sheet>
+          <v-progress-linear :model-value="ceremonyProgress" color="primary" height="6" rounded class="mt-4" />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn color="primary" variant="tonal" prepend-icon="check_circle" @click="ceremonyOpen = false;">
+            完成
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    
+    <v-dialog v-model="groupRevealOpen" fullscreen scrollable>
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <v-icon class="mr-2" icon="movie" /> 小组赛分组展示
+          <v-spacer />
+          <v-btn color="warning" variant="tonal" prepend-icon="pause" class="mr-2" :disabled="!groupRevealPlaying" @click="stopGroupReveal">暂停</v-btn>
+          <v-btn color="default" variant="tonal" prepend-icon="restart_alt" class="mr-2" @click="resetGroupReveal">重置</v-btn>
+          <v-btn color="error" variant="tonal" prepend-icon="close" @click="() => { stopGroupReveal(); groupRevealOpen = false; const r = groupRevealResolver; groupRevealResolver = null; if (r) r() }">关闭</v-btn>
+        </v-card-title>
+        <v-card-text>
+          <div class="reveal-grid">
+            <div v-for="col in groupRevealColumnsData" :key="col.label" class="reveal-card">
+              <div class="reveal-header">
+                <v-icon class="mr-2" icon="diversity_3" />
+                <span>组 {{ col.label }}</span>
+              </div>
+              <div class="reveal-body">
+                <div v-for="item in (groupRevealDisplayed[col.label] || [])" :key="item.key" class="reveal-item pop-item">
+                  <span class="text-body-1">{{ item.name }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </v-card-text>
       </v-card>
     </v-dialog>
 
@@ -1158,4 +1799,33 @@ onMounted(async () => {
   .entry-main { padding: 10px 12px; }
   .entry-actions { padding: 0 12px 10px; }
 }
+
+.ceremony-sheet {
+  position: relative;
+  padding: 2rem;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #2c3e50, #4a0e4e);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 1px 8px rgba(0, 0, 0, 0.2);
+  color: #fff;
+  overflow: hidden;
+}
+
+.ceremony-sheet::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.4), rgba(255,255,255,0));
+}
+.ceremony-confetti { position: absolute; inset: 0; pointer-events: none; display: flex; justify-content: center; align-items: center; }
+
+.reveal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px }
+.reveal-card { border-radius: 16px; background: white; border: 2px solid rgba(25,118,210,0.35); box-shadow: 0 4px 12px rgba(0,0,0,0.06); padding: 12px }
+.reveal-header { display: flex; align-items: center; font-weight: 600; margin-bottom: 8px }
+.reveal-body { min-height: 160px; display: flex; flex-direction: column; gap: 8px }
+.reveal-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: rgba(0,0,0,0.04) }
+@keyframes pop { 0% { transform: scale(0.6); opacity: 0 } 60% { transform: scale(1.08); opacity: 1 } 100% { transform: scale(1); opacity: 1 } }
+.pop-item { animation: pop 0.5s ease-out }
 </style>

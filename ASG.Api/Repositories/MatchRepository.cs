@@ -20,7 +20,7 @@ namespace ASG.Api.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Match>> GetAllMatchesAsync(Guid? eventId = null, int page = 1, int pageSize = 10)
+        public async Task<IEnumerable<Match>> GetAllMatchesAsync(Guid? eventId = null, int page = 1, int pageSize = 10, int? groupIndex = null, string? groupLabel = null)
         {
             var query = _context.Matches
                 .Include(m => m.HomeTeam)
@@ -33,6 +33,18 @@ namespace ASG.Api.Repositories
                 query = query.Where(m => m.EventId == eventId.Value);
             }
 
+            if (groupIndex.HasValue)
+            {
+                var needle = $"\"groupIndex\":{groupIndex.Value}";
+                query = query.Where(m => m.CustomData != null && m.CustomData.Contains(needle));
+            }
+            if (!string.IsNullOrWhiteSpace(groupLabel))
+            {
+                var safe = groupLabel!.Replace("\"", string.Empty);
+                var needle = $"\"groupLabel\":\"{safe}\"";
+                query = query.Where(m => m.CustomData != null && m.CustomData.Contains(needle));
+            }
+
             return await query
                 .OrderByDescending(m => m.MatchTime)
                 .Skip((page - 1) * pageSize)
@@ -40,13 +52,25 @@ namespace ASG.Api.Repositories
                 .ToListAsync();
         }
 
-        public async Task<int> GetMatchCountAsync(Guid? eventId = null)
+        public async Task<int> GetMatchCountAsync(Guid? eventId = null, int? groupIndex = null, string? groupLabel = null)
         {
             var query = _context.Matches.AsQueryable();
 
             if (eventId.HasValue)
             {
                 query = query.Where(m => m.EventId == eventId.Value);
+            }
+
+            if (groupIndex.HasValue)
+            {
+                var needle = $"\"groupIndex\":{groupIndex.Value}";
+                query = query.Where(m => m.CustomData != null && m.CustomData.Contains(needle));
+            }
+            if (!string.IsNullOrWhiteSpace(groupLabel))
+            {
+                var safe = groupLabel!.Replace("\"", string.Empty);
+                var needle = $"\"groupLabel\":\"{safe}\"";
+                query = query.Where(m => m.CustomData != null && m.CustomData.Contains(needle));
             }
 
             return await query.CountAsync();

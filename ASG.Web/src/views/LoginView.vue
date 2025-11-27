@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { login } from '../services/auth'
+import { login, startOAuth } from '../services/auth'
 
 const router = useRouter()
 const route = useRoute()
@@ -38,6 +38,16 @@ async function onSubmit() {
     loading.value = false
   }
 }
+
+async function onOAuth(provider) {
+  const redirect = String(redirectTarget.value || '/')
+  await startOAuth(provider, redirect)
+}
+onMounted(() => {
+  if (route.query.error) {
+    errorMsg.value = String(route.query.error)
+  }
+})
 </script>
 
 <template>
@@ -73,6 +83,15 @@ async function onSubmit() {
             <div>
               <v-btn to="/forgot-password" variant="text" class="mr-2">忘记密码？</v-btn>
               <v-btn to="/register" variant="text">没有账号？去注册</v-btn>
+            </div>
+          </div>
+          <v-divider class="my-4" />
+          <div class="d-flex flex-column">
+            <div class="mb-2">使用第三方登录</div>
+            <div class="d-flex align-center">
+              <!-- <v-btn class="mr-2" color="black" variant="tonal" prepend-icon="open_in_new" @click="onOAuth('github')">GitHub</v-btn> -->
+              <v-btn class="mr-2" color="blue" variant="tonal" prepend-icon="open_in_new" @click="onOAuth('microsoft')">Microsoft</v-btn>
+              <!-- <v-btn color="green" variant="tonal" prepend-icon="open_in_new" @click="onOAuth('qq')">QQ</v-btn> -->
             </div>
           </div>
           

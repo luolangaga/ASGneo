@@ -221,11 +221,13 @@ const vTilt = {
                   alt="logo"
                   width="96"
                   aspect-ratio="2"
-                  class="mr-3 partner-logo"
+                  :class="['mr-3', 'partner-logo', { 'blue-filter': i === 0 }]"
                   contain
                 >
                   <template #placeholder>
-                    <div class="img-skeleton"></div>
+                    <div class="d-flex align-center justify-center" style="width:100%;height:100%">
+                      <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:64px;height:64px"></lottie-player>
+                    </div>
                   </template>
                 </v-img>
                 <div class="text-subtitle-1 font-weight-bold">{{ p.name }}</div>
@@ -432,12 +434,13 @@ const vTilt = {
 }
 
 .partner-logo {
-  filter: grayscale(100%);
+  filter: none;
   transition: filter 0.3s;
 }
 
-.v-card:hover .partner-logo {
-  filter: grayscale(0%);
+.blue-filter { filter: none; }
+:deep(.v-theme--light) .blue-filter {
+  filter: invert(19%) sepia(93%) saturate(3824%) hue-rotate(198deg) brightness(99%) contrast(101%);
 }
 
 .img-skeleton {

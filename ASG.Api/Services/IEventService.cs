@@ -183,9 +183,33 @@ namespace ASG.Api.Services
         Task<IEnumerable<UserResponseDto>> GetEventAdminsAsync(Guid eventId);
         Task<bool> AddEventAdminAsync(Guid eventId, string userId, string targetUserId);
         Task<bool> RemoveEventAdminAsync(Guid eventId, string userId, string targetUserId);
+        Task<bool> IsEventAdminAsync(Guid eventId, string userId);
 
         // 赛程图画布持久化
         Task<bool> SaveBracketCanvasAsync(Guid eventId, string userId, string canvasJson);
         Task<string> GetBracketCanvasAsync(Guid eventId);
+
+        Task<bool> CanUserManageAnyEventOfTeamAsync(Guid teamId, string userId);
+
+        // 规则版本化
+        Task<RuleRevisionDto> CreateRuleRevisionAsync(Guid eventId, CreateRuleRevisionDto dto, string userId);
+        Task<IEnumerable<RuleRevisionDto>> GetRuleRevisionsAsync(Guid eventId);
+        Task<bool> PublishRuleRevisionAsync(Guid eventId, Guid revisionId, string userId);
+
+        // 报名表 Schema 存储于 Event.CustomData
+        Task<bool> UpdateRegistrationFormSchemaAsync(Guid eventId, UpdateRegistrationFormSchemaDto dto, string userId);
+
+        // 报名答案（按战队唯一）
+        Task<bool> SubmitRegistrationAnswersAsync(Guid eventId, SubmitRegistrationAnswersDto dto, string userId);
+
+        // 读取报名表 Schema
+        Task<string> GetRegistrationFormSchemaAsync(Guid eventId);
+
+        // 读取报名答案 JSON
+        Task<string> GetRegistrationAnswersAsync(Guid eventId, Guid teamId, string userId);
+
+        Task<bool> UpdateTournamentConfigAsync(Guid eventId, UpdateTournamentConfigDto dto, string userId);
+
+        Task<IEnumerable<TeamEventDto>> GenerateTestRegistrationsAsync(Guid eventId, int count, string userId, string? namePrefix = null, bool approve = true);
     }
 }

@@ -96,6 +96,13 @@ export async function acceptInvite(token, player) {
   return apiFetch(`/Teams/invites/${token}/accept`, init)
 }
 
+export async function transferOwner(teamId, targetUserId) {
+  return apiFetch(`/Teams/${teamId}/transfer-owner`, {
+    method: 'POST',
+    body: JSON.stringify({ targetUserId }),
+  })
+}
+
 export async function getMyPlayer() {
   return apiFetch('/Teams/me/player')
 }
@@ -107,4 +114,13 @@ export async function upsertMyPlayer(player) {
   })
 }
 
-export default { registerTeam, updateTeam, bindTeam, bindTeamByName, unbindTeam, leaveTeam, getTeam, getTeamHonors, searchTeamsByName, likeTeam, uploadTeamLogo, deleteTeam, applyTeamLogoFromUrl, generateInvite, getInvite, acceptInvite, getMyPlayer, upsertMyPlayer }
+ 
+
+export async function setTeamDispute(teamId, { hasDispute, disputeDetail, communityPostId } = {}) {
+  return apiFetch(`/Teams/${teamId}/dispute`, {
+    method: 'POST',
+    body: JSON.stringify({ hasDispute, disputeDetail, communityPostId }),
+  })
+}
+
+export default { registerTeam, updateTeam, bindTeam, bindTeamByName, unbindTeam, leaveTeam, getTeam, getTeamHonors, searchTeamsByName, likeTeam, uploadTeamLogo, deleteTeam, applyTeamLogoFromUrl, generateInvite, getInvite, acceptInvite, getMyPlayer, upsertMyPlayer, transferOwner, setTeamDispute }

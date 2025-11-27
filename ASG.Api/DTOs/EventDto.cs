@@ -11,6 +11,8 @@ namespace ASG.Api.DTOs
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public string? QqGroup { get; set; }
+        public string? RulesMarkdown { get; set; }
         public DateTime RegistrationStartTime { get; set; }
         public DateTime RegistrationEndTime { get; set; }
         public DateTime CompetitionStartTime { get; set; }
@@ -26,6 +28,7 @@ namespace ASG.Api.DTOs
         public int RegisteredTeamsCount { get; set; }
         public List<TeamEventDto>? RegisteredTeams { get; set; }
         public List<string>? AdminUserIds { get; set; }
+        public string? CustomData { get; set; }
     }
 
     /// <summary>
@@ -39,6 +42,11 @@ namespace ASG.Api.DTOs
 
         [StringLength(1000, ErrorMessage = "赛事描述长度不能超过1000个字符")]
         public string? Description { get; set; }
+
+        [StringLength(50, ErrorMessage = "QQ群号长度不能超过50个字符")]
+        public string? QqGroup { get; set; }
+
+        public string? RulesMarkdown { get; set; }
 
         [Required(ErrorMessage = "报名开始时间不能为空")]
         public DateTime RegistrationStartTime { get; set; }
@@ -66,6 +74,11 @@ namespace ASG.Api.DTOs
 
         [StringLength(1000, ErrorMessage = "赛事描述长度不能超过1000个字符")]
         public string? Description { get; set; }
+
+        [StringLength(50, ErrorMessage = "QQ群号长度不能超过50个字符")]
+        public string? QqGroup { get; set; }
+
+        public string? RulesMarkdown { get; set; }
 
         [Required(ErrorMessage = "报名开始时间不能为空")]
         public DateTime RegistrationStartTime { get; set; }
@@ -99,6 +112,11 @@ namespace ASG.Api.DTOs
         public string? RegisteredByUserId { get; set; }
         public string? QqNumberMasked { get; set; }
         public string? QqNumberFull { get; set; }
+        public bool TeamHasDispute { get; set; }
+        public string? TeamDisputeDetail { get; set; }
+        public Guid? TeamCommunityPostId { get; set; }
+        public double TeamRatingAverage { get; set; }
+        public int TeamRatingCount { get; set; }
     }
 
     /// <summary>
@@ -141,5 +159,99 @@ namespace ASG.Api.DTOs
     public class AddEventAdminDto
     {
         public string UserId { get; set; } = string.Empty;
+    }
+
+    // 规则版本化
+    public class CreateRuleRevisionDto
+    {
+        [Required]
+        public string ContentMarkdown { get; set; } = string.Empty;
+        [StringLength(500)]
+        public string? ChangeNotes { get; set; }
+    }
+
+    public class RuleRevisionDto
+    {
+        public Guid Id { get; set; }
+        public Guid EventId { get; set; }
+        public int Version { get; set; }
+        public string ContentMarkdown { get; set; } = string.Empty;
+        public string? ChangeNotes { get; set; }
+        public string? CreatedByUserId { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public bool IsPublished { get; set; }
+        public DateTime? PublishedAt { get; set; }
+    }
+
+    // 报名表 Schema 与答案
+    public class UpdateRegistrationFormSchemaDto
+    {
+        [Required]
+        public string SchemaJson { get; set; } = "{}";
+    }
+
+    public class SubmitRegistrationAnswersDto
+    {
+        [Required]
+        public Guid TeamId { get; set; }
+        [Required]
+        public string AnswersJson { get; set; } = "{}";
+    }
+
+    public class UpdateTournamentConfigDto
+    {
+        [Required]
+        public string Format { get; set; } = "single_elim";
+        public int? Rounds { get; set; }
+        public int? BestOf { get; set; }
+        public int? GroupSize { get; set; }
+        public int? AdvancePerGroup { get; set; }
+        public List<List<Guid>>? Groups { get; set; }
+        public List<Guid>? Seeding { get; set; }
+        public DateTime? StartTime { get; set; }
+        public int? IntervalMinutes { get; set; }
+        public DateTime? StartDate { get; set; }
+        public string? DailyStartTime { get; set; }
+        public int? MaxMatchesPerDay { get; set; }
+    }
+
+    public class GenerateScheduleRequestDto
+    {
+        [Required]
+        public string Stage { get; set; } = "single_elim";
+        public int? Round { get; set; }
+        public int? BestOf { get; set; }
+        public DateTime? StartTime { get; set; }
+        public int? IntervalMinutes { get; set; }
+        public DateTime? StartDate { get; set; }
+        public string? DailyStartTime { get; set; }
+        public int? MaxMatchesPerDay { get; set; }
+    }
+
+    public class GenerateNextRoundRequestDto
+    {
+        [Required]
+        public string Stage { get; set; } = "single_elim";
+        public int? BestOf { get; set; }
+        public DateTime? StartTime { get; set; }
+        public DateTime? StartDate { get; set; }
+        public string? DailyStartTime { get; set; }
+        public int? IntervalMinutes { get; set; }
+        public int? MaxMatchesPerDay { get; set; }
+    }
+
+    public class GenerateTestRegistrationsRequestDto
+    {
+        public int Count { get; set; } = 64;
+        public string? NamePrefix { get; set; }
+        public bool Approve { get; set; } = true;
+    }
+
+    public class ConflictDto
+    {
+        public Guid TeamId { get; set; }
+        public List<Guid> MatchIds { get; set; } = new List<Guid>();
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
     }
 }

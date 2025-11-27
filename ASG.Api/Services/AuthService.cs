@@ -9,6 +9,7 @@ namespace ASG.Api.Services
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IJwtService _jwtService;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _config;
 
@@ -17,13 +18,15 @@ namespace ASG.Api.Services
             SignInManager<User> signInManager,
             IJwtService jwtService,
             IEmailService emailService,
-            IConfiguration config)
+            IConfiguration config,
+            RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtService = jwtService;
             _emailService = emailService;
             _config = config;
+            _roleManager = roleManager;
         }
 
         public async Task<AuthResponseDto?> RegisterAsync(UserRegistrationDto registrationDto)
@@ -53,6 +56,16 @@ namespace ASG.Api.Services
             {
                 var errorMessage = string.Join("; ", result.Errors.Select(e => e.Description));
                 throw new InvalidOperationException($"注册失败: {errorMessage}");
+            }
+
+            var roleName = user.RoleName;
+            if (!await _roleManager.RoleExistsAsync(roleName))
+            {
+                await _roleManager.CreateAsync(new IdentityRole(roleName));
+            }
+            if (!await _userManager.IsInRoleAsync(user, roleName))
+            {
+                await _userManager.AddToRoleAsync(user, roleName);
             }
 
             var token = _jwtService.GenerateToken(user);

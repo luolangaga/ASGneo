@@ -1,0 +1,1153 @@
+2025-11-26 13:31:44.402 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 13:31:44.477 +08:00 [INF] WebApplication built successfully.
+2025-11-26 13:31:44.565 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 13:31:44.565 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 13:31:45.305 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 13:31:45.421 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 13:31:45.706 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 13:31:45.884 +08:00 [INF] EF Migrations (normal path): Pending=7, Applied=3
+2025-11-26 13:31:45.886 +08:00 [INF] Pending migrations (normal path): 20251123081317_AddPingFeng, 20251123083456_AddNewPingFeng, 20251123134215_AddEventQqGroupAndRulesMarkdown, 20251123155540_AddRulesAndRegistrationFeatures, 20251124025149_AddZiDingYiform, 20251124034234_AddNextRoundScheduling, 20251125143138_AddPlayerTypeToPlayer
+2025-11-26 13:31:46.120 +08:00 [ERR] Failed executing DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "Users" DROP CONSTRAINT "FK_Users_Teams_TeamId";
+2025-11-26 13:31:46.124 +08:00 [WRN] Database migration failed on normal path.
+Npgsql.PostgresException (0x80004005): 42704: 关系 "Users" 的 约束"FK_Users_Teams_TeamId" 不存在
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IEnumerable`1 migrationCommands, IRelationalConnection connection)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal.NpgsqlMigrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Program.<Main>$(String[] args) in C:\Users\luolan\ASG\ASG.Api\Program.cs:line 488
+  Exception data:
+    Severity: 错误
+    SqlState: 42704
+    MessageText: 关系 "Users" 的 约束"FK_Users_Teams_TeamId" 不存在
+    File: tablecmds.c
+    Line: 14048
+    Routine: ATExecDropConstraint
+2025-11-26 13:31:46.150 +08:00 [INF] Local heroes import setting: true
+2025-11-26 13:31:46.150 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 13:31:46.150 +08:00 [INF] Local stats import setting: true
+2025-11-26 13:31:46.151 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 13:31:46.153 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-26 13:31:46.464 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 13:31:46.467 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-26 13:31:51.637 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 13:31:51.664 +08:00 [INF] Starting Kestrel...
+2025-11-26 13:31:53.574 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 13:32:40.400 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 13:32:40.404 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 13:32:40.449 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 13:32:51.200 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 13:33:25.151 +08:00 [INF] User logged in successfully: luolan12323@outlook.com
+2025-11-26 14:04:12.877 +08:00 [INF] User logged in successfully: luolan12323@outlook.com
+2025-11-26 14:29:49.421 +08:00 [INF] User logged in successfully: luolan12323@outlook.com
+2025-11-26 14:30:17.942 +08:00 [ERR] An exception occurred while iterating over the results of a query for context type 'ASG.Api.Data.ApplicationDbContext'.
+System.InvalidOperationException: A second operation was started on this context instance before a previous operation completed. This is usually caused by different threads concurrently using the same instance of DbContext. For more information on how to avoid threading issues with DbContext, see https://go.microsoft.com/fwlink/?linkid=2097913.
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+System.InvalidOperationException: A second operation was started on this context instance before a previous operation completed. This is usually caused by different threads concurrently using the same instance of DbContext. For more information on how to avoid threading issues with DbContext, see https://go.microsoft.com/fwlink/?linkid=2097913.
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+2025-11-26 14:30:17.956 +08:00 [ERR] 发生未处理的异常
+System.InvalidOperationException: A second operation was started on this context instance before a previous operation completed. This is usually caused by different threads concurrently using the same instance of DbContext. For more information on how to avoid threading issues with DbContext, see https://go.microsoft.com/fwlink/?linkid=2097913.
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at ASG.Api.Repositories.TeamRepository.GetSearchTeamCountAsync(String name) in C:\Users\luolan\ASG\ASG.Api\Repositories\TeamRepository.cs:line 254
+   at ASG.Api.Services.TeamService.SearchTeamsByNameAsync(String name, Int32 page, Int32 pageSize) in C:\Users\luolan\ASG\ASG.Api\Services\TeamService.cs:line 42
+   at ASG.Api.Controllers.SearchController.Search(String type, String query, Int32 page, Int32 pageSize) in C:\Users\luolan\ASG\ASG.Api\Controllers\SearchController.cs:line 68
+   at lambda_method1749(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at ASG.Api.Middleware.ExceptionHandlingMiddleware.InvokeAsync(HttpContext context) in C:\Users\luolan\ASG\ASG.Api\Middleware\ExceptionHandlingMiddleware.cs:line 21
+2025-11-26 14:32:11.539 +08:00 [INF] User logged in successfully: luolan233@outlook.com
+2025-11-26 14:32:56.435 +08:00 [ERR] 发生未处理的异常
+System.InvalidOperationException: No authentication handler is registered for the scheme '您没有权限删除此赛事'. The registered schemes are: Identity.Application, Identity.External, Identity.TwoFactorRememberMe, Identity.TwoFactorUserId, Bearer. Did you forget to call AddAuthentication().Add[SomeAuthHandler]("您没有权限删除此赛事",...)?
+   at Microsoft.AspNetCore.Authentication.AuthenticationService.ForbidAsync(HttpContext context, String scheme, AuthenticationProperties properties)
+   at Microsoft.AspNetCore.Mvc.ForbidResult.ExecuteResultAsync(ActionContext context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeNextResultFilterAsync>g__Awaited|30_0[TFilter,TFilterAsync](ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResultExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.ResultNext[TFilter,TFilterAsync](State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeResultFilters()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at ASG.Api.Middleware.ExceptionHandlingMiddleware.InvokeAsync(HttpContext context) in C:\Users\luolan\ASG\ASG.Api\Middleware\ExceptionHandlingMiddleware.cs:line 21
+2025-11-26 14:33:04.417 +08:00 [ERR] 发生未处理的异常
+System.InvalidOperationException: No authentication handler is registered for the scheme '您没有权限删除此赛事'. The registered schemes are: Identity.Application, Identity.External, Identity.TwoFactorRememberMe, Identity.TwoFactorUserId, Bearer. Did you forget to call AddAuthentication().Add[SomeAuthHandler]("您没有权限删除此赛事",...)?
+   at Microsoft.AspNetCore.Authentication.AuthenticationService.ForbidAsync(HttpContext context, String scheme, AuthenticationProperties properties)
+   at Microsoft.AspNetCore.Mvc.ForbidResult.ExecuteResultAsync(ActionContext context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeNextResultFilterAsync>g__Awaited|30_0[TFilter,TFilterAsync](ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResultExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.ResultNext[TFilter,TFilterAsync](State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeResultFilters()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at ASG.Api.Middleware.ExceptionHandlingMiddleware.InvokeAsync(HttpContext context) in C:\Users\luolan\ASG\ASG.Api\Middleware\ExceptionHandlingMiddleware.cs:line 21
+2025-11-26 15:12:49.735 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 15:12:49.811 +08:00 [INF] WebApplication built successfully.
+2025-11-26 15:12:49.901 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 15:12:49.901 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 15:12:50.600 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 15:12:50.710 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 15:12:50.843 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 15:12:51.006 +08:00 [INF] EF Migrations (normal path): Pending=7, Applied=3
+2025-11-26 15:12:51.007 +08:00 [INF] Pending migrations (normal path): 20251123081317_AddPingFeng, 20251123083456_AddNewPingFeng, 20251123134215_AddEventQqGroupAndRulesMarkdown, 20251123155540_AddRulesAndRegistrationFeatures, 20251124025149_AddZiDingYiform, 20251124034234_AddNextRoundScheduling, 20251125143138_AddPlayerTypeToPlayer
+2025-11-26 15:12:51.227 +08:00 [ERR] Failed executing DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "Users" DROP CONSTRAINT "FK_Users_Teams_TeamId";
+2025-11-26 15:12:51.230 +08:00 [WRN] Database migration failed on normal path.
+Npgsql.PostgresException (0x80004005): 42704: 关系 "Users" 的 约束"FK_Users_Teams_TeamId" 不存在
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IEnumerable`1 migrationCommands, IRelationalConnection connection)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal.NpgsqlMigrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Program.<Main>$(String[] args) in C:\Users\luolan\ASG\ASG.Api\Program.cs:line 488
+  Exception data:
+    Severity: 错误
+    SqlState: 42704
+    MessageText: 关系 "Users" 的 约束"FK_Users_Teams_TeamId" 不存在
+    File: tablecmds.c
+    Line: 14048
+    Routine: ATExecDropConstraint
+2025-11-26 15:12:51.247 +08:00 [INF] Local heroes import setting: true
+2025-11-26 15:12:51.247 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 15:12:51.247 +08:00 [INF] Local stats import setting: true
+2025-11-26 15:12:51.247 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 15:12:51.250 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-26 15:12:51.528 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 15:12:51.531 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-26 15:12:56.297 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 15:12:56.318 +08:00 [INF] Starting Kestrel...
+2025-11-26 15:17:40.021 +08:00 [ERR] 发生未处理的异常
+System.InvalidOperationException: The LINQ expression 'DbSet<User>()
+    .Where(u => u.IsActive)
+    .Where(u => u.Email.ToLower().Contains(__q_0) || (u.FirstName + " " + u.LastName).ToLower().Contains(__q_0) || u.FullName != null && u.FullName.ToLower().Contains(__q_0))' could not be translated. Additional information: Translation of member 'FullName' on entity type 'User' failed. This commonly occurs when the specified member is unmapped.
+Translation of member 'FullName' on entity type 'User' failed. This commonly occurs when the specified member is unmapped.
+Translation of member 'FullName' on entity type 'User' failed. This commonly occurs when the specified member is unmapped. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ASG.Api.Repositories.UserRepository.GetUsersWithPaginationAsync(Int32 pageNumber, Int32 pageSize, String search) in C:\Users\luolan\ASG\ASG.Api\Repositories\UserRepository.cs:line 151
+   at ASG.Api.Services.RoleService.GetUsersWithPaginationAsync(Int32 pageNumber, Int32 pageSize, String search) in C:\Users\luolan\ASG\ASG.Api\Services\RoleService.cs:line 52
+   at ASG.Api.Controllers.RoleController.GetUsersWithPagination(Int32 pageNumber, Int32 pageSize, String search) in C:\Users\luolan\ASG\ASG.Api\Controllers\RoleController.cs:line 83
+   at lambda_method118(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at ASG.Api.Middleware.ExceptionHandlingMiddleware.InvokeAsync(HttpContext context) in C:\Users\luolan\ASG\ASG.Api\Middleware\ExceptionHandlingMiddleware.cs:line 21
+2025-11-26 15:17:42.936 +08:00 [ERR] 发生未处理的异常
+System.InvalidOperationException: The LINQ expression 'DbSet<User>()
+    .Where(u => u.IsActive)
+    .Where(u => u.Email.ToLower().Contains(__q_0) || (u.FirstName + " " + u.LastName).ToLower().Contains(__q_0) || u.FullName != null && u.FullName.ToLower().Contains(__q_0))' could not be translated. Additional information: Translation of member 'FullName' on entity type 'User' failed. This commonly occurs when the specified member is unmapped.
+Translation of member 'FullName' on entity type 'User' failed. This commonly occurs when the specified member is unmapped.
+Translation of member 'FullName' on entity type 'User' failed. This commonly occurs when the specified member is unmapped. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ASG.Api.Repositories.UserRepository.GetUsersWithPaginationAsync(Int32 pageNumber, Int32 pageSize, String search) in C:\Users\luolan\ASG\ASG.Api\Repositories\UserRepository.cs:line 151
+   at ASG.Api.Services.RoleService.GetUsersWithPaginationAsync(Int32 pageNumber, Int32 pageSize, String search) in C:\Users\luolan\ASG\ASG.Api\Services\RoleService.cs:line 52
+   at ASG.Api.Controllers.RoleController.GetUsersWithPagination(Int32 pageNumber, Int32 pageSize, String search) in C:\Users\luolan\ASG\ASG.Api\Controllers\RoleController.cs:line 83
+   at lambda_method118(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at ASG.Api.Middleware.ExceptionHandlingMiddleware.InvokeAsync(HttpContext context) in C:\Users\luolan\ASG\ASG.Api\Middleware\ExceptionHandlingMiddleware.cs:line 21
+2025-11-26 15:17:47.960 +08:00 [ERR] 发生未处理的异常
+System.InvalidOperationException: The LINQ expression 'DbSet<User>()
+    .Where(u => u.IsActive)
+    .Where(u => u.Email.ToLower().Contains(__q_0) || (u.FirstName + " " + u.LastName).ToLower().Contains(__q_0) || u.FullName != null && u.FullName.ToLower().Contains(__q_0))' could not be translated. Additional information: Translation of member 'FullName' on entity type 'User' failed. This commonly occurs when the specified member is unmapped.
+Translation of member 'FullName' on entity type 'User' failed. This commonly occurs when the specified member is unmapped.
+Translation of member 'FullName' on entity type 'User' failed. This commonly occurs when the specified member is unmapped. Either rewrite the query in a form that can be translated, or switch to client evaluation explicitly by inserting a call to 'AsEnumerable', 'AsAsyncEnumerable', 'ToList', or 'ToListAsync'. See https://go.microsoft.com/fwlink/?linkid=2101038 for more information.
+   at Microsoft.EntityFrameworkCore.Query.QueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.RelationalQueryableMethodTranslatingExpressionVisitor.Translate(Expression expression)
+   at Microsoft.EntityFrameworkCore.Query.QueryCompilationContext.CreateQueryExecutor[TResult](Expression query)
+   at Microsoft.EntityFrameworkCore.Storage.Database.CompileQuery[TResult](Expression query, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.CompileQueryCore[TResult](IDatabase database, Expression query, IModel model, Boolean async)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.<>c__DisplayClass12_0`1.<ExecuteAsync>b__0()
+   at Microsoft.EntityFrameworkCore.Query.Internal.CompiledQueryCache.GetOrAddQuery[TResult](Object cacheKey, Func`1 compiler)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteAsync[TResult](Expression query, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1.GetAsyncEnumerator(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.ConfiguredCancelableAsyncEnumerable`1.GetAsyncEnumerator()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at ASG.Api.Repositories.UserRepository.GetUsersWithPaginationAsync(Int32 pageNumber, Int32 pageSize, String search) in C:\Users\luolan\ASG\ASG.Api\Repositories\UserRepository.cs:line 151
+   at ASG.Api.Services.RoleService.GetUsersWithPaginationAsync(Int32 pageNumber, Int32 pageSize, String search) in C:\Users\luolan\ASG\ASG.Api\Services\RoleService.cs:line 52
+   at ASG.Api.Controllers.RoleController.GetUsersWithPagination(Int32 pageNumber, Int32 pageSize, String search) in C:\Users\luolan\ASG\ASG.Api\Controllers\RoleController.cs:line 83
+   at lambda_method118(Closure, Object)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at ASG.Api.Middleware.ExceptionHandlingMiddleware.InvokeAsync(HttpContext context) in C:\Users\luolan\ASG\ASG.Api\Middleware\ExceptionHandlingMiddleware.cs:line 21
+2025-11-26 15:18:24.884 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 15:18:36.847 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="0bb3ec47-a44a-4781-b606-78c4214641b1", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8470607Z
+2025-11-26 15:18:36.847 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="0e72e5e9-0dab-4f75-99e0-75b2f292b62b", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8470723Z
+2025-11-26 15:18:36.847 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="06170ee1-151e-462b-9284-4e0a45dcb35d", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8470499Z
+2025-11-26 15:18:36.847 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="100fc0fc-b088-4faf-a22a-5e91495d5b5e", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8471320Z
+2025-11-26 15:18:36.847 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="04fbeef6-787e-49b3-9a61-095b03302fbd", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8471028Z
+2025-11-26 15:18:36.847 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="05e798c2-b7a9-43d0-b518-f9f6acd62094", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8470888Z
+2025-11-26 15:18:36.849 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="11172f90-44d7-4c53-9eb2-f956960a53e9", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8499097Z
+2025-11-26 15:18:36.849 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="14c43034-41b6-4a6e-960e-14cc7718b870", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8499631Z
+2025-11-26 15:18:36.850 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="125a34ea-2496-4c50-b49f-80d7431e2a34", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8505222Z
+2025-11-26 15:18:36.850 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="1a68f8ef-090e-49d7-a1b1-100f1475e7bd", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8506481Z
+2025-11-26 15:18:36.850 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="17a5ff2c-ecc8-40f0-a2f2-2a26965743ab", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8506373Z
+2025-11-26 15:18:36.850 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="1bb46de8-d2d4-4f3d-bd3c-2882e1464f0b", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8507592Z
+2025-11-26 15:18:36.853 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="1cb5929e-bc5e-490b-b3fe-d20ae9203e25", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8534622Z
+2025-11-26 15:18:36.854 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="1d84178f-19e2-4f58-8002-486ac7f4b57d", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8540871Z
+2025-11-26 15:18:36.854 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="1ea5a864-1e65-457f-a310-5692e2a3e5b4", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8541642Z
+2025-11-26 15:18:36.854 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="28c8dffb-8b3d-46fe-9356-0da20169ecda", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8546955Z
+2025-11-26 15:18:36.854 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="2c0da7b2-99b0-44ac-967e-f0050f3ce7b8", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8549472Z
+2025-11-26 15:18:36.854 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="2aa4be0c-0d4c-4b11-aacd-f70e669e0126", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8547833Z
+2025-11-26 15:18:36.857 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="2e0276cb-5261-4b6a-a95d-abb08dadf765", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8576091Z
+2025-11-26 15:18:36.858 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="35d9dbe1-55d6-4e27-96be-c85f2ead8ef6", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8584832Z
+2025-11-26 15:18:36.858 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="32ac4506-2243-44ed-930f-13c6daf44f81", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8585055Z
+2025-11-26 15:18:36.858 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="357bae18-c3e2-417b-907e-c164b6146d50", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8588510Z
+2025-11-26 15:18:36.859 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="38350f8d-1306-4983-9a45-d90cbbfdf4fa", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8590158Z
+2025-11-26 15:18:36.859 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="374914e0-ca42-4b84-81fc-7cb1147c3274", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8590708Z
+2025-11-26 15:18:36.861 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="38f17896-7ac6-4083-b797-52159d48a204", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8611624Z
+2025-11-26 15:18:36.861 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="39549cf1-997c-417a-a3c4-412ecb8b68e1", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8613678Z
+2025-11-26 15:18:36.861 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="3f4bd8a5-ac80-4efa-989a-257895fc08be", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8618433Z
+2025-11-26 15:18:36.862 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="39d59c37-38ec-4536-bff9-a36e293a5954", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8622008Z
+2025-11-26 15:18:36.862 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="4073c2d7-9475-4b0f-840a-e0e4cde53db8", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8622199Z
+2025-11-26 15:18:36.862 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="4205af3a-ffa4-492c-812b-50be8047813f", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8622896Z
+2025-11-26 15:18:36.864 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="42c2b7b4-c842-4999-9d44-393a3f89ab70", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8640211Z
+2025-11-26 15:18:36.864 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="44b24b0a-6cd9-45d6-8165-2b0802757693", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8645765Z
+2025-11-26 15:18:36.865 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="44e15da1-10e7-4838-b042-431675449139", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8655024Z
+2025-11-26 15:18:36.865 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="46073135-c2bb-45a8-b54b-9985e41345eb", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8655623Z
+2025-11-26 15:18:36.865 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="46de6ddf-be4a-4b99-be9a-637c818ac936", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8656280Z
+2025-11-26 15:18:36.866 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="47a7ddc2-ae9d-41ba-a01f-d2ed7647339d", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8660624Z
+2025-11-26 15:18:36.867 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="4f1b5656-efac-4393-bfd1-a0d80904dd51", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8678558Z
+2025-11-26 15:18:36.868 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="528f3248-e004-4f04-bcbf-38aa317f5df3", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8679804Z
+2025-11-26 15:18:36.868 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="554b3e5e-d2dd-4e93-b1ac-353b2b669152", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8683247Z
+2025-11-26 15:18:36.868 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="5841b8d7-b30a-4d03-8672-7abdf51ad41c", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8686396Z
+2025-11-26 15:18:36.868 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="56a71a4a-22c2-4e2b-914c-a1506db88a60", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8684879Z
+2025-11-26 15:18:36.869 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="5c82dbf8-da64-43dc-add9-637449b45732", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8690988Z
+2025-11-26 15:18:36.870 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="5d7f1049-82f8-41be-b225-556fd593e949", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8706919Z
+2025-11-26 15:18:36.871 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="6258979b-fd34-48d0-9a9b-b8be4bd986ba", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8712287Z
+2025-11-26 15:18:36.872 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="628042b0-ec71-41af-9b18-efbda3c1a3c0", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8722121Z
+2025-11-26 15:18:36.872 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="64b917a0-6811-482f-a5e6-d4edc9aeed72", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8722823Z
+2025-11-26 15:18:36.872 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="6f81fe8a-d417-440c-909d-6f18a8926016", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8723533Z
+2025-11-26 15:18:36.872 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="783b0fb9-ba20-4953-a268-016cfb49d998", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8727224Z
+2025-11-26 15:18:36.874 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="7c6571a2-07d8-4900-9f9d-7cf9eb11396a", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8742283Z
+2025-11-26 15:18:36.874 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="7d0d7ac0-855e-4037-b890-8ac4b9dc24ed", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8745857Z
+2025-11-26 15:18:36.875 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="7f389bbe-2b4b-46f1-8ba3-8ca94b7b5d48", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8751389Z
+2025-11-26 15:18:36.875 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="809c9eeb-1887-4273-8484-583c16c7f949", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8752198Z
+2025-11-26 15:18:36.875 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="84d2c7c9-3b31-48d2-a1d2-379d28385dfe", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8755604Z
+2025-11-26 15:18:36.876 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="8959a135-b25b-4fd9-8b79-5e67fabcc5bc", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8761184Z
+2025-11-26 15:18:36.877 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="87a56bb5-cf28-4929-a2fa-655638d2a953", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8779385Z
+2025-11-26 15:18:36.878 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="89f1bce8-74dc-44f5-aac3-c5312b1c62ec", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8782809Z
+2025-11-26 15:18:36.878 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="8a39c33f-6238-4fd4-a319-1afbb1ba6b47", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8787041Z
+2025-11-26 15:18:36.878 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="8dbbaea4-0f9e-4111-9e02-52fcc4e5f255", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8787907Z
+2025-11-26 15:18:36.879 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="8fcc20d7-0e2a-40c6-b5a4-b2853bba4608", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8793018Z
+2025-11-26 15:18:36.879 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="97e21bc8-c8db-48ea-894e-8d8191474223", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8793541Z
+2025-11-26 15:18:36.880 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="98608979-cb01-4e5a-a811-1d62a609d472", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8809178Z
+2025-11-26 15:18:36.881 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="9914abff-7a22-4327-915c-14d2f9ee8f0e", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8811879Z
+2025-11-26 15:18:36.882 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="9a642042-d87b-4c61-9980-d0ebc7523b91", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8820541Z
+2025-11-26 15:18:36.882 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="a609408b-ac63-4bb7-b1ae-1044b04ce905", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8824062Z
+2025-11-26 15:18:36.882 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="a6d9112f-5143-4c6f-b75e-b8935d3ffe9f", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8824187Z
+2025-11-26 15:18:36.882 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="a9f71852-37d1-4d04-bd39-2553c72dfd49", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8827674Z
+2025-11-26 15:18:36.884 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="ab598f73-45d0-4ffc-8109-8dba6f5d4b20", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8843496Z
+2025-11-26 15:18:36.884 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="b2c0651a-4d96-43af-ac0f-4f7a6eb1f8d3", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8846047Z
+2025-11-26 15:18:36.884 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="ab7e2eab-aa66-4a13-abb0-53dea9303364", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8849027Z
+2025-11-26 15:18:36.885 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="b343512b-4394-4da6-9db7-7ae88de45bf0", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8851924Z
+2025-11-26 15:18:36.885 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="b4076f7b-eca7-4ba1-9ebf-9540184cc130", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8854485Z
+2025-11-26 15:18:36.885 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="b433c2c6-4db8-4837-9ff0-285c5e2d9557", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8857579Z
+2025-11-26 15:18:36.887 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="b4ae32e2-4017-4a2c-816c-b9cb0f4eb22a", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8877036Z
+2025-11-26 15:18:36.888 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="b599d035-62be-435c-b08a-9e484aa9258e", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8880562Z
+2025-11-26 15:18:36.889 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="b8c5b051-d1d6-4a52-82c6-48ce1555290a", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8890390Z
+2025-11-26 15:18:36.889 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="ba7b01f4-e6c9-47ea-9f69-ce7b772a76ff", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8890891Z
+2025-11-26 15:18:36.889 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="bdbf3b39-fbfc-4b2e-9719-ac34748e7e36", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8896135Z
+2025-11-26 15:18:36.889 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="bed2bc99-df36-4fa9-b584-fb9820d073cb", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8897628Z
+2025-11-26 15:18:36.892 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="c5c70f14-41fb-4855-9835-3117405751d9", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8920728Z
+2025-11-26 15:18:36.892 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="c67f59ed-7ac9-4dd3-a898-015c404d2d20", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8923150Z
+2025-11-26 15:18:36.893 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="c704d4e2-a3ab-41f7-a50d-02f61c5d4188", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8931575Z
+2025-11-26 15:18:36.893 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="c8435ab3-5ea4-4a42-b4c9-2176da05eb63", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8935125Z
+2025-11-26 15:18:36.894 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="ce0f38d4-5291-4194-9c56-0c787d0446a7", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8941302Z
+2025-11-26 15:18:36.894 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="c9f2fd80-610f-46a2-b153-ebd415c8798a", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8942656Z
+2025-11-26 15:18:36.895 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="cea4a206-4b9a-4a7a-babc-a976e9e57651", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8956836Z
+2025-11-26 15:18:36.896 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="d0b7e7c7-0dd5-4c74-ad8b-e0459669a254", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8961222Z
+2025-11-26 15:18:36.896 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="d14dd962-7d57-43dc-843d-84f4489ef0c2", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8968469Z
+2025-11-26 15:18:36.896 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="d379d0a8-b808-47a6-a9f0-a39525e81227", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8968942Z
+2025-11-26 15:18:36.897 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="d4f433d7-afb2-49de-ac42-2b78049de4f9", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8974608Z
+2025-11-26 15:18:36.897 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="d50d0ecc-94be-43fa-9a74-48462a9c2894", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8975904Z
+2025-11-26 15:18:36.899 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="d9278fcc-778f-47a6-afc5-3a2e13657574", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8994287Z
+2025-11-26 15:18:36.899 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="e07390ea-168b-4b62-81fe-331430b965e0", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.8997695Z
+2025-11-26 15:18:36.900 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="e4877352-611a-4be0-b55f-421e85dc2c3f", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.9000078Z
+2025-11-26 15:18:36.900 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="e87a1574-78dd-418e-a01b-50b5252f7566", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.9004898Z
+2025-11-26 15:18:36.900 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="ee828d0f-c5f9-4d48-ba86-f0f6a8674a74", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.9005463Z
+2025-11-26 15:18:36.900 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="f4b0cf01-a2a2-4b07-b2ab-d0d5d9d2c128", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.9009740Z
+2025-11-26 15:18:36.903 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="f85618b9-26d6-4bb3-8ea1-88b24aa5e8c2", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.9037938Z
+2025-11-26 15:18:36.903 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="f734f2b1-7998-46ae-9259-2732e25679d3", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.9038434Z
+2025-11-26 15:18:36.903 +08:00 [INF] AUDIT QQ view: EventId="ca33b84e-b6b7-4b28-b674-1f5ad04d3712", TeamId="fa6a85ec-934c-4a85-8760-ef6dbd6b5872", UserId=4b189589-5d6c-46fb-980f-30b4de83013d, Time=2025-11-26T07:18:36.9039721Z
+2025-11-26 15:18:51.553 +08:00 [ERR] 发生未处理的异常
+System.InvalidOperationException: No authentication handler is registered for the scheme '您没有权限导出此赛事的报名信息'. The registered schemes are: Identity.Application, Identity.External, Identity.TwoFactorRememberMe, Identity.TwoFactorUserId, Bearer. Did you forget to call AddAuthentication().Add[SomeAuthHandler]("您没有权限导出此赛事的报名信息",...)?
+   at Microsoft.AspNetCore.Authentication.AuthenticationService.ForbidAsync(HttpContext context, String scheme, AuthenticationProperties properties)
+   at Microsoft.AspNetCore.Mvc.ForbidResult.ExecuteResultAsync(ActionContext context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeNextResultFilterAsync>g__Awaited|30_0[TFilter,TFilterAsync](ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResultExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.ResultNext[TFilter,TFilterAsync](State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeResultFilters()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at ASG.Api.Middleware.ExceptionHandlingMiddleware.InvokeAsync(HttpContext context) in C:\Users\luolan\ASG\ASG.Api\Middleware\ExceptionHandlingMiddleware.cs:line 21
+2025-11-26 15:20:20.209 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 15:20:20.282 +08:00 [INF] WebApplication built successfully.
+2025-11-26 15:20:20.367 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 15:20:20.367 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 15:20:20.803 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 15:20:20.918 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 15:20:21.044 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 15:20:21.207 +08:00 [INF] EF Migrations (normal path): Pending=7, Applied=3
+2025-11-26 15:20:21.209 +08:00 [INF] Pending migrations (normal path): 20251123081317_AddPingFeng, 20251123083456_AddNewPingFeng, 20251123134215_AddEventQqGroupAndRulesMarkdown, 20251123155540_AddRulesAndRegistrationFeatures, 20251124025149_AddZiDingYiform, 20251124034234_AddNextRoundScheduling, 20251125143138_AddPlayerTypeToPlayer
+2025-11-26 15:20:21.429 +08:00 [ERR] Failed executing DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "Users" DROP CONSTRAINT "FK_Users_Teams_TeamId";
+2025-11-26 15:20:21.433 +08:00 [WRN] Database migration failed on normal path.
+Npgsql.PostgresException (0x80004005): 42704: 关系 "Users" 的 约束"FK_Users_Teams_TeamId" 不存在
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IEnumerable`1 migrationCommands, IRelationalConnection connection)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal.NpgsqlMigrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Program.<Main>$(String[] args) in C:\Users\luolan\ASG\ASG.Api\Program.cs:line 488
+  Exception data:
+    Severity: 错误
+    SqlState: 42704
+    MessageText: 关系 "Users" 的 约束"FK_Users_Teams_TeamId" 不存在
+    File: tablecmds.c
+    Line: 14048
+    Routine: ATExecDropConstraint
+2025-11-26 15:20:21.450 +08:00 [INF] Local heroes import setting: true
+2025-11-26 15:20:21.450 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 15:20:21.450 +08:00 [INF] Local stats import setting: true
+2025-11-26 15:20:21.450 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 15:20:21.452 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-26 15:20:21.719 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 15:20:21.721 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net8.0\NeteaseJ
+2025-11-26 15:20:26.595 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 15:20:26.615 +08:00 [INF] Starting Kestrel...
+2025-11-26 15:23:47.691 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 18:00:09.618 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 18:00:09.795 +08:00 [INF] WebApplication built successfully.
+2025-11-26 18:00:09.936 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 18:00:09.937 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 18:00:10.799 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 18:00:10.901 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 18:00:11.058 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 18:00:11.096 +08:00 [INF] EF Migrations (normal path): Pending=7, Applied=3
+2025-11-26 18:00:11.097 +08:00 [INF] Pending migrations (normal path): 20251123081317_AddPingFeng, 20251123083456_AddNewPingFeng, 20251123134215_AddEventQqGroupAndRulesMarkdown, 20251123155540_AddRulesAndRegistrationFeatures, 20251124025149_AddZiDingYiform, 20251124034234_AddNextRoundScheduling, 20251125143138_AddPlayerTypeToPlayer
+2025-11-26 18:00:11.282 +08:00 [ERR] Failed executing DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "Users" DROP CONSTRAINT "FK_Users_Teams_TeamId";
+2025-11-26 18:00:11.285 +08:00 [WRN] Database migration failed on normal path.
+Npgsql.PostgresException (0x80004005): 42704: 关系 "Users" 的 约束"FK_Users_Teams_TeamId" 不存在
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.Execute(IReadOnlyList`1 migrationCommands, IRelationalConnection connection, MigrationExecutionState executionState, Boolean beginTransaction, Boolean commitTransaction, Nullable`1 isolationLevel)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.<>c.<ExecuteNonQuery>b__3_1(DbContext _, ValueTuple`6 s)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IReadOnlyList`1 migrationCommands, IRelationalConnection connection, MigrationExecutionState executionState, Boolean commitTransaction, Nullable`1 isolationLevel)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.MigrateImplementation(DbContext context, String targetMigration, MigrationExecutionState state, Boolean useTransaction)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.<>c.<Migrate>b__20_1(DbContext c, ValueTuple`4 s)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal.NpgsqlMigrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Program.<Main>$(String[] args) in C:\Users\luolan\ASG\ASG.Api\Program.cs:line 454
+  Exception data:
+    Severity: 错误
+    SqlState: 42704
+    MessageText: 关系 "Users" 的 约束"FK_Users_Teams_TeamId" 不存在
+    File: tablecmds.c
+    Line: 14048
+    Routine: ATExecDropConstraint
+2025-11-26 18:00:11.305 +08:00 [INF] Local heroes import setting: true
+2025-11-26 18:00:11.305 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 18:00:11.305 +08:00 [INF] Local stats import setting: true
+2025-11-26 18:00:11.305 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 18:00:11.309 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:00:11.722 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 18:00:11.725 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:00:16.651 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 18:00:16.684 +08:00 [INF] Starting Kestrel...
+2025-11-26 18:02:27.825 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 18:02:27.917 +08:00 [INF] WebApplication built successfully.
+2025-11-26 18:02:28.022 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 18:02:28.022 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 18:02:28.545 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 18:02:28.632 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 18:02:28.782 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 18:02:28.817 +08:00 [INF] EF Migrations (normal path): Pending=7, Applied=3
+2025-11-26 18:02:28.819 +08:00 [INF] Pending migrations (normal path): 20251123081317_AddPingFeng, 20251123083456_AddNewPingFeng, 20251123134215_AddEventQqGroupAndRulesMarkdown, 20251123155540_AddRulesAndRegistrationFeatures, 20251124025149_AddZiDingYiform, 20251124034234_AddNextRoundScheduling, 20251125143138_AddPlayerTypeToPlayer
+2025-11-26 18:02:28.995 +08:00 [ERR] Failed executing DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "Teams" ADD "HasDispute" boolean NOT NULL DEFAULT FALSE;
+2025-11-26 18:02:28.998 +08:00 [WRN] Database migration failed on normal path.
+Npgsql.PostgresException (0x80004005): 42701: 关系 "HasDispute" 的属性 "Teams" 已经存在
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.Execute(IReadOnlyList`1 migrationCommands, IRelationalConnection connection, MigrationExecutionState executionState, Boolean beginTransaction, Boolean commitTransaction, Nullable`1 isolationLevel)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.<>c.<ExecuteNonQuery>b__3_1(DbContext _, ValueTuple`6 s)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IReadOnlyList`1 migrationCommands, IRelationalConnection connection, MigrationExecutionState executionState, Boolean commitTransaction, Nullable`1 isolationLevel)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.MigrateImplementation(DbContext context, String targetMigration, MigrationExecutionState state, Boolean useTransaction)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.<>c.<Migrate>b__20_1(DbContext c, ValueTuple`4 s)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal.NpgsqlMigrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Program.<Main>$(String[] args) in C:\Users\luolan\ASG\ASG.Api\Program.cs:line 454
+  Exception data:
+    Severity: 错误
+    SqlState: 42701
+    MessageText: 关系 "HasDispute" 的属性 "Teams" 已经存在
+    File: tablecmds.c
+    Line: 7679
+    Routine: check_for_column_name_collision
+2025-11-26 18:02:29.014 +08:00 [INF] Local heroes import setting: true
+2025-11-26 18:02:29.015 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 18:02:29.015 +08:00 [INF] Local stats import setting: true
+2025-11-26 18:02:29.015 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 18:02:29.017 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:02:29.405 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 18:02:29.407 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:02:34.257 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 18:02:34.284 +08:00 [INF] Starting Kestrel...
+2025-11-26 18:04:30.280 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 18:04:30.371 +08:00 [INF] WebApplication built successfully.
+2025-11-26 18:04:30.469 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 18:04:30.470 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 18:04:31.007 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 18:04:31.091 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 18:04:31.237 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 18:04:31.271 +08:00 [INF] EF Migrations (normal path): Pending=7, Applied=3
+2025-11-26 18:04:31.272 +08:00 [INF] Pending migrations (normal path): 20251123081317_AddPingFeng, 20251123083456_AddNewPingFeng, 20251123134215_AddEventQqGroupAndRulesMarkdown, 20251123155540_AddRulesAndRegistrationFeatures, 20251124025149_AddZiDingYiform, 20251124034234_AddNextRoundScheduling, 20251125143138_AddPlayerTypeToPlayer
+2025-11-26 18:04:31.477 +08:00 [ERR] Failed executing DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "Teams" ADD "CommunityPostId" uuid;
+2025-11-26 18:04:31.480 +08:00 [WRN] Database migration failed on normal path.
+Npgsql.PostgresException (0x80004005): 42701: 关系 "CommunityPostId" 的属性 "Teams" 已经存在
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.Execute(IReadOnlyList`1 migrationCommands, IRelationalConnection connection, MigrationExecutionState executionState, Boolean beginTransaction, Boolean commitTransaction, Nullable`1 isolationLevel)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.<>c.<ExecuteNonQuery>b__3_1(DbContext _, ValueTuple`6 s)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IReadOnlyList`1 migrationCommands, IRelationalConnection connection, MigrationExecutionState executionState, Boolean commitTransaction, Nullable`1 isolationLevel)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.MigrateImplementation(DbContext context, String targetMigration, MigrationExecutionState state, Boolean useTransaction)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.<>c.<Migrate>b__20_1(DbContext c, ValueTuple`4 s)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal.NpgsqlMigrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Program.<Main>$(String[] args) in C:\Users\luolan\ASG\ASG.Api\Program.cs:line 454
+  Exception data:
+    Severity: 错误
+    SqlState: 42701
+    MessageText: 关系 "CommunityPostId" 的属性 "Teams" 已经存在
+    File: tablecmds.c
+    Line: 7679
+    Routine: check_for_column_name_collision
+2025-11-26 18:04:31.498 +08:00 [INF] Local heroes import setting: true
+2025-11-26 18:04:31.498 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 18:04:31.498 +08:00 [INF] Local stats import setting: true
+2025-11-26 18:04:31.498 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 18:04:31.500 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:04:31.887 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 18:04:31.890 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:04:36.908 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 18:04:36.936 +08:00 [INF] Starting Kestrel...
+2025-11-26 18:05:07.775 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 18:05:07.867 +08:00 [INF] WebApplication built successfully.
+2025-11-26 18:05:07.965 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 18:05:07.966 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 18:05:08.503 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 18:05:08.589 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 18:05:08.845 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 18:05:08.879 +08:00 [INF] EF Migrations (normal path): Pending=6, Applied=4
+2025-11-26 18:05:08.881 +08:00 [INF] Pending migrations (normal path): 20251123083456_AddNewPingFeng, 20251123134215_AddEventQqGroupAndRulesMarkdown, 20251123155540_AddRulesAndRegistrationFeatures, 20251124025149_AddZiDingYiform, 20251124034234_AddNextRoundScheduling, 20251125143138_AddPlayerTypeToPlayer
+2025-11-26 18:05:09.082 +08:00 [ERR] Failed executing DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "Events" ADD "QqGroup" character varying(50);
+2025-11-26 18:05:09.085 +08:00 [WRN] Database migration failed on normal path.
+Npgsql.PostgresException (0x80004005): 42701: 关系 "QqGroup" 的属性 "Events" 已经存在
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.Execute(IReadOnlyList`1 migrationCommands, IRelationalConnection connection, MigrationExecutionState executionState, Boolean beginTransaction, Boolean commitTransaction, Nullable`1 isolationLevel)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.<>c.<ExecuteNonQuery>b__3_1(DbContext _, ValueTuple`6 s)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IReadOnlyList`1 migrationCommands, IRelationalConnection connection, MigrationExecutionState executionState, Boolean commitTransaction, Nullable`1 isolationLevel)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.MigrateImplementation(DbContext context, String targetMigration, MigrationExecutionState state, Boolean useTransaction)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.<>c.<Migrate>b__20_1(DbContext c, ValueTuple`4 s)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal.NpgsqlMigrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Program.<Main>$(String[] args) in C:\Users\luolan\ASG\ASG.Api\Program.cs:line 454
+  Exception data:
+    Severity: 错误
+    SqlState: 42701
+    MessageText: 关系 "QqGroup" 的属性 "Events" 已经存在
+    File: tablecmds.c
+    Line: 7679
+    Routine: check_for_column_name_collision
+2025-11-26 18:05:09.103 +08:00 [INF] Local heroes import setting: true
+2025-11-26 18:05:09.103 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 18:05:09.103 +08:00 [INF] Local stats import setting: true
+2025-11-26 18:05:09.103 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 18:05:09.106 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:05:09.504 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 18:05:09.507 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:05:14.417 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 18:05:14.441 +08:00 [INF] Starting Kestrel...
+2025-11-26 18:05:42.698 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 18:05:42.788 +08:00 [INF] WebApplication built successfully.
+2025-11-26 18:05:42.887 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 18:05:42.887 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 18:05:43.409 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 18:05:43.505 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 18:05:43.658 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 18:05:43.694 +08:00 [INF] EF Migrations (normal path): Pending=5, Applied=5
+2025-11-26 18:05:43.696 +08:00 [INF] Pending migrations (normal path): 20251123134215_AddEventQqGroupAndRulesMarkdown, 20251123155540_AddRulesAndRegistrationFeatures, 20251124025149_AddZiDingYiform, 20251124034234_AddNextRoundScheduling, 20251125143138_AddPlayerTypeToPlayer
+2025-11-26 18:05:43.902 +08:00 [ERR] Failed executing DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "EventRegistrationAnswers" (
+    "Id" uuid NOT NULL,
+    "EventId" uuid NOT NULL,
+    "TeamId" uuid NOT NULL,
+    "AnswersJson" text NOT NULL,
+    "SubmittedByUserId" text,
+    "SubmittedAt" timestamp with time zone NOT NULL,
+    "UpdatedAt" timestamp with time zone,
+    CONSTRAINT "PK_EventRegistrationAnswers" PRIMARY KEY ("Id"),
+    CONSTRAINT "FK_EventRegistrationAnswers_Events_EventId" FOREIGN KEY ("EventId") REFERENCES "Events" ("Id") ON DELETE CASCADE,
+    CONSTRAINT "FK_EventRegistrationAnswers_Teams_TeamId" FOREIGN KEY ("TeamId") REFERENCES "Teams" ("Id") ON DELETE CASCADE
+);
+2025-11-26 18:05:43.906 +08:00 [WRN] Database migration failed on normal path.
+Npgsql.PostgresException (0x80004005): 42P07: 关系 "EventRegistrationAnswers" 已经存在
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.Execute(IReadOnlyList`1 migrationCommands, IRelationalConnection connection, MigrationExecutionState executionState, Boolean beginTransaction, Boolean commitTransaction, Nullable`1 isolationLevel)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.<>c.<ExecuteNonQuery>b__3_1(DbContext _, ValueTuple`6 s)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IReadOnlyList`1 migrationCommands, IRelationalConnection connection, MigrationExecutionState executionState, Boolean commitTransaction, Nullable`1 isolationLevel)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.MigrateImplementation(DbContext context, String targetMigration, MigrationExecutionState state, Boolean useTransaction)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.<>c.<Migrate>b__20_1(DbContext c, ValueTuple`4 s)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal.NpgsqlMigrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Program.<Main>$(String[] args) in C:\Users\luolan\ASG\ASG.Api\Program.cs:line 454
+  Exception data:
+    Severity: 错误
+    SqlState: 42P07
+    MessageText: 关系 "EventRegistrationAnswers" 已经存在
+    File: heap.c
+    Line: 1179
+    Routine: heap_create_with_catalog
+2025-11-26 18:05:43.924 +08:00 [INF] Local heroes import setting: true
+2025-11-26 18:05:43.924 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 18:05:43.924 +08:00 [INF] Local stats import setting: true
+2025-11-26 18:05:43.924 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 18:05:43.926 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:05:44.323 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 18:05:44.325 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:05:49.222 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 18:05:49.247 +08:00 [INF] Starting Kestrel...
+2025-11-26 18:07:10.622 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 18:07:10.711 +08:00 [INF] WebApplication built successfully.
+2025-11-26 18:07:10.805 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 18:07:10.806 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 18:07:11.324 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 18:07:11.412 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 18:07:11.559 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 18:07:11.597 +08:00 [INF] EF Migrations (normal path): Pending=4, Applied=6
+2025-11-26 18:07:11.598 +08:00 [INF] Pending migrations (normal path): 20251123155540_AddRulesAndRegistrationFeatures, 20251124025149_AddZiDingYiform, 20251124034234_AddNextRoundScheduling, 20251125143138_AddPlayerTypeToPlayer
+2025-11-26 18:07:11.851 +08:00 [ERR] Failed executing DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "Players" ADD "PlayerType" integer NOT NULL DEFAULT 2;
+2025-11-26 18:07:11.854 +08:00 [WRN] Database migration failed on normal path.
+Npgsql.PostgresException (0x80004005): 42701: 关系 "PlayerType" 的属性 "Players" 已经存在
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult()
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery()
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQuery(RelationalCommandParameterObject parameterObject)
+   at Microsoft.EntityFrameworkCore.Migrations.MigrationCommand.ExecuteNonQuery(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.Execute(IReadOnlyList`1 migrationCommands, IRelationalConnection connection, MigrationExecutionState executionState, Boolean beginTransaction, Boolean commitTransaction, Nullable`1 isolationLevel)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.<>c.<ExecuteNonQuery>b__3_1(DbContext _, ValueTuple`6 s)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationCommandExecutor.ExecuteNonQuery(IReadOnlyList`1 migrationCommands, IRelationalConnection connection, MigrationExecutionState executionState, Boolean commitTransaction, Nullable`1 isolationLevel)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.MigrateImplementation(DbContext context, String targetMigration, MigrationExecutionState state, Boolean useTransaction)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.<>c.<Migrate>b__20_1(DbContext c, ValueTuple`4 s)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal.NpgsqlMigrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Program.<Main>$(String[] args) in C:\Users\luolan\ASG\ASG.Api\Program.cs:line 454
+  Exception data:
+    Severity: 错误
+    SqlState: 42701
+    MessageText: 关系 "PlayerType" 的属性 "Players" 已经存在
+    File: tablecmds.c
+    Line: 7679
+    Routine: check_for_column_name_collision
+2025-11-26 18:07:11.872 +08:00 [INF] Local heroes import setting: true
+2025-11-26 18:07:11.872 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 18:07:11.873 +08:00 [INF] Local stats import setting: true
+2025-11-26 18:07:11.873 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 18:07:11.875 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:07:12.268 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 18:07:12.270 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:07:17.148 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 18:07:17.176 +08:00 [INF] Starting Kestrel...
+2025-11-26 18:07:45.853 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 18:07:45.946 +08:00 [INF] WebApplication built successfully.
+2025-11-26 18:07:46.042 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 18:07:46.043 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 18:07:46.560 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 18:07:46.645 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 18:07:46.892 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 18:07:46.927 +08:00 [INF] EF Migrations (normal path): Pending=1, Applied=9
+2025-11-26 18:07:46.928 +08:00 [INF] Pending migrations (normal path): 20251125143138_AddPlayerTypeToPlayer
+2025-11-26 18:07:47.095 +08:00 [INF] EF Migrations applied (normal path). Total applied now: 10. Last=20251125143138_AddPlayerTypeToPlayer
+2025-11-26 18:07:47.096 +08:00 [INF] Local heroes import setting: true
+2025-11-26 18:07:47.096 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 18:07:47.096 +08:00 [INF] Local stats import setting: true
+2025-11-26 18:07:47.097 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 18:07:47.098 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:07:47.509 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 18:07:47.511 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:07:52.339 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 18:07:52.365 +08:00 [INF] Starting Kestrel...
+2025-11-26 18:11:48.439 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 18:12:03.201 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 18:12:03.257 +08:00 [ERR] 发生未处理的异常
+System.InvalidOperationException: No authentication handler is registered for the scheme '您没有权限删除此赛事'. The registered schemes are: Identity.Application, Identity.External, Identity.TwoFactorRememberMe, Identity.TwoFactorUserId, Bearer. Did you forget to call AddAuthentication().Add[SomeAuthHandler]("您没有权限删除此赛事",...)?
+   at Microsoft.AspNetCore.Authentication.AuthenticationService.ForbidAsync(HttpContext context, String scheme, AuthenticationProperties properties)
+   at Microsoft.AspNetCore.Authentication.AuthenticationServiceImpl.ForbidAsync(HttpContext context, String scheme, AuthenticationProperties properties)
+   at Microsoft.AspNetCore.Mvc.ForbidResult.ExecuteResultAsync(ActionContext context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeNextResultFilterAsync>g__Awaited|30_0[TFilter,TFilterAsync](ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResultExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.ResultNext[TFilter,TFilterAsync](State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeResultFilters()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at ASG.Api.Middleware.ExceptionHandlingMiddleware.InvokeAsync(HttpContext context) in C:\Users\luolan\ASG\ASG.Api\Middleware\ExceptionHandlingMiddleware.cs:line 21
+2025-11-26 18:12:13.948 +08:00 [ERR] 发生未处理的异常
+System.InvalidOperationException: No authentication handler is registered for the scheme '您没有权限删除此赛事'. The registered schemes are: Identity.Application, Identity.External, Identity.TwoFactorRememberMe, Identity.TwoFactorUserId, Bearer. Did you forget to call AddAuthentication().Add[SomeAuthHandler]("您没有权限删除此赛事",...)?
+   at Microsoft.AspNetCore.Authentication.AuthenticationService.ForbidAsync(HttpContext context, String scheme, AuthenticationProperties properties)
+   at Microsoft.AspNetCore.Authentication.AuthenticationServiceImpl.ForbidAsync(HttpContext context, String scheme, AuthenticationProperties properties)
+   at Microsoft.AspNetCore.Mvc.ForbidResult.ExecuteResultAsync(ActionContext context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeNextResultFilterAsync>g__Awaited|30_0[TFilter,TFilterAsync](ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResultExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.ResultNext[TFilter,TFilterAsync](State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeResultFilters()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at ASG.Api.Middleware.ExceptionHandlingMiddleware.InvokeAsync(HttpContext context) in C:\Users\luolan\ASG\ASG.Api\Middleware\ExceptionHandlingMiddleware.cs:line 21
+2025-11-26 18:24:29.760 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 18:24:29.852 +08:00 [INF] WebApplication built successfully.
+2025-11-26 18:24:29.950 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 18:24:29.951 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 18:24:30.463 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 18:24:30.549 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 18:24:30.690 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 18:24:30.724 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=10
+2025-11-26 18:24:30.726 +08:00 [INF] Local heroes import setting: true
+2025-11-26 18:24:30.727 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 18:24:30.727 +08:00 [INF] Local stats import setting: true
+2025-11-26 18:24:30.727 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 18:24:30.729 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:24:31.138 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 18:24:31.140 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:24:35.828 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 18:24:36.057 +08:00 [WRN] Identity roles synchronization failed; continuing startup.
+System.InvalidOperationException: The instance of entity type 'User' cannot be tracked because another instance with the same key value for {'Id'} is already being tracked. When attaching existing entities, ensure that only one entity instance with a given key value is attached. Consider using 'DbContextOptionsBuilder.EnableSensitiveDataLogging' to see the conflicting key values.
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.IdentityMap`1.ThrowIdentityConflict(InternalEntityEntry entry)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.IdentityMap`1.Add(TKey key, InternalEntityEntry entry, Boolean updateDuplicate)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.IdentityMap`1.Add(TKey key, InternalEntityEntry entry)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.NullableKeyIdentityMap`1.Add(InternalEntityEntry entry)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.StartTracking(InternalEntityEntry entry)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.InternalEntityEntry.OnStateChanging(EntityState newState)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.InternalEntryBase.SetEntityState(EntityState oldState, EntityState newState, Boolean acceptChanges, Boolean modifyProperties)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.InternalEntityEntry.SetEntityState(EntityState entityState, Boolean acceptChanges, Boolean modifyProperties, Nullable`1 forceStateWhenUnknownKey, Nullable`1 fallbackState)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.EntityGraphAttacher.PaintAction(EntityEntryGraphNode`1 node)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.EntityEntryGraphIterator.TraverseGraph[TState](EntityEntryGraphNode`1 node, Func`2 handleNode)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.EntityGraphAttacher.AttachGraph(InternalEntityEntry rootEntry, EntityState targetState, EntityState storeGeneratedWithKeySetTargetState, Boolean forceStateWhenUnknownKey)
+   at Microsoft.EntityFrameworkCore.DbContext.SetEntityState(InternalEntityEntry entry, EntityState entityState)
+   at Microsoft.EntityFrameworkCore.DbContext.SetEntityState[TEntity](TEntity entity, EntityState entityState)
+   at Microsoft.EntityFrameworkCore.DbContext.Attach[TEntity](TEntity entity)
+   at Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore`10.UpdateAsync(TUser user, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Identity.UserManager`1.UpdateUserAsync(TUser user)
+   at Microsoft.AspNetCore.Identity.UserManager`1.AddToRoleCoreAsync(TUser user, String role)
+   at Microsoft.AspNetCore.Identity.UserManager`1.AddToRoleAsync(TUser user, String role)
+   at Program.<Main>$(String[] args) in C:\Users\luolan\ASG\ASG.Api\Program.cs:line 541
+2025-11-26 18:24:36.085 +08:00 [INF] Starting Kestrel...
+2025-11-26 18:29:43.837 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 18:30:05.153 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 18:30:05.244 +08:00 [INF] WebApplication built successfully.
+2025-11-26 18:30:05.337 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 18:30:05.337 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 18:30:05.843 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 18:30:05.925 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 18:30:06.072 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 18:30:06.106 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=10
+2025-11-26 18:30:06.107 +08:00 [INF] Local heroes import setting: true
+2025-11-26 18:30:06.107 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 18:30:06.108 +08:00 [INF] Local stats import setting: true
+2025-11-26 18:30:06.108 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 18:30:06.110 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:30:06.514 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 18:30:06.516 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 18:30:11.791 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 18:30:12.089 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=4
+2025-11-26 18:30:12.122 +08:00 [INF] Starting Kestrel...
+2025-11-26 18:30:35.741 +08:00 [INF] User logged in successfully: luolan233@outlook.com
+2025-11-26 18:30:40.395 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 19:06:18.889 +08:00 [INF] User logged in successfully: luolan12323@outlook.com
+2025-11-26 19:06:21.616 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 19:06:21.616 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 19:06:21.616 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 19:49:56.605 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 19:49:56.695 +08:00 [INF] WebApplication built successfully.
+2025-11-26 19:49:56.788 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 19:49:56.789 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 19:49:57.309 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 19:49:57.401 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 19:49:57.564 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 19:49:57.603 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=10
+2025-11-26 19:49:57.605 +08:00 [INF] Local heroes import setting: true
+2025-11-26 19:49:57.605 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 19:49:57.605 +08:00 [INF] Local stats import setting: true
+2025-11-26 19:49:57.605 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 19:49:57.607 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 19:49:58.015 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 19:49:58.018 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 19:50:02.873 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 19:50:02.987 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=4
+2025-11-26 19:50:03.010 +08:00 [INF] Starting Kestrel...
+2025-11-26 20:28:11.693 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 20:28:11.784 +08:00 [INF] WebApplication built successfully.
+2025-11-26 20:28:11.878 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 20:28:11.878 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 20:28:12.382 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 20:28:12.466 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 20:28:12.606 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 20:28:12.640 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=10
+2025-11-26 20:28:12.642 +08:00 [INF] Local heroes import setting: true
+2025-11-26 20:28:12.642 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 20:28:12.642 +08:00 [INF] Local stats import setting: true
+2025-11-26 20:28:12.642 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 20:28:12.644 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 20:28:13.055 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 20:28:13.057 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 20:28:17.866 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 20:28:17.981 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=4
+2025-11-26 20:28:18.004 +08:00 [INF] Starting Kestrel...
+2025-11-26 20:32:39.835 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 22:54:57.199 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 22:54:57.293 +08:00 [INF] WebApplication built successfully.
+2025-11-26 22:54:57.390 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 22:54:57.391 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 22:54:57.939 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 22:54:58.038 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 22:54:58.247 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 22:54:58.285 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=10
+2025-11-26 22:54:58.287 +08:00 [INF] Local heroes import setting: true
+2025-11-26 22:54:58.287 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 22:54:58.287 +08:00 [INF] Local stats import setting: true
+2025-11-26 22:54:58.288 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 22:54:58.289 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 22:54:58.744 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 22:54:58.746 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 22:55:04.095 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 22:55:04.243 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=4
+2025-11-26 22:55:04.278 +08:00 [INF] Starting Kestrel...
+2025-11-26 22:55:04.868 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 23:00:31.009 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 23:00:31.097 +08:00 [INF] WebApplication built successfully.
+2025-11-26 23:00:31.198 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 23:00:31.198 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 23:00:31.717 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 23:00:31.801 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 23:00:31.948 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 23:00:31.986 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=10
+2025-11-26 23:00:31.988 +08:00 [INF] Local heroes import setting: true
+2025-11-26 23:00:31.988 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 23:00:31.989 +08:00 [INF] Local stats import setting: true
+2025-11-26 23:00:31.989 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 23:00:31.991 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 23:00:32.408 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 23:00:32.410 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 23:00:37.875 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 23:00:38.012 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=4
+2025-11-26 23:00:38.039 +08:00 [INF] Starting Kestrel...
+2025-11-26 23:02:37.577 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 23:02:37.677 +08:00 [INF] WebApplication built successfully.
+2025-11-26 23:02:37.787 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 23:02:37.787 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 23:02:38.329 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 23:02:38.419 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 23:02:38.582 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 23:02:38.620 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=10
+2025-11-26 23:02:38.622 +08:00 [INF] Local heroes import setting: true
+2025-11-26 23:02:38.622 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 23:02:38.622 +08:00 [INF] Local stats import setting: true
+2025-11-26 23:02:38.622 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 23:02:38.625 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 23:02:39.071 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 23:02:39.073 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 23:02:44.502 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 23:02:44.642 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=4
+2025-11-26 23:02:44.670 +08:00 [INF] Starting Kestrel...
+2025-11-26 23:05:07.428 +08:00 [INF] Start processing HTTP request POST https://login.microsoftonline.com/common/oauth2/v2.0/token
+2025-11-26 23:05:07.432 +08:00 [INF] Sending HTTP request POST https://login.microsoftonline.com/common/oauth2/v2.0/token
+2025-11-26 23:05:11.123 +08:00 [INF] Received HTTP response headers after 3689.0136ms - 200
+2025-11-26 23:05:11.132 +08:00 [INF] End processing HTTP request after 3707.7068ms - 200
+2025-11-26 23:05:11.137 +08:00 [INF] Start processing HTTP request GET https://graph.microsoft.com/oidc/userinfo
+2025-11-26 23:05:11.137 +08:00 [INF] Sending HTTP request GET https://graph.microsoft.com/oidc/userinfo
+2025-11-26 23:05:11.934 +08:00 [INF] Received HTTP response headers after 796.1957ms - 200
+2025-11-26 23:05:11.934 +08:00 [INF] End processing HTTP request after 797.708ms - 200
+2025-11-26 23:13:40.521 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 23:13:40.613 +08:00 [INF] WebApplication built successfully.
+2025-11-26 23:13:40.710 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 23:13:40.710 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 23:13:41.237 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 23:13:41.318 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 23:13:41.459 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 23:13:41.493 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=10
+2025-11-26 23:13:41.495 +08:00 [INF] Local heroes import setting: true
+2025-11-26 23:13:41.495 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 23:13:41.495 +08:00 [INF] Local stats import setting: true
+2025-11-26 23:13:41.495 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 23:13:41.498 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 23:13:41.898 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 23:13:41.901 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 23:13:47.068 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 23:13:47.196 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=4
+2025-11-26 23:13:47.224 +08:00 [INF] Starting Kestrel...
+2025-11-26 23:16:06.979 +08:00 [INF] Start processing HTTP request POST https://login.microsoftonline.com/common/oauth2/v2.0/token
+2025-11-26 23:16:06.982 +08:00 [INF] Sending HTTP request POST https://login.microsoftonline.com/common/oauth2/v2.0/token
+2025-11-26 23:16:08.150 +08:00 [INF] Received HTTP response headers after 1165.4255ms - 200
+2025-11-26 23:16:08.159 +08:00 [INF] End processing HTTP request after 1182.7869ms - 200
+2025-11-26 23:16:08.162 +08:00 [INF] Start processing HTTP request GET https://graph.microsoft.com/oidc/userinfo
+2025-11-26 23:16:08.163 +08:00 [INF] Sending HTTP request GET https://graph.microsoft.com/oidc/userinfo
+2025-11-26 23:16:08.656 +08:00 [INF] Received HTTP response headers after 492.8711ms - 200
+2025-11-26 23:16:08.657 +08:00 [INF] End processing HTTP request after 494.4732ms - 200
+2025-11-26 23:17:14.016 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 23:17:14.109 +08:00 [INF] WebApplication built successfully.
+2025-11-26 23:17:14.203 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 23:17:14.203 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 23:17:14.706 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 23:17:14.789 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 23:17:14.938 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 23:17:14.973 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=10
+2025-11-26 23:17:14.975 +08:00 [INF] Local heroes import setting: true
+2025-11-26 23:17:14.975 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 23:17:14.975 +08:00 [INF] Local stats import setting: true
+2025-11-26 23:17:14.975 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 23:17:14.978 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 23:17:15.397 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 23:17:15.400 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 23:17:20.324 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 23:17:20.464 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=4
+2025-11-26 23:17:20.496 +08:00 [INF] Starting Kestrel...
+2025-11-26 23:17:24.470 +08:00 [INF] Start processing HTTP request POST https://login.microsoftonline.com/common/oauth2/v2.0/token
+2025-11-26 23:17:24.474 +08:00 [INF] Sending HTTP request POST https://login.microsoftonline.com/common/oauth2/v2.0/token
+2025-11-26 23:17:25.378 +08:00 [INF] Received HTTP response headers after 901.2189ms - 200
+2025-11-26 23:17:25.384 +08:00 [INF] End processing HTTP request after 919.3283ms - 200
+2025-11-26 23:17:25.388 +08:00 [INF] Start processing HTTP request GET https://graph.microsoft.com/oidc/userinfo
+2025-11-26 23:17:25.389 +08:00 [INF] Sending HTTP request GET https://graph.microsoft.com/oidc/userinfo
+2025-11-26 23:17:25.817 +08:00 [INF] Received HTTP response headers after 428.3528ms - 200
+2025-11-26 23:17:25.818 +08:00 [INF] End processing HTTP request after 429.584ms - 200
+2025-11-26 23:18:11.071 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 23:18:11.164 +08:00 [INF] WebApplication built successfully.
+2025-11-26 23:18:11.262 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 23:18:11.262 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 23:18:11.777 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 23:18:11.863 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 23:18:12.006 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 23:18:12.040 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=10
+2025-11-26 23:18:12.042 +08:00 [INF] Local heroes import setting: true
+2025-11-26 23:18:12.043 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 23:18:12.043 +08:00 [INF] Local stats import setting: true
+2025-11-26 23:18:12.043 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 23:18:12.045 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 23:18:12.476 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 23:18:12.479 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 23:18:17.747 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 23:18:17.877 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=4
+2025-11-26 23:18:17.903 +08:00 [INF] Starting Kestrel...
+2025-11-26 23:18:42.294 +08:00 [INF] Start processing HTTP request POST https://login.microsoftonline.com/common/oauth2/v2.0/token
+2025-11-26 23:18:42.297 +08:00 [INF] Sending HTTP request POST https://login.microsoftonline.com/common/oauth2/v2.0/token
+2025-11-26 23:18:43.297 +08:00 [INF] Received HTTP response headers after 998.396ms - 200
+2025-11-26 23:18:43.306 +08:00 [INF] End processing HTTP request after 1016.2736ms - 200
+2025-11-26 23:18:43.310 +08:00 [INF] Start processing HTTP request GET https://graph.microsoft.com/oidc/userinfo
+2025-11-26 23:18:43.310 +08:00 [INF] Sending HTTP request GET https://graph.microsoft.com/oidc/userinfo
+2025-11-26 23:18:43.724 +08:00 [INF] Received HTTP response headers after 413.6545ms - 200
+2025-11-26 23:18:43.725 +08:00 [INF] End processing HTTP request after 414.9193ms - 200
+2025-11-26 23:20:41.861 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-26 23:20:41.952 +08:00 [INF] WebApplication built successfully.
+2025-11-26 23:20:42.049 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-26 23:20:42.049 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-26 23:20:42.581 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-26 23:20:42.668 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-26 23:20:42.814 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-26 23:20:42.849 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=10
+2025-11-26 23:20:42.850 +08:00 [INF] Local heroes import setting: true
+2025-11-26 23:20:42.851 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-26 23:20:42.851 +08:00 [INF] Local stats import setting: true
+2025-11-26 23:20:42.851 +08:00 [INF] Local stats overwrite setting: false
+2025-11-26 23:20:42.854 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 23:20:43.269 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-26 23:20:43.272 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-26 23:20:48.692 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-26 23:20:48.831 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=4
+2025-11-26 23:20:48.863 +08:00 [INF] Starting Kestrel...
+2025-11-26 23:20:55.922 +08:00 [INF] Start processing HTTP request POST https://login.microsoftonline.com/common/oauth2/v2.0/token
+2025-11-26 23:20:55.925 +08:00 [INF] Sending HTTP request POST https://login.microsoftonline.com/common/oauth2/v2.0/token
+2025-11-26 23:20:57.251 +08:00 [INF] Received HTTP response headers after 1323.9652ms - 200
+2025-11-26 23:20:57.257 +08:00 [INF] End processing HTTP request after 1338.375ms - 200
+2025-11-26 23:20:57.261 +08:00 [INF] Start processing HTTP request GET https://graph.microsoft.com/oidc/userinfo
+2025-11-26 23:20:57.261 +08:00 [INF] Sending HTTP request GET https://graph.microsoft.com/oidc/userinfo
+2025-11-26 23:20:58.743 +08:00 [INF] Received HTTP response headers after 1480.7294ms - 200
+2025-11-26 23:20:58.743 +08:00 [INF] End processing HTTP request after 1482.539ms - 200
+2025-11-26 23:21:17.718 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-26 23:21:43.523 +08:00 [INF] Start processing HTTP request POST https://login.microsoftonline.com/common/oauth2/v2.0/token
+2025-11-26 23:21:43.523 +08:00 [INF] Sending HTTP request POST https://login.microsoftonline.com/common/oauth2/v2.0/token
+2025-11-26 23:21:44.069 +08:00 [INF] Received HTTP response headers after 545.1683ms - 200
+2025-11-26 23:21:44.069 +08:00 [INF] End processing HTTP request after 546.3775ms - 200
+2025-11-26 23:21:44.070 +08:00 [INF] Start processing HTTP request GET https://graph.microsoft.com/oidc/userinfo
+2025-11-26 23:21:44.070 +08:00 [INF] Sending HTTP request GET https://graph.microsoft.com/oidc/userinfo
+2025-11-26 23:22:03.282 +08:00 [INF] HTTP request failed after 19209.0962ms
+System.Net.Http.HttpRequestException: An error occurred while sending the request.
+ ---> System.IO.IOException: Unable to read data from the transport connection: 远程主机强迫关闭了一个现有的连接。.
+ ---> System.Net.Sockets.SocketException (10054): 远程主机强迫关闭了一个现有的连接。
+   --- End of inner exception stack trace ---
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource<System.Int32>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.EnsureFullTlsFrameAsync[TIOAdapter](CancellationToken cancellationToken, Int32 estimatedSize)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.ReadAsyncInternal[TIOAdapter](Memory`1 buffer, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Http.HttpConnection.<CheckUsabilityOnScavenge>g__ReadAheadWithZeroByteReadAsync|39_0()
+   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.DiagnosticsHandler.SendAsyncCore(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+2025-11-26 23:22:03.285 +08:00 [INF] HTTP request failed after 19214.4649ms
+System.Net.Http.HttpRequestException: An error occurred while sending the request.
+ ---> System.IO.IOException: Unable to read data from the transport connection: 远程主机强迫关闭了一个现有的连接。.
+ ---> System.Net.Sockets.SocketException (10054): 远程主机强迫关闭了一个现有的连接。
+   --- End of inner exception stack trace ---
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource<System.Int32>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.EnsureFullTlsFrameAsync[TIOAdapter](CancellationToken cancellationToken, Int32 estimatedSize)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.ReadAsyncInternal[TIOAdapter](Memory`1 buffer, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Http.HttpConnection.<CheckUsabilityOnScavenge>g__ReadAheadWithZeroByteReadAsync|39_0()
+   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.DiagnosticsHandler.SendAsyncCore(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+2025-11-26 23:22:03.289 +08:00 [ERR] 发生未处理的异常
+System.Net.Http.HttpRequestException: An error occurred while sending the request.
+ ---> System.IO.IOException: Unable to read data from the transport connection: 远程主机强迫关闭了一个现有的连接。.
+ ---> System.Net.Sockets.SocketException (10054): 远程主机强迫关闭了一个现有的连接。
+   --- End of inner exception stack trace ---
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource<System.Int32>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.EnsureFullTlsFrameAsync[TIOAdapter](CancellationToken cancellationToken, Int32 estimatedSize)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.ReadAsyncInternal[TIOAdapter](Memory`1 buffer, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Http.HttpConnection.<CheckUsabilityOnScavenge>g__ReadAheadWithZeroByteReadAsync|39_0()
+   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.DiagnosticsHandler.SendAsyncCore(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at ASG.Api.Services.ExternalAuthService.FetchMicrosoftUserAsync(String accessToken) in C:\Users\luolan\ASG\ASG.Api\Services\ExternalAuthService.cs:line 289
+   at ASG.Api.Services.ExternalAuthService.ProcessCallbackAsync(String provider, String code, String state, String callbackBaseUrl) in C:\Users\luolan\ASG\ASG.Api\Services\ExternalAuthService.cs:line 95
+   at ASG.Api.Controllers.OAuthController.Callback(String provider, String code, String state, String error, String error_description) in C:\Users\luolan\ASG\ASG.Api\Controllers\OAuthController.cs:line 50
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at ASG.Api.Middleware.ExceptionHandlingMiddleware.InvokeAsync(HttpContext context) in C:\Users\luolan\ASG\ASG.Api\Middleware\ExceptionHandlingMiddleware.cs:line 21
+2025-11-26 23:22:14.215 +08:00 [INF] Start processing HTTP request POST https://login.microsoftonline.com/common/oauth2/v2.0/token
+2025-11-26 23:22:14.215 +08:00 [INF] Sending HTTP request POST https://login.microsoftonline.com/common/oauth2/v2.0/token
+2025-11-26 23:22:15.284 +08:00 [INF] Received HTTP response headers after 1068.767ms - 200
+2025-11-26 23:22:15.285 +08:00 [INF] End processing HTTP request after 1069.8247ms - 200
+2025-11-26 23:22:15.285 +08:00 [INF] Start processing HTTP request GET https://graph.microsoft.com/oidc/userinfo
+2025-11-26 23:22:15.285 +08:00 [INF] Sending HTTP request GET https://graph.microsoft.com/oidc/userinfo
+2025-11-26 23:22:15.781 +08:00 [INF] Received HTTP response headers after 495.2516ms - 200
+2025-11-26 23:22:15.781 +08:00 [INF] End processing HTTP request after 496.105ms - 200
+2025-11-26 23:25:28.093 +08:00 [INF] Start processing HTTP request POST https://login.microsoftonline.com/common/oauth2/v2.0/token
+2025-11-26 23:25:28.094 +08:00 [INF] Sending HTTP request POST https://login.microsoftonline.com/common/oauth2/v2.0/token
+2025-11-26 23:25:29.438 +08:00 [INF] Received HTTP response headers after 1344.1193ms - 200
+2025-11-26 23:25:29.439 +08:00 [INF] End processing HTTP request after 1345.3227ms - 200
+2025-11-26 23:25:29.439 +08:00 [INF] Start processing HTTP request GET https://graph.microsoft.com/oidc/userinfo
+2025-11-26 23:25:29.439 +08:00 [INF] Sending HTTP request GET https://graph.microsoft.com/oidc/userinfo
+2025-11-26 23:25:30.273 +08:00 [INF] Received HTTP response headers after 833.7427ms - 200
+2025-11-26 23:25:30.274 +08:00 [INF] End processing HTTP request after 834.4907ms - 200

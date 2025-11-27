@@ -148,6 +148,48 @@ namespace ASG.Api.Migrations
                     b.ToTable("ConversationMembers", (string)null);
                 });
 
+            modelBuilder.Entity("ASG.Api.Models.DeviceToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("LastSeenAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Platform")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Token")
+                        .IsUnique();
+
+                    b.ToTable("DeviceTokens", (string)null);
+                });
+
             modelBuilder.Entity("ASG.Api.Models.Event", b =>
                 {
                     b.Property<Guid>("Id")
@@ -189,11 +231,18 @@ namespace ASG.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("QqGroup")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<DateTime>("RegistrationEndTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("RegistrationStartTime")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RulesMarkdown")
+                        .HasColumnType("text");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -229,6 +278,81 @@ namespace ASG.Api.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("EventAdmins", (string)null);
+                });
+
+            modelBuilder.Entity("ASG.Api.Models.EventRegistrationAnswer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AnswersJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SubmittedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId");
+
+                    b.HasIndex("EventId", "TeamId")
+                        .IsUnique();
+
+                    b.ToTable("EventRegistrationAnswers", (string)null);
+                });
+
+            modelBuilder.Entity("ASG.Api.Models.EventRuleRevision", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ChangeNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ContentMarkdown")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId", "Version")
+                        .IsUnique();
+
+                    b.ToTable("EventRuleRevisions", (string)null);
                 });
 
             modelBuilder.Entity("ASG.Api.Models.GameRole", b =>
@@ -531,6 +655,38 @@ namespace ASG.Api.Migrations
                     b.ToTable("Notifications", (string)null);
                 });
 
+            modelBuilder.Entity("ASG.Api.Models.OperationLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Details")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("EntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EntityType")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OperationLogs", (string)null);
+                });
+
             modelBuilder.Entity("ASG.Api.Models.Player", b =>
                 {
                     b.Property<Guid>("Id")
@@ -558,6 +714,9 @@ namespace ASG.Api.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<int>("PlayerType")
+                        .HasColumnType("integer");
 
                     b.Property<Guid?>("TeamId")
                         .HasColumnType("uuid");
@@ -686,6 +845,9 @@ namespace ASG.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("CommunityPostId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -694,6 +856,19 @@ namespace ASG.Api.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("DisputeDetail")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("HasDispute")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("HidePlayers")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<DateTime?>("InviteExpiresAt")
                         .HasColumnType("timestamp with time zone");
@@ -732,7 +907,8 @@ namespace ASG.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("OwnerId")
+                        .IsUnique();
 
                     b.ToTable("Teams", (string)null);
                 });
@@ -772,6 +948,56 @@ namespace ASG.Api.Migrations
                     b.HasIndex("EventId");
 
                     b.ToTable("TeamEvents", (string)null);
+                });
+
+            modelBuilder.Entity("ASG.Api.Models.TeamReview", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CommentMarkdown")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("CommunityPostId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<int>("Rating")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("TeamReviews", (string)null);
                 });
 
             modelBuilder.Entity("ASG.Api.Models.User", b =>
@@ -1114,6 +1340,36 @@ namespace ASG.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("ASG.Api.Models.EventRegistrationAnswer", b =>
+                {
+                    b.HasOne("ASG.Api.Models.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ASG.Api.Models.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("ASG.Api.Models.EventRuleRevision", b =>
+                {
+                    b.HasOne("ASG.Api.Models.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+                });
+
             modelBuilder.Entity("ASG.Api.Models.Match", b =>
                 {
                     b.HasOne("ASG.Api.Models.Team", "AwayTeam")
@@ -1196,8 +1452,8 @@ namespace ASG.Api.Migrations
             modelBuilder.Entity("ASG.Api.Models.Team", b =>
                 {
                     b.HasOne("ASG.Api.Models.User", "Owner")
-                        .WithMany("OwnedTeams")
-                        .HasForeignKey("OwnerId")
+                        .WithOne("OwnedTeam")
+                        .HasForeignKey("ASG.Api.Models.Team", "OwnerId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Owner");
@@ -1213,6 +1469,24 @@ namespace ASG.Api.Migrations
 
                     b.HasOne("ASG.Api.Models.Team", "Team")
                         .WithMany("TeamEvents")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("ASG.Api.Models.TeamReview", b =>
+                {
+                    b.HasOne("ASG.Api.Models.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("ASG.Api.Models.Team", "Team")
+                        .WithMany()
                         .HasForeignKey("TeamId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1301,7 +1575,7 @@ namespace ASG.Api.Migrations
 
             modelBuilder.Entity("ASG.Api.Models.User", b =>
                 {
-                    b.Navigation("OwnedTeams");
+                    b.Navigation("OwnedTeam");
                 });
 #pragma warning restore 612, 618
         }

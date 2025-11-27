@@ -159,7 +159,7 @@ namespace ASG.Api.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return Forbid(ex.Message);
+                return StatusCode(403, new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
@@ -204,7 +204,7 @@ namespace ASG.Api.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return Forbid(ex.Message);
+                return StatusCode(403, new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
@@ -243,12 +243,153 @@ namespace ASG.Api.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return Forbid(ex.Message);
+                return StatusCode(403, new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "删除赛事失败", error = ex.Message });
             }
+        }
+
+        // 规则版本化：创建修订
+        [HttpPost("{id}/rules/revisions")]
+        [Authorize]
+        public async Task<ActionResult<RuleRevisionDto>> CreateRuleRevision(Guid id, [FromBody] CreateRuleRevisionDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized(new { message = "用户未登录" });
+                var rev = await _eventService.CreateRuleRevisionAsync(id, dto, userId);
+                return Ok(rev);
+            }
+            catch (UnauthorizedAccessException ex) { return StatusCode(403, new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { message = "创建规则修订失败", error = ex.Message }); }
+        }
+
+        // 规则版本化：发布/回滚到指定修订
+        [HttpPost("{id}/rules/revisions/{revId}/publish")]
+        [Authorize]
+        public async Task<ActionResult> PublishRuleRevision(Guid id, Guid revId)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized(new { message = "用户未登录" });
+                var ok = await _eventService.PublishRuleRevisionAsync(id, revId, userId);
+                if (!ok) return NotFound(new { message = "规则修订不存在" });
+                return Ok(new { message = "发布成功" });
+            }
+            catch (UnauthorizedAccessException ex) { return StatusCode(403, new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { message = "发布规则修订失败", error = ex.Message }); }
+        }
+
+        // 规则版本化：获取修订列表
+        [HttpGet("{id}/rules/revisions")]
+        public async Task<ActionResult<IEnumerable<RuleRevisionDto>>> GetRuleRevisions(Guid id)
+        {
+            try
+            {
+                var list = await _eventService.GetRuleRevisionsAsync(id);
+                return Ok(list);
+            }
+            catch (Exception ex) { return StatusCode(500, new { message = "获取规则修订失败", error = ex.Message }); }
+        }
+
+        // 报名表 Schema：更新
+        [HttpPut("{id}/registration-form-schema")]
+        [Authorize]
+        public async Task<ActionResult> UpdateRegistrationFormSchema(Guid id, [FromBody] UpdateRegistrationFormSchemaDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized(new { message = "用户未登录" });
+                var ok = await _eventService.UpdateRegistrationFormSchemaAsync(id, dto, userId);
+                return ok ? Ok(new { message = "更新成功" }) : NotFound(new { message = "赛事不存在" });
+            }
+            catch (UnauthorizedAccessException ex) { return StatusCode(403, new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { message = "更新报名表Schema失败", error = ex.Message }); }
+        }
+
+        [HttpGet("{id}/registration-form-schema")]
+        public async Task<ActionResult<object>> GetRegistrationFormSchema(Guid id)
+        {
+            try
+            {
+                var json = await _eventService.GetRegistrationFormSchemaAsync(id);
+                var node = System.Text.Json.Nodes.JsonNode.Parse(string.IsNullOrWhiteSpace(json) ? "{}" : json);
+                return Ok(node);
+            }
+            catch (Exception ex) { return StatusCode(500, new { message = "获取报名表Schema失败", error = ex.Message }); }
+        }
+
+        // 报名答案：提交
+        [HttpPost("{id}/registration-answers")]
+        [Authorize]
+        public async Task<ActionResult> SubmitRegistrationAnswers(Guid id, [FromBody] SubmitRegistrationAnswersDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized(new { message = "用户未登录" });
+                var ok = await _eventService.SubmitRegistrationAnswersAsync(id, dto, userId);
+                return ok ? Ok(new { message = "提交成功" }) : BadRequest(new { message = "提交失败" });
+            }
+            catch (UnauthorizedAccessException ex) { return StatusCode(403, new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { message = "提交报名答案失败", error = ex.Message }); }
+        }
+
+        [HttpGet("{id}/registration-answers/{teamId}")]
+        [Authorize]
+        public async Task<ActionResult<object>> GetRegistrationAnswers(Guid id, Guid teamId)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized(new { message = "用户未登录" });
+                var json = await _eventService.GetRegistrationAnswersAsync(id, teamId, userId);
+                var node = System.Text.Json.Nodes.JsonNode.Parse(string.IsNullOrWhiteSpace(json) ? "{}" : json);
+                return Ok(node);
+            }
+            catch (UnauthorizedAccessException ex) { return StatusCode(403, new { message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { message = "获取报名答案失败", error = ex.Message }); }
+        }
+
+        [HttpPut("{id}/tournament-config")]
+        [Authorize]
+        public async Task<ActionResult> UpdateTournamentConfig(Guid id, [FromBody] UpdateTournamentConfigDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized(new { message = "用户未登录" });
+                var ok = await _eventService.UpdateTournamentConfigAsync(id, dto, userId);
+                return ok ? Ok(new { message = "更新成功" }) : NotFound(new { message = "赛事不存在" });
+            }
+            catch (UnauthorizedAccessException ex) { return Forbid(ex.Message); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { message = "更新赛制配置失败", error = ex.Message }); }
+        }
+
+        [HttpPost("{id}/generate-test-registrations")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<TeamEventDto>>> GenerateTestRegistrations(Guid id, [FromBody] GenerateTestRegistrationsRequestDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized(new { message = "用户未登录" });
+                var list = await _eventService.GenerateTestRegistrationsAsync(id, dto?.Count ?? 64, userId, dto?.NamePrefix, dto?.Approve ?? true);
+                return Ok(list);
+            }
+            catch (UnauthorizedAccessException ex) { return Forbid(ex.Message); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { message = "生成测试报名失败", error = ex.Message }); }
         }
 
         /// <summary>
@@ -445,7 +586,7 @@ namespace ASG.Api.Controllers
                 var canManage = await _eventService.CanUserManageEventAsync(id, userId);
                 if (!canManage)
                 {
-                    return Forbid("您没有权限导出该赛事的战队徽标");
+                    return StatusCode(403, new { message = "您没有权限导出该赛事的战队徽标" });
                 }
 
                 var regs = await _eventService.GetEventRegistrationsWithSensitiveAsync(id, userId);
@@ -456,7 +597,7 @@ namespace ASG.Api.Controllers
                     root = Path.Combine(_env.ContentRootPath, "wwwroot");
                 }
 
-                await using var mem = new MemoryStream();
+                var mem = new MemoryStream();
                 using (var zip = new ZipArchive(mem, ZipArchiveMode.Create, leaveOpen: true))
                 {
                     foreach (var r in regs)
@@ -482,11 +623,11 @@ namespace ASG.Api.Controllers
                 var eventInfo = await _eventService.GetEventByIdAsync(id);
                 var safeEventName = Regex.Replace(eventInfo?.Name ?? "event", "[^a-zA-Z0-9_\\-]", "_");
                 var fileName = $"{safeEventName}-team-logos.zip";
-                return File(mem, "application/zip", fileName);
+                return File(mem.ToArray(), "application/zip", fileName);
             }
             catch (UnauthorizedAccessException ex)
             {
-                return Forbid(ex.Message);
+                return StatusCode(403, new { message = ex.Message });
             }
             catch (Exception ex)
             {
@@ -524,7 +665,7 @@ namespace ASG.Api.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return Forbid(ex.Message);
+                return StatusCode(403, new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
@@ -556,7 +697,7 @@ namespace ASG.Api.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return Forbid(ex.Message);
+                return StatusCode(403, new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
@@ -790,7 +931,7 @@ namespace ASG.Api.Controllers
                 var canManage = await _eventService.CanUserManageEventAsync(id, userId);
                 if (!canManage)
                 {
-                    return Forbid("您没有权限上传该赛事的徽标");
+                    return StatusCode(403, new { message = "您没有权限上传该赛事的徽标" });
                 }
 
                 var root = _env.WebRootPath;

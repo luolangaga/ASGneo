@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { getProfile, updateProfile, uploadAvatar } from '../services/user'
 import { updateCurrentUser, currentUser } from '../stores/auth'
-import { getTeam, getTeamHonors, uploadTeamLogo, bindTeamByName, leaveTeam, getMyPlayer, upsertMyPlayer } from '../services/teams'
+import { getTeam, getTeamHonors, uploadTeamLogo, bindTeamByName, leaveTeam, getMyPlayer, upsertMyPlayer, generateInvite } from '../services/teams'
 import { notify } from '../stores/notify'
 import PageHero from '../components/PageHero.vue'
 import { renderMarkdown } from '../utils/markdown'
@@ -39,12 +39,18 @@ const binding = ref(false)
 const bindError = ref('')
 const showPlayerPrompt = ref(false)
 const playerSectionEl = ref(null)
+const inviteLoading = ref(false)
+const inviteError = ref('')
+const inviteDialog = ref(false)
+const inviteDto = ref(null)
+const inviteValidDays = ref(7)
 
 // 我的玩家状态
 const myPlayer = ref({ name: '', gameId: '', gameRank: '', description: '' })
 const playerLoading = ref(false)
 const playerSaving = ref(false)
 const playerError = ref('')
+const hasPlayer = ref(false)
 
 
 async function load() {
@@ -61,7 +67,7 @@ async function load() {
     updateCurrentUser({ ...(currentUser.value || {}), ...profile })
 
     // 如果用户已有战队，加载战队信息（兼容不同大小写）
-    const tId = currentUser.value?.teamId || currentUser.value?.TeamId
+    const tId = currentUser.value?.displayTeamId || currentUser.value?.DisplayTeamId || currentUser.value?.ownedTeamId || currentUser.value?.OwnedTeamId || currentUser.value?.teamId || currentUser.value?.TeamId
     if (tId) {
       teamLoading.value = true
       teamError.value = ''
@@ -86,6 +92,7 @@ async function load() {
         playerLoading.value = true
         playerError.value = ''
         const p = await getMyPlayer()
+        hasPlayer.value = !!p
         myPlayer.value = p || { name: '', gameId: '', gameRank: '', description: '' }
       } catch (err3) {
         playerError.value = err3?.payload?.message || err3?.message || ''
@@ -184,12 +191,12 @@ async function onUnbindTeam() {
   unbinding.value = true
   teamError.value = ''
   try {
-    const teamId = currentUser.value?.teamId || currentUser.value?.TeamId
-    if (!teamId) { throw new Error('当前未绑定战队') }
-    await leaveTeam(teamId)
+    const player = await getMyPlayer()
+    const memberTeamId = player?.teamId || player?.TeamId || currentUser.value?.displayTeamId || currentUser.value?.DisplayTeamId
+    if (!memberTeamId) { throw new Error('当前未加入任何战队') }
+    await leaveTeam(memberTeamId)
     notify({ text: '已退出战队', color: 'success' })
     team.value = null
-    // 重新加载资料以刷新用户 TeamId 状态
     await load()
   } catch (err) {
     teamError.value = err?.payload?.message || err?.message || '解绑失败'
@@ -201,6 +208,7 @@ async function onUnbindTeam() {
 function toMd(s) {
   return renderMarkdown(s || '')
 }
+function playerTypeName(pt) { const v = Number(pt ?? 2); return v === 1 ? '监管者' : '求生者' }
 
 function goToPlayerSection() {
   try {
@@ -212,6 +220,49 @@ function goToPlayerSection() {
       }
     }, 50)
   } catch {}
+}
+
+function onCreatePlayerClick() {
+  const tId = currentUser.value?.teamId || currentUser.value?.TeamId
+  if (!tId) {
+    showBind.value = true
+    return
+  }
+}
+
+async function onGenerateInvite() {
+  try {
+    const teamId = team.value?.id || team.value?.Id
+    if (!teamId) return
+    inviteLoading.value = true
+    inviteError.value = ''
+    const dto = await generateInvite(teamId, Number(inviteValidDays.value) || 7)
+    inviteDto.value = dto
+    inviteDialog.value = true
+  } catch (err) {
+    inviteError.value = err?.payload?.message || err?.message || '生成失败'
+  } finally {
+    inviteLoading.value = false
+  }
+}
+
+async function copyInviteToken() {
+  try {
+    const t = inviteDto.value?.Token || inviteDto.value?.token
+    if (!t) return
+    await navigator.clipboard.writeText(String(t))
+    notify({ text: '已复制Token', color: 'success' })
+  } catch {
+    try {
+      const input = document.createElement('textarea')
+      input.value = String(inviteDto.value?.Token || inviteDto.value?.token || '')
+      document.body.appendChild(input)
+      input.select()
+      document.execCommand('copy')
+      document.body.removeChild(input)
+      notify({ text: '已复制Token', color: 'success' })
+    } catch {}
+  }
 }
 
 function copyUserId() {
@@ -269,7 +320,9 @@ async function onSavePlayer() {
               <v-avatar size="120" class="mb-3">
                 <v-img :src="localPreview || avatarUrl" alt="avatar" cover>
                   <template #placeholder>
-                    <div class="img-skeleton"></div>
+                    <div class="d-flex align-center justify-center" style="width:100%;height:100%">
+                      <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:96px;height:96px"></lottie-player>
+                    </div>
                   </template>
                 </v-img>
               </v-avatar>
@@ -317,14 +370,16 @@ async function onSavePlayer() {
         </template>
         <v-alert v-if="teamError" type="error" :text="teamError" class="mb-3" />
 
-        <template v-if="(currentUser?.teamId || currentUser?.TeamId) && team">
+        <template v-if="((currentUser?.displayTeamId || currentUser?.DisplayTeamId || currentUser?.ownedTeamId || currentUser?.OwnedTeamId || currentUser?.teamId || currentUser?.TeamId) && team)">
           <v-row>
             <v-col cols="12" md="4">
               <div class="d-flex flex-column align-center">
                 <v-avatar size="120" class="mb-3" v-if="team.logoUrl || team.LogoUrl">
                   <v-img :src="team.logoUrl || team.LogoUrl" alt="team logo" cover>
                     <template #placeholder>
-                      <div class="img-skeleton"></div>
+                      <div class="d-flex align-center justify-center" style="width:100%;height:100%">
+                        <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:96px;height:96px"></lottie-player>
+                      </div>
                     </template>
                   </v-img>
                 </v-avatar>
@@ -347,6 +402,7 @@ async function onSavePlayer() {
                   <v-list-item-subtitle>
                     <span v-if="p.gameId || p.GameId">ID: {{ p.gameId || p.GameId }} </span>
                     <span v-if="p.gameRank || p.GameRank" class="ml-2">段位: {{ p.gameRank || p.GameRank }}</span>
+                    <span v-if="(p.playerType ?? p.PlayerType) != null" class="ml-2">角色类型: {{ playerTypeName(p.playerType ?? p.PlayerType) }}</span>
                   </v-list-item-subtitle>
                 </v-list-item>
               </v-list>
@@ -364,7 +420,9 @@ async function onSavePlayer() {
                       <v-avatar size="32" v-if="e.logoUrl || e.LogoUrl">
                         <v-img :src="e.logoUrl || e.LogoUrl" alt="event logo" cover>
                           <template #placeholder>
-                            <div class="img-skeleton"></div>
+                            <div class="d-flex align-center justify-center" style="width:100%;height:100%">
+                              <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:28px;height:28px"></lottie-player>
+                            </div>
                           </template>
                         </v-img>
                       </v-avatar>
@@ -380,7 +438,9 @@ async function onSavePlayer() {
               <v-divider class="my-4" />
               <div class="d-flex justify-end align-center gap-2">
                 <v-btn color="primary" variant="tonal" to="/teams/edit" prepend-icon="edit">编辑信息</v-btn>
-                <v-btn color="error" variant="text" :loading="unbinding" prepend-icon="logout" @click="onUnbindTeam">退出战队</v-btn>
+                <v-btn v-if="(currentUser?.displayTeamId || currentUser?.DisplayTeamId)" color="error" variant="text" :loading="unbinding" prepend-icon="logout" @click="onUnbindTeam">退出战队</v-btn>
+                <v-btn v-else color="error" variant="text" to="/teams/edit" prepend-icon="manage_accounts">管理战队</v-btn>
+                <v-btn color="secondary" variant="flat" :loading="inviteLoading" prepend-icon="key" @click="onGenerateInvite">生成绑定Token</v-btn>
               </div>
             </v-col>
           </v-row>
@@ -415,6 +475,7 @@ async function onSavePlayer() {
       <v-card-text ref="playerSectionEl">
         <v-alert v-if="playerError" type="error" :text="playerError" class="mb-4" />
         <template v-if="(currentUser?.teamId || currentUser?.TeamId)">
+          <v-alert v-if="!hasPlayer && !playerLoading" type="info" text="你还没有玩家，填写下面的信息创建一个玩家并加入你的战队" class="mb-2" />
           <v-form @submit.prevent="onSavePlayer">
             <v-text-field v-model="myPlayer.name" label="玩家昵称" prepend-inner-icon="person" required />
             <v-row>
@@ -434,8 +495,7 @@ async function onSavePlayer() {
         <template v-else>
           <v-alert type="info" text="请先绑定或创建战队，再创建玩家" />
           <div class="d-flex justify-end mt-2">
-            <v-btn color="primary" variant="text" to="/teams/create" prepend-icon="group_add">创建战队</v-btn>
-            <v-btn color="secondary" variant="text" to="/teams/edit" prepend-icon="edit">编辑战队</v-btn>
+
           </div>
         </template>
       </v-card-text>
@@ -451,6 +511,29 @@ async function onSavePlayer() {
       <v-card-actions class="justify-end">
         <v-btn variant="text" @click="showPlayerPrompt=false">稍后再说</v-btn>
         <v-btn color="primary" prepend-icon="person_add" @click="goToPlayerSection">去添加玩家</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+  <v-dialog v-model="inviteDialog" max-width="640">
+    <v-card>
+      <v-card-title>绑定Token</v-card-title>
+      <v-card-text>
+        <v-alert v-if="inviteError" type="error" :text="inviteError" class="mb-3" />
+        <div class="d-flex align-center gap-2 mb-3">
+          <div class="text-subtitle-2">有效期(天)</div>
+          <v-text-field v-model="inviteValidDays" type="number" density="compact" style="max-width: 120px" />
+          <v-btn color="primary" :loading="inviteLoading" @click="onGenerateInvite">重新生成</v-btn>
+        </div>
+        <div class="mb-2">战队：{{ inviteDto?.TeamName || inviteDto?.teamName || team?.name || team?.Name }}</div>
+        <div class="mb-2">Token：<code>{{ inviteDto?.Token || inviteDto?.token }}</code> <v-btn size="x-small" class="ml-2" prepend-icon="content_copy" @click="copyInviteToken">复制</v-btn></div>
+        <div class="mb-2">过期时间：{{ (inviteDto?.ExpiresAt || inviteDto?.expiresAt) ? new Date(inviteDto?.ExpiresAt || inviteDto?.expiresAt).toLocaleString() : '' }}</div>
+        <v-divider class="my-3" />
+        <div>在QQ群发送命令：<code>绑定战队 Token</code></div>
+        <div>绑定成功后，Token 立即失效。</div>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn variant="text" @click="inviteDialog=false">关闭</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

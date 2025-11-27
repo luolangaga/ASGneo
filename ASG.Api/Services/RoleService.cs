@@ -1,16 +1,21 @@
 using ASG.Api.DTOs;
 using ASG.Api.Models;
 using ASG.Api.Repositories;
+using Microsoft.AspNetCore.Identity;
 
 namespace ASG.Api.Services
 {
     public class RoleService : IRoleService
     {
         private readonly IUserRepository _userRepository;
+        private readonly UserManager<User> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public RoleService(IUserRepository userRepository)
+        public RoleService(IUserRepository userRepository, UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
         {
             _userRepository = userRepository;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         public async Task<IEnumerable<RoleInfoDto>> GetAllRolesAsync()
@@ -38,6 +43,24 @@ namespace ASG.Api.Services
             if (user == null)
                 return null;
 
+            var roleName = user.RoleName;
+            if (!await _roleManager.RoleExistsAsync(roleName))
+            {
+                await _roleManager.CreateAsync(new IdentityRole(roleName));
+            }
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            foreach (var r in currentRoles.Where(x => x == "User" || x == "Admin").ToList())
+            {
+                if (r != roleName)
+                {
+                    await _userManager.RemoveFromRoleAsync(user, r);
+                }
+            }
+            if (!await _userManager.IsInRoleAsync(user, roleName))
+            {
+                await _userManager.AddToRoleAsync(user, roleName);
+            }
+
             return MapToUserResponseDto(user);
         }
 
@@ -47,10 +70,10 @@ namespace ASG.Api.Services
             return users.Select(MapToUserResponseDto);
         }
 
-        public async Task<UserListDto> GetUsersWithPaginationAsync(int pageNumber, int pageSize)
+        public async Task<UserListDto> GetUsersWithPaginationAsync(int pageNumber, int pageSize, string? search = null)
         {
-            var users = await _userRepository.GetUsersWithPaginationAsync(pageNumber, pageSize);
-            var totalCount = await _userRepository.GetTotalUserCountAsync();
+            var users = await _userRepository.GetUsersWithPaginationAsync(pageNumber, pageSize, search);
+            var totalCount = await _userRepository.GetTotalUserCountAsync(search);
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
             return new UserListDto

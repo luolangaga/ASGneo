@@ -43,6 +43,8 @@ namespace ASG.Api.DTOs
         public bool IsActive { get; set; }
         public string? AvatarUrl { get; set; }
         public Guid? TeamId { get; set; }
+        public Guid? DisplayTeamId { get; set; }
+        public Guid? OwnedTeamId { get; set; }
         public int EmailCredits { get; set; }
     }
 
@@ -51,6 +53,7 @@ namespace ASG.Api.DTOs
         public string Token { get; set; } = string.Empty;
         public DateTime Expires { get; set; }
         public UserResponseDto User { get; set; } = new();
+        public bool IsNewUser { get; set; }
     }
 
     public class UpdateProfileDto

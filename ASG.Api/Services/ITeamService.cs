@@ -6,7 +6,7 @@ namespace ASG.Api.Services
     {
         Task<PagedResult<TeamDto>> GetAllTeamsAsync(int page = 1, int pageSize = 10);
         Task<PagedResult<TeamDto>> SearchTeamsByNameAsync(string name, int page = 1, int pageSize = 10);
-        Task<TeamDto?> GetTeamByIdAsync(Guid id);
+        Task<TeamDto?> GetTeamByIdAsync(Guid id, string? userId = null);
         Task<TeamDto> CreateTeamAsync(CreateTeamDto createTeamDto, string? userId = null);
         Task<TeamDto> UpdateTeamAsync(Guid id, UpdateTeamDto updateTeamDto, string? userId = null);
         Task<bool> DeleteTeamAsync(Guid id, string? userId = null, bool isAdmin = false);
@@ -23,5 +23,9 @@ namespace ASG.Api.Services
         Task<bool> LeaveTeamAsync(Guid teamId, string userId);
         Task<PlayerDto?> GetMyPlayerAsync(string userId);
         Task<PlayerDto> UpsertMyPlayerAsync(string userId, CreatePlayerDto playerDto);
+        Task<bool> TransferTeamOwnershipAsync(Guid teamId, string currentUserId, string targetUserId);
+        Task<IEnumerable<TeamReviewDto>> GetTeamReviewsAsync(Guid teamId);
+        Task<TeamReviewDto> AddTeamReviewAsync(Guid teamId, string userId, CreateTeamReviewDto dto);
+        Task<bool> SetTeamDisputeAsync(Guid teamId, bool hasDispute, string? disputeDetail = null, Guid? communityPostId = null);
     }
 }

@@ -42,5 +42,13 @@ public int Likes { get; set; } = 0;
 
         // 导航属性 - 战队参与的赛事
         public virtual ICollection<TeamEvent> TeamEvents { get; set; } = new List<TeamEvent>();
+
+        public bool HidePlayers { get; set; } = false;
+
+        public bool HasDispute { get; set; } = false;
+
+        public string? DisputeDetail { get; set; }
+
+        public Guid? CommunityPostId { get; set; }
     }
 }

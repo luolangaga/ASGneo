@@ -43,3 +43,31 @@ export async function resetPassword({ email, token, password }) {
   })
   return data
 }
+
+export async function getOAuthAuthorizeUrl(provider, redirect) {
+  const qs = new URLSearchParams()
+  if (redirect) qs.set('redirect', String(redirect))
+  const q = qs.toString()
+  const res = await apiFetch(`/OAuth/${provider}/authorize${q ? `?${q}` : ''}`)
+  return res?.url || res?.Url || ''
+}
+
+export async function startOAuth(provider, redirect) {
+  const url = await getOAuthAuthorizeUrl(provider, redirect)
+  if (url) {
+    window.location.href = url
+  }
+}
+
+export async function getLinkAuthorizeUrl(provider, redirect) {
+  const qs = new URLSearchParams()
+  if (redirect) qs.set('redirect', String(redirect))
+  const q = qs.toString()
+  const res = await apiFetch(`/OAuth/${provider}/link/authorize${q ? `?${q}` : ''}`)
+  return res?.url || res?.Url || ''
+}
+
+export async function startOAuthLink(provider, redirect) {
+  const url = await getLinkAuthorizeUrl(provider, redirect)
+  if (url) window.location.href = url
+}

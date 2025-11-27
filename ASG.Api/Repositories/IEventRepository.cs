@@ -169,5 +169,17 @@ namespace ASG.Api.Repositories
         Task<bool> RemoveEventAdminAsync(Guid eventId, string userId);
         Task<IEnumerable<string>> GetEventAdminUserIdsAsync(Guid eventId);
         Task<bool> IsEventAdminAsync(Guid eventId, string userId);
+
+        // 规则版本化
+        Task<EventRuleRevision> CreateRuleRevisionAsync(EventRuleRevision rev);
+        Task<IEnumerable<EventRuleRevision>> GetRuleRevisionsAsync(Guid eventId);
+        Task<bool> PublishRuleRevisionAsync(Guid eventId, Guid revisionId);
+
+        // 报名表 Schema 存储于 Event.CustomData
+        Task<bool> UpdateRegistrationFormSchemaAsync(Guid eventId, string schemaJson);
+
+        // 报名答案（按战队唯一）
+        Task<EventRegistrationAnswer> UpsertRegistrationAnswersAsync(Guid eventId, Guid teamId, string answersJson, string? submittedByUserId);
+        Task<EventRegistrationAnswer?> GetRegistrationAnswersAsync(Guid eventId, Guid teamId);
     }
 }
