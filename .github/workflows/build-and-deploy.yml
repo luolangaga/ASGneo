@@ -9,7 +9,8 @@ on:
     types: [ published ]
 
 env:
-  DOTNET_VERSION: '8.0.x'
+  DOTNET_VERSION: '10.0.x'
+  NODE_VERSION: '20.x'
   PROJECT_PATH: './ASG.Api'
   DOCKER_IMAGE_NAME: 'asg-api'
 
@@ -26,6 +27,7 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
+        global-json-file: ./global.json
         
     - name: Restore dependencies
       run: dotnet restore ${{ env.PROJECT_PATH }}
@@ -58,6 +60,7 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
+        global-json-file: ./global.json
         
     - name: Restore dependencies
       run: dotnet restore ${{ env.PROJECT_PATH }}
@@ -76,6 +79,30 @@ jobs:
       with:
         name: asg-api-linux-x64
         path: ./publish/linux-x64/
+        retention-days: 30
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: 'ASG.Web/package-lock.json'
+    - name: Install dependencies
+      working-directory: ASG.Web
+      run: npm ci
+    - name: Build frontend
+      working-directory: ASG.Web
+      run: npm run build
+    - name: Upload frontend artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: asg-web-dist
+        path: ASG.Web/dist/
         retention-days: 30
 
   # 构建 Docker 镜像
@@ -125,7 +152,7 @@ jobs:
   create-release:
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
-    needs: [build-windows, build-linux, build-docker]
+    needs: [build-windows, build-linux, build-docker, build-frontend]
     
     steps:
     - name: Download Windows artifacts
@@ -139,12 +166,18 @@ jobs:
       with:
         name: asg-api-linux-x64
         path: ./artifacts/linux/
+    - name: Download Frontend artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: asg-web-dist
+        path: ./artifacts/frontend/
         
     - name: Create ZIP archives
       run: |
         cd ./artifacts
         zip -r asg-api-windows-x64.zip windows/
         tar -czf asg-api-linux-x64.tar.gz linux/
+        zip -r asg-web-dist.zip frontend/
         
     - name: Upload Release Assets
       uses: softprops/action-gh-release@v1
@@ -152,6 +185,7 @@ jobs:
         files: |
           ./artifacts/asg-api-windows-x64.zip
           ./artifacts/asg-api-linux-x64.tar.gz
+          ./artifacts/asg-web-dist.zip
         body: |
           ## ASG API Release ${{ github.ref_name }}
           

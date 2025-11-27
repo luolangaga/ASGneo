@@ -9,7 +9,7 @@ on:
     types: [ published ]
 
 env:
-  DOTNET_VERSION: '8.0.x'
+  DOTNET_VERSION: '10.0.x'
   PROJECT_PATH: './ASG.Api'
   DOCKER_IMAGE_NAME: 'asg-api'
 
@@ -26,6 +26,7 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
+        global-json-file: ./global.json
         
     - name: Restore dependencies
       run: dotnet restore ${{ env.PROJECT_PATH }}
@@ -58,6 +59,7 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
+        global-json-file: ./global.json
         
     - name: Restore dependencies
       run: dotnet restore ${{ env.PROJECT_PATH }}
