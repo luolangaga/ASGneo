@@ -5,8 +5,6 @@
 
 node_modules/
 ASG.Web/dist/
-ASG.Web/android/
-ASG.Web/ios/
 **/bin/
 **/obj/
 **/publish/
@@ -16,16 +14,12 @@ ASG.Api/wwwroot/event-logos/
 ASG.Api/wwwroot/team-logos/
 ASG.Api/wwwroot/avatars/
 
-# heavy static assets
-ASG.Web/public/animations/*.json
-ASG.Web/public/robots.txt
-ASG.Web/public/sitemap.xml
+# mobile build outputs (keep source code tracked)
+ASG.Web/android/.gradle/
+ASG.Web/android/app/build/
+ASG.Web/ios/App/build/
+ASG.Web/ios/App/Pods/
 
 # user-specific IDE settings
 *.user
 *.DotSettings.user
-ASG.Api/appsettings.json
-**/bin/
-**/obj/
-**/publish/
-ASG.Web/dist/

@@ -1,0 +1,178 @@
+openapi: 3.0.3
+info:
+  title: Identity V Official Weekly Hero Stats API
+  description: 第五人格（网易）官方每周角色统计数据接口
+  version: 1.0.0
+servers:
+  - url: https://h55.s3.game.163.com
+    description: 网易官方服务器
+
+tags:
+  - name: netease
+    description: 官方数据源（只读）
+
+paths:
+  /w/epro/wechatuser/gameRole/herouse_week:
+    get:
+      tags: [netease]
+      summary: 获取每周角色统计数据
+      description: 返回角色在指定时间区间的胜率、使用率、Ban率等统计信息
+      parameters:
+        - name: Accept-Encoding
+          in: header
+          description: 可选压缩协商头；服务端通常支持 br/gzip
+          required: false
+          schema:
+            type: string
+            example: br, gzip
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeroStatsResponse'
+              example:
+                status: true
+                success: true
+                code: 200
+                msg: OK
+                data:
+                  - name: 厂长
+                    camp_id: 1
+                    hero_id: 1
+                    season: 35
+                    part: 4
+                    week_num: null
+                    win_rate: 0.456217
+                    ping_rate: 0.225413
+                    use_rate: 0.05366
+                    ban_rate: 0.003586
+                    run_rate: null
+                    start_time: '2024-09-26'
+                    end_time: '2024-12-11'
+                    position: 四阶
+                  - name: 噩梦
+                    camp_id: 1
+                    hero_id: 117
+                    season: 35
+                    part: 4
+                    week_num: null
+                    win_rate: 0.556254
+                    ping_rate: 0.218195
+                    use_rate: 0.040096
+                    ban_rate: 0.001933
+                    run_rate: null
+                    start_time: '2024-09-26'
+                    end_time: '2024-12-11'
+                    position: 四阶
+        '4xx':
+          description: 客户端错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5xx':
+          description: 服务端错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    HeroStatsResponse:
+      type: object
+      properties:
+        status:
+          type: boolean
+          description: 请求状态
+        success:
+          type: boolean
+          description: 业务成功标记
+        code:
+          type: integer
+          description: 状态码
+        msg:
+          type: string
+          description: 文本信息
+        data:
+          type: array
+          description: 角色统计数据列表
+          items:
+            $ref: '#/components/schemas/RankedData'
+
+    RankedData:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 角色名称
+        camp_id:
+          type: integer
+          description: 阵营（1=求生者，2=监管者）
+          enum: [1, 2]
+        hero_id:
+          type: integer
+          description: 角色ID
+        season:
+          type: integer
+          description: 赛季号
+        part:
+          type: integer
+          description: 段位（1-7为一到七阶，8为巅峰七阶；-127表示全段位）
+          enum: [-127, 1, 2, 3, 4, 5, 6, 7, 8]
+        week_num:
+          type: integer
+          nullable: true
+          description: 周序号（可能为空）
+        win_rate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: 胜率（0-1）
+        ping_rate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: 平局率（0-1）
+        use_rate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: 使用率（0-1）
+        ban_rate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Ban率（0-1）
+        run_rate:
+          type: number
+          format: float
+          nullable: true
+          description: 逃跑相关比率（可能为空）
+        start_time:
+          type: string
+          format: date
+          description: 统计区间开始时间
+        end_time:
+          type: string
+          format: date
+          description: 统计区间结束时间
+        position:
+          type: string
+          description: 段位/位置标签
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: 状态码
+        msg:
+          type: string
+          description: 错误信息
