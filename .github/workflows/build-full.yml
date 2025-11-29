@@ -104,6 +104,7 @@ jobs:
           port: ${{ secrets.DEPLOY_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
+          debug: true
           source: "artifacts/frontend/**"
           target: "/www/wwwroot/idvevent.cn"
           overwrite: true
@@ -116,6 +117,7 @@ jobs:
           port: ${{ secrets.DEPLOY_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
+          debug: true
           source: "artifacts/backend/ASG.Api.dll"
           target: "/www/wwwroot/backend/"
           overwrite: true
@@ -128,7 +130,26 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
           timeout: 300
+          command_timeout: 2m
+          debug: true
+          script_stop: true
           script: |
-            set -e
+            set -euo pipefail
+            set -x
             pkill -x dotnet || true
-            nohup /root/.dotnet/dotnet /www/wwwroot/backend/ASG.Api.dll > /www/wwwroot/backend/api.log 2>&1 &
+            DOTNET_BIN=""
+            if command -v dotnet >/dev/null 2>&1; then
+              DOTNET_BIN="$(command -v dotnet)"
+            elif [ -x /root/.dotnet/dotnet ]; then
+              DOTNET_BIN="/root/.dotnet/dotnet"
+            elif [ -x /usr/bin/dotnet ]; then
+              DOTNET_BIN="/usr/bin/dotnet"
+            elif [ -x /usr/local/bin/dotnet ]; then
+              DOTNET_BIN="/usr/local/bin/dotnet"
+            else
+              echo "dotnet runtime not found" >&2
+              exit 1
+            fi
+            nohup "$DOTNET_BIN" /www/wwwroot/backend/ASG.Api.dll > /www/wwwroot/backend/api.log 2>&1 &
+            sleep 2
+            ps aux | grep -v grep | grep "ASG.Api.dll" || { echo "ASG.Api.dll not running" >&2; exit 1; }
