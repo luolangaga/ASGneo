@@ -34,6 +34,10 @@ export async function getEvent(id) {
   return apiFetch(`/Events/${id}`)
 }
 
+export async function getEventsByCreator(userId) {
+  return apiFetch(`/Events/created-by/${userId}`)
+}
+
 export async function createEvent(dto) {
   return apiFetch('/Events', {
     method: 'POST',
@@ -204,11 +208,36 @@ export async function getRegistrationAnswers(eventId, teamId) {
   return apiFetch(`/Events/${eventId}/registration-answers/${teamId}`)
 }
 
+// Solo 报名与临时战队
+export async function registerPlayerToEvent(eventId, { playerId = null, notes = '' } = {}) {
+  const payload = {}
+  if (playerId) payload.playerId = playerId
+  if (notes) payload.notes = notes
+  return apiFetch(`/Events/${eventId}/register-player`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function getEventPlayerRegistrations(eventId) {
+  return apiFetch(`/Events/${eventId}/player-registrations`)
+}
+
+export async function createSoloTemporaryTeam(eventId, { name = '', playerIds = [], approveRegistration = true } = {}) {
+  const payload = { playerIds, approveRegistration }
+  if (name) payload.name = name
+  return apiFetch(`/Events/${eventId}/solo-teams`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
 export default {
   getAllEvents,
   getActiveRegistrationEvents,
   getUpcomingEvents,
   getEvent,
+  getEventsByCreator,
   createEvent,
   updateEvent,
   deleteEvent,
@@ -238,4 +267,7 @@ export default {
   publishRuleRevision,
   getRegistrationFormSchema,
   getRegistrationAnswers,
+  registerPlayerToEvent,
+  getEventPlayerRegistrations,
+  createSoloTemporaryTeam,
 }

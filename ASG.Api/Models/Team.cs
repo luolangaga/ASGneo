@@ -50,5 +50,8 @@ public int Likes { get; set; } = 0;
         public string? DisputeDetail { get; set; }
 
         public Guid? CommunityPostId { get; set; }
+
+        public bool IsTemporary { get; set; } = false;
+        public Guid? TemporaryEventId { get; set; }
     }
 }

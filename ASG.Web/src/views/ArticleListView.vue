@@ -101,86 +101,102 @@ async function onLike(a) {
     </template>
   </PageHero>
 
-  <v-container class="py-6 page-container">
-    <v-alert v-if="errorMsg" type="error" :text="errorMsg" class="mb-4" />
-    <v-card class="mb-4">
-      <v-card-title class="d-flex align-center">
-        <v-text-field
-          v-model="keyword"
-          class="flex-grow-1"
-          label="搜索帖子关键字"
-          prepend-inner-icon="search"
-          clearable
-          hide-details
-          @keyup.enter="onSearch"
-        />
-        <v-btn class="ml-2" color="primary" variant="elevated" @click="onSearch" prepend-icon="search">搜索</v-btn>
-      </v-card-title>
-    </v-card>
-    <v-row v-if="loading" class="mb-4" dense>
+  <v-container class="py-8 page-container">
+    <v-alert v-if="errorMsg" type="error" :text="errorMsg" class="mb-4" variant="tonal" />
+    
+    <div class="d-flex align-center mb-8">
+      <v-text-field
+        v-model="keyword"
+        class="flex-grow-1"
+        label="搜索帖子关键字"
+        prepend-inner-icon="search"
+        variant="outlined"
+        density="comfortable"
+        clearable
+        hide-details
+        @keyup.enter="onSearch"
+        style="max-width: 600px"
+      />
+      <v-btn class="ml-3 px-6" color="primary" height="48" @click="onSearch" prepend-icon="search">搜索</v-btn>
+    </div>
+
+    <v-row v-if="loading" class="mb-4">
       <v-col v-for="n in 6" :key="n" cols="12" sm="6" md="4" lg="3">
-        <v-skeleton-loader type="card" />
+        <v-skeleton-loader type="card" rounded="xl" />
       </v-col>
     </v-row>
 
     <v-row v-else-if="items.length" dense>
       <v-col v-for="a in items" :key="a.id || a.Id" cols="12" sm="6" md="4" lg="3">
-        <v-card class="article-card h-100">
-          <v-card-item class="pa-3">
-            <router-link :to="`/articles/${a.id || a.Id}`" class="text-h6 mb-2 d-inline-block text-decoration-none">{{ a.title || a.Title }}</router-link>
-            <div class="d-flex align-center">
-              <v-avatar size="28" class="mr-2">
+        <v-card class="article-card h-100 hover-elevate" variant="flat" border rounded="xl">
+          <v-card-item class="pa-4">
+            <router-link :to="`/articles/${a.id || a.Id}`" class="text-subtitle-1 font-weight-bold mb-3 d-inline-block text-decoration-none text-high-emphasis article-title">
+              {{ a.title || a.Title }}
+            </router-link>
+            
+            <div class="d-flex align-center mb-3">
+              <v-avatar size="32" class="mr-2" color="surface-variant">
                 <template v-if="authorMap[a.authorUserId || a.AuthorUserId]?.avatarUrl || authorMap[a.authorUserId || a.AuthorUserId]?.AvatarUrl">
                   <v-img :src="authorMap[a.authorUserId || a.AuthorUserId]?.avatarUrl || authorMap[a.authorUserId || a.AuthorUserId]?.AvatarUrl" alt="作者头像" cover />
                 </template>
                 <template v-else>
-                  <span class="text-caption">{{ initials(a.authorName || a.AuthorName) }}</span>
+                  <span class="text-caption font-weight-bold text-primary">{{ initials(a.authorName || a.AuthorName) }}</span>
                 </template>
               </v-avatar>
-              <div class="flex-grow-1">
-                <div class="text-caption">
+              <div class="flex-grow-1 text-truncate">
+                <div class="text-caption font-weight-medium">
                   <router-link
                     v-if="a.authorUserId || a.AuthorUserId"
                     :to="`/users/${a.authorUserId || a.AuthorUserId}`"
-                    class="text-decoration-none"
+                    class="text-decoration-none text-primary"
                   >{{ a.authorName || a.AuthorName || '未知' }}</router-link>
                   <template v-else>
                     {{ a.authorName || a.AuthorName || '未知' }}
                   </template>
                 </div>
-                <div class="text-caption text-medium-emphasis">
-                  战队：
+                <div class="text-caption text-medium-emphasis text-truncate">
                   <template v-if="a.authorTeamName || a.AuthorTeamName">
-                    <router-link :to="{ name: 'team-search', query: { q: a.authorTeamName || a.AuthorTeamName } }" class="text-decoration-none">{{ a.authorTeamName || a.AuthorTeamName }}</router-link>
+                    <v-icon icon="groups" size="x-small" class="mr-1" />
+                    <router-link :to="{ name: 'team-search', query: { q: a.authorTeamName || a.AuthorTeamName } }" class="text-decoration-none text-medium-emphasis">{{ a.authorTeamName || a.AuthorTeamName }}</router-link>
                   </template>
-                  <template v-else>无</template>
                 </div>
               </div>
             </div>
-            <div class="text-caption text-disabled mt-2">发表于：{{ toDateStr(a.createdAt || a.CreatedAt) }}</div>
+            
+            <div class="text-caption text-disabled d-flex align-center">
+              <v-icon icon="schedule" size="x-small" class="mr-1" />
+              {{ toDateStr(a.createdAt || a.CreatedAt) }}
+            </div>
           </v-card-item>
-          <v-card-actions>
-            <v-btn size="small" :loading="likingIds.has(a.id || a.Id)" color="primary" variant="tonal" @click="onLike(a)" prepend-icon="favorite">
-              点赞 {{ (a.likes ?? a.Likes ?? 0) }}
-            </v-btn>
-            <v-chip size="small" class="ml-2" color="default" variant="tonal">
-              <v-icon start icon="visibility" /> 浏览 {{ (a.views ?? a.Views ?? 0) }}
-            </v-chip>
+          
+          <v-divider class="mx-4 opacity-20" />
+          
+          <v-card-actions class="pa-4">
+            <div class="d-flex align-center gap-2">
+              <v-btn size="small" :loading="likingIds.has(a.id || a.Id)" color="pink" variant="text" @click="onLike(a)" prepend-icon="favorite" class="px-2" :active="false">
+                {{ (a.likes ?? a.Likes ?? 0) }}
+              </v-btn>
+              <div class="text-caption text-medium-emphasis d-flex align-center">
+                <v-icon icon="visibility" size="small" class="mr-1" />
+                {{ (a.views ?? a.Views ?? 0) }}
+              </div>
+            </div>
             <v-spacer />
-            <v-btn variant="text" :to="`/articles/${a.id || a.Id}`" prepend-icon="visibility">查看详情</v-btn>
+            <v-btn variant="tonal" color="primary" size="small" :to="`/articles/${a.id || a.Id}`" prepend-icon="arrow_forward">查看</v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
     </v-row>
 
-    <v-card v-else class="pa-8 text-center">
-      <v-icon size="40" color="primary" icon="article" />
-      <div class="text-h6 mt-3">暂无帖子</div>
-      <div class="text-medium-emphasis">登录后可以发布属于你的首篇帖子</div>
-    </v-card>
+    <div v-else class="pa-12 text-center border rounded-xl border-dashed text-medium-emphasis">
+      <v-icon size="64" color="medium-emphasis" icon="forum" class="mb-4" />
+      <div class="text-h6 font-weight-bold mb-2">暂无帖子</div>
+      <div class="text-body-2">登录后可以发布属于你的首篇帖子，分享你的观点。</div>
+      <v-btn v-if="loggedIn" color="primary" class="mt-4" @click="goCreate" prepend-icon="edit">立即发布</v-btn>
+    </div>
 
-    <div class="d-flex justify-center mt-4" v-if="totalCount > pageSize">
-      <v-pagination v-model="page" :length="Math.ceil(totalCount / pageSize)" total-visible="7" @update:modelValue="load" />
+    <div class="d-flex justify-center mt-8" v-if="totalCount > pageSize">
+      <v-pagination v-model="page" :length="Math.ceil(totalCount / pageSize)" total-visible="7" @update:modelValue="load" rounded="circle" density="comfortable" />
     </div>
   </v-container>
 </template>
@@ -188,4 +204,12 @@ async function onLike(a) {
 <style scoped>
 .article-card { display: flex; flex-direction: column; }
 .article-card .v-card-actions { margin-top: auto; }
+.article-title {
+  line-height: 1.4;
+  height: 2.8em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; 
+}
 </style>

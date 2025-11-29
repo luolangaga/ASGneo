@@ -104,6 +104,8 @@ namespace ASG.Api.Models
         /// 自定义数据（JSON），用于保存额外的赛事配置，例如赛程图画布
         /// </summary>
         public string CustomData { get; set; } = "{}";
+
+        public RegistrationMode RegistrationMode { get; set; } = RegistrationMode.Team;
     }
 
     /// <summary>
@@ -140,5 +142,11 @@ namespace ASG.Api.Models
         /// 已取消
         /// </summary>
         Cancelled = 5
+    }
+
+    public enum RegistrationMode
+    {
+        Team = 0,
+        Solo = 1
     }
 }

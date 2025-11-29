@@ -17,7 +17,7 @@ namespace ASG.Api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -237,6 +237,12 @@ namespace ASG.Api.Migrations
 
                     b.Property<DateTime>("RegistrationEndTime")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RegistrationMode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Team");
 
                     b.Property<DateTime>("RegistrationStartTime")
                         .HasColumnType("timestamp with time zone");
@@ -736,6 +742,37 @@ namespace ASG.Api.Migrations
                     b.ToTable("Players", (string)null);
                 });
 
+            modelBuilder.Entity("ASG.Api.Models.PlayerEvent", b =>
+                {
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("RegisteredByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RegistrationTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("PlayerId", "EventId");
+
+                    b.HasIndex("EventId");
+
+                    b.ToTable("PlayerEvents", (string)null);
+                });
+
             modelBuilder.Entity("ASG.Api.Models.RecruitmentApplication", b =>
                 {
                     b.Property<Guid>("Id")
@@ -876,6 +913,11 @@ namespace ASG.Api.Migrations
                     b.Property<Guid?>("InviteToken")
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("IsTemporary")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<int>("Likes")
                         .HasColumnType("integer");
 
@@ -895,6 +937,9 @@ namespace ASG.Api.Migrations
                     b.Property<string>("QqNumber")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<Guid?>("TemporaryEventId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("UpdatedAt")
                         .IsConcurrencyToken()
@@ -1429,6 +1474,25 @@ namespace ASG.Api.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("ASG.Api.Models.PlayerEvent", b =>
+                {
+                    b.HasOne("ASG.Api.Models.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ASG.Api.Models.Player", "Player")
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+
+                    b.Navigation("Player");
                 });
 
             modelBuilder.Entity("ASG.Api.Models.RecruitmentApplication", b =>

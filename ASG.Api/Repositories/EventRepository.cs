@@ -313,12 +313,30 @@ namespace ASG.Api.Repositories
         // 规则版本化
         public async Task<EventRuleRevision> CreateRuleRevisionAsync(EventRuleRevision rev)
         {
-            // 自动版本号：取该赛事最大版本+1
-            var maxVer = await _context.EventRuleRevisions.Where(r => r.EventId == rev.EventId).MaxAsync(r => (int?)r.Version) ?? 0;
-            rev.Version = maxVer + 1;
-            _context.EventRuleRevisions.Add(rev);
-            await _context.SaveChangesAsync();
-            return rev;
+            // 并发安全：重试获取最大版本并写入，避免唯一索引冲突
+            const int maxAttempts = 3;
+            Exception? lastEx = null;
+            for (int attempt = 0; attempt < maxAttempts; attempt++)
+            {
+                var maxVer = await _context.EventRuleRevisions
+                    .Where(r => r.EventId == rev.EventId)
+                    .MaxAsync(r => (int?)r.Version) ?? 0;
+                rev.Version = maxVer + 1;
+                _context.EventRuleRevisions.Add(rev);
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    return rev;
+                }
+                catch (DbUpdateException ex)
+                {
+                    // 唯一索引冲突时等待并重试
+                    lastEx = ex;
+                    _context.Entry(rev).State = EntityState.Detached;
+                    await Task.Delay(50);
+                }
+            }
+            throw new InvalidOperationException("创建规则修订失败：并发冲突，请稍后重试。", lastEx);
         }
 
         public async Task<IEnumerable<EventRuleRevision>> GetRuleRevisionsAsync(Guid eventId)
@@ -396,6 +414,45 @@ namespace ASG.Api.Repositories
         public async Task<EventRegistrationAnswer?> GetRegistrationAnswersAsync(Guid eventId, Guid teamId)
         {
             return await _context.EventRegistrationAnswers.FirstOrDefaultAsync(a => a.EventId == eventId && a.TeamId == teamId);
+        }
+
+        // Solo player registrations
+        public async Task<PlayerEvent> RegisterPlayerToEventAsync(PlayerEvent playerEvent)
+        {
+            _context.PlayerEvents.Add(playerEvent);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new InvalidOperationException("保存报名数据失败，请确认玩家与赛事存在且未重复报名。", ex);
+            }
+            return playerEvent;
+        }
+
+        public async Task<bool> UnregisterPlayerFromEventAsync(Guid playerId, Guid eventId)
+        {
+            var pe = await _context.PlayerEvents.FirstOrDefaultAsync(x => x.PlayerId == playerId && x.EventId == eventId);
+            if (pe == null) return false;
+            _context.PlayerEvents.Remove(pe);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> IsPlayerRegisteredAsync(Guid playerId, Guid eventId)
+        {
+            return await _context.PlayerEvents.AnyAsync(x => x.PlayerId == playerId && x.EventId == eventId);
+        }
+
+        public async Task<IEnumerable<PlayerEvent>> GetEventPlayerRegistrationsAsync(Guid eventId)
+        {
+            return await _context.PlayerEvents
+                .Include(x => x.Player)
+                .Include(x => x.Event)
+                .Where(x => x.EventId == eventId)
+                .OrderBy(x => x.RegistrationTime)
+                .ToListAsync();
         }
     }
 }

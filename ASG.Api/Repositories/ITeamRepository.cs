@@ -20,6 +20,7 @@ namespace ASG.Api.Repositories
         Task<bool> TeamNameExistsAsync(string name, Guid? excludeId = null);
         Task<IEnumerable<Player>> GetTeamPlayersAsync(Guid teamId);
         Task<Player?> GetPlayerByUserIdAsync(string userId);
+        Task<Player?> GetPlayerByIdAsync(Guid playerId);
         Task<Player> UpdatePlayerAsync(Player player);
         Task<int> LikeTeamAsync(Guid id);
         Task<IEnumerable<TeamReview>> GetTeamReviewsAsync(Guid teamId);

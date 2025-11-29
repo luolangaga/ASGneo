@@ -349,6 +349,12 @@ namespace ASG.Api.Services
         {
             var team = await _teamRepository.GetTeamByIdAsync(teamId);
             if (team == null) return false;
+            if (team.IsTemporary && team.TemporaryEventId.HasValue)
+            {
+                // 临时战队仅赛事创建者/管理员可管理
+                var canManage = await _eventService.CanUserManageEventAsync(team.TemporaryEventId.Value, userId);
+                if (canManage) return true;
+            }
             if (!string.IsNullOrEmpty(team.OwnerId) && team.OwnerId == userId) return true;
             if (string.IsNullOrEmpty(team.OwnerId) && team.UserId == userId) return true;
             var user = await _userRepository.GetByIdAsync(userId);

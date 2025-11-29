@@ -74,7 +74,8 @@ namespace ASG.Api.Services
                 Status = EventStatus.Draft,
                 CreatedAt = ChinaNow(),
                 UpdatedAt = ChinaNow(),
-                CreatedByUserId = creatorUserId
+                CreatedByUserId = creatorUserId,
+                RegistrationMode = createEventDto.RegistrationMode
             };
 
             var createdEvent = await _eventRepository.CreateEventAsync(eventEntity);
@@ -120,6 +121,7 @@ namespace ASG.Api.Services
             eventEntity.CompetitionEndTime = compEnd;
             eventEntity.MaxTeams = updateEventDto.MaxTeams;
             eventEntity.Status = updateEventDto.Status;
+            eventEntity.RegistrationMode = updateEventDto.RegistrationMode;
 
             var updatedEvent = await _eventRepository.UpdateEventAsync(eventEntity);
             return MapToEventDto(updatedEvent);
@@ -262,6 +264,138 @@ namespace ASG.Api.Services
 
             var createdTeamEvent = await _eventRepository.RegisterTeamToEventAsync(teamEvent);
             return MapToTeamEventDto(createdTeamEvent, team.Name, eventEntity.Name);
+        }
+
+        public async Task<PlayerEventDto> RegisterPlayerToEventAsync(Guid eventId, RegisterPlayerToEventDto dto, string userId)
+        {
+            var ev = await _eventRepository.GetEventByIdAsync(eventId);
+            if (ev == null) throw new InvalidOperationException("赛事不存在");
+            if (ev.RegistrationMode != RegistrationMode.Solo) throw new InvalidOperationException("该赛事不支持单人报名");
+
+            var now = ChinaNow();
+            if (ev.Status != EventStatus.RegistrationOpen) throw new InvalidOperationException("赛事未开放报名");
+            if (now < ev.RegistrationStartTime || now > ev.RegistrationEndTime) throw new InvalidOperationException("不在报名时间范围内");
+
+            Player? player = null;
+            if (dto.PlayerId.HasValue)
+            {
+                player = await _teamRepository.GetPlayerByIdAsync(dto.PlayerId.Value);
+            }
+            else
+            {
+                player = await _teamRepository.GetPlayerByUserIdAsync(userId);
+            }
+            if (player == null) throw new InvalidOperationException("未找到您的玩家信息");
+            if (!string.Equals(player.UserId, userId, StringComparison.Ordinal)) throw new UnauthorizedAccessException("只能使用自己的玩家报名");
+
+            if (await _eventRepository.IsPlayerRegisteredAsync(player.Id, eventId)) throw new InvalidOperationException("您已报名该赛事");
+
+            var pe = new PlayerEvent
+            {
+                PlayerId = player.Id,
+                EventId = eventId,
+                RegistrationTime = now,
+                Status = RegistrationStatus.Pending,
+                Notes = dto.Notes,
+                RegisteredByUserId = userId
+            };
+            var saved = await _eventRepository.RegisterPlayerToEventAsync(pe);
+            return new PlayerEventDto
+            {
+                PlayerId = saved.PlayerId,
+                EventId = saved.EventId,
+                PlayerName = player.Name,
+                RegistrationTime = saved.RegistrationTime,
+                Status = saved.Status,
+                Notes = saved.Notes,
+                RegisteredByUserId = saved.RegisteredByUserId
+            };
+        }
+
+        public async Task<IEnumerable<PlayerEventDto>> GetEventPlayerRegistrationsAsync(Guid eventId)
+        {
+            var list = await _eventRepository.GetEventPlayerRegistrationsAsync(eventId);
+            return list.Select(pe => new PlayerEventDto
+            {
+                PlayerId = pe.PlayerId,
+                EventId = pe.EventId,
+                PlayerName = pe.Player?.Name ?? string.Empty,
+                RegistrationTime = pe.RegistrationTime,
+                Status = pe.Status,
+                Notes = pe.Notes,
+                RegisteredByUserId = pe.RegisteredByUserId
+            });
+        }
+
+        public async Task<TeamEventDto> CreateSoloTemporaryTeamAsync(Guid eventId, CreateSoloTempTeamDto dto, string userId)
+        {
+            var ev = await _eventRepository.GetEventByIdAsync(eventId);
+            if (ev == null) throw new InvalidOperationException("赛事不存在");
+            if (ev.RegistrationMode != RegistrationMode.Solo) throw new InvalidOperationException("该赛事不支持临时战队");
+            if (!await CanUserManageEventAsync(eventId, userId)) throw new UnauthorizedAccessException("无权限");
+
+            var regs = await _eventRepository.GetEventPlayerRegistrationsAsync(eventId);
+            var regSet = regs.Select(r => r.PlayerId).ToHashSet();
+            foreach (var pid in dto.PlayerIds)
+            {
+                if (!regSet.Contains(pid)) throw new InvalidOperationException("所选玩家尚未报名该赛事");
+            }
+
+            var baseName = string.IsNullOrWhiteSpace(dto.Name) ? "临时战队" : dto.Name!.Trim();
+            var name = baseName;
+            var suffix = 0;
+            while (await _teamRepository.TeamNameExistsAsync(name))
+            {
+                suffix++;
+                name = $"{baseName}-{suffix}";
+                if (suffix > 10) break;
+            }
+
+            var tempTeam = new Team
+            {
+                Id = Guid.NewGuid(),
+                Name = name,
+                Password = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString("N")),
+                Description = "赛事临时战队",
+                OwnerId = null,
+                UserId = null,
+                IsTemporary = true,
+                TemporaryEventId = eventId,
+                Players = new List<Player>()
+            };
+
+            foreach (var pid in dto.PlayerIds)
+            {
+                var p = await _teamRepository.GetPlayerByIdAsync(pid);
+                if (p == null) throw new InvalidOperationException("玩家不存在");
+                var clone = new Player
+                {
+                    Id = Guid.NewGuid(),
+                    Name = p.Name,
+                    GameId = p.GameId,
+                    GameRank = p.GameRank,
+                    Description = p.Description,
+                    PlayerType = p.PlayerType,
+                    TeamId = tempTeam.Id,
+                    UserId = p.UserId,
+                    CreatedAt = ChinaNow(),
+                    UpdatedAt = ChinaNow()
+                };
+                tempTeam.Players.Add(clone);
+            }
+
+            var createdTeam = await _teamRepository.CreateTeamAsync(tempTeam);
+            var te = new TeamEvent
+            {
+                TeamId = createdTeam.Id,
+                EventId = eventId,
+                RegistrationTime = ChinaNow(),
+                Status = dto.ApproveRegistration ? RegistrationStatus.Approved : RegistrationStatus.Pending,
+                Notes = "临时战队",
+                RegisteredByUserId = userId
+            };
+            var savedTe = await _eventRepository.RegisterTeamToEventAsync(te);
+            return MapToTeamEventDto(savedTe, createdTeam.Name, ev.Name);
         }
 
         private static (int? minReg, int? maxReg, int? minSur, int? maxSur) GetPlayerTypeRequirements(Event ev)
@@ -926,7 +1060,8 @@ namespace ASG.Api.Services
                 RegisteredTeamsCount = eventEntity.TeamEvents?.Count ?? 0,
                 RegisteredTeams = eventEntity.TeamEvents?.Select(te => MapToTeamEventDto(te, te.Team?.Name ?? "", eventEntity.Name)).ToList(),
                 AdminUserIds = eventEntity.EventAdmins?.Select(a => a.UserId).ToList(),
-                CustomData = eventEntity.CustomData
+                CustomData = eventEntity.CustomData,
+                RegistrationMode = eventEntity.RegistrationMode
             };
         }
 

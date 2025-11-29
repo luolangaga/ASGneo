@@ -181,5 +181,11 @@ namespace ASG.Api.Repositories
         // 报名答案（按战队唯一）
         Task<EventRegistrationAnswer> UpsertRegistrationAnswersAsync(Guid eventId, Guid teamId, string answersJson, string? submittedByUserId);
         Task<EventRegistrationAnswer?> GetRegistrationAnswersAsync(Guid eventId, Guid teamId);
+
+        // Solo player registrations
+        Task<PlayerEvent> RegisterPlayerToEventAsync(PlayerEvent playerEvent);
+        Task<bool> UnregisterPlayerFromEventAsync(Guid playerId, Guid eventId);
+        Task<bool> IsPlayerRegisteredAsync(Guid playerId, Guid eventId);
+        Task<IEnumerable<PlayerEvent>> GetEventPlayerRegistrationsAsync(Guid eventId);
     }
 }

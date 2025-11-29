@@ -25,6 +25,11 @@ const status = ref(0)
 const qqGroup = ref('')
 const rulesMarkdown = ref('')
 const polishing = ref(false)
+const registrationMode = ref(0)
+const registrationModeOptions = [
+  { title: '战队报名', value: 0 },
+  { title: '单人报名', value: 1 },
+]
 
 const statusOptions = [
   { title: '草稿', value: 0 },
@@ -62,6 +67,7 @@ async function load() {
     competitionEndTime.value = ev.competitionEndTime ? isoToLocalInput(ev.competitionEndTime) : ''
     maxTeams.value = ev.maxTeams ?? ''
     status.value = ev.status
+    registrationMode.value = (ev.registrationMode ?? ev.RegistrationMode ?? 0)
   } catch (err) {
     errorMsg.value = err?.payload?.message || err?.message || '加载赛事失败'
   } finally {
@@ -91,6 +97,7 @@ async function onSave() {
       competitionEndTime: competitionEndTime.value ? localInputToIso(competitionEndTime.value) : null,
       maxTeams: maxTeams.value ? Number(maxTeams.value) : null,
       status: Number(status.value),
+      registrationMode: Number(registrationMode.value),
     }
     await updateEvent(id, dto)
     router.push('/events/manage')
@@ -176,6 +183,11 @@ async function onDelete() {
             </v-col>
             <v-col cols="12" md="6">
               <v-select v-model="status" :items="statusOptions" item-title="title" item-value="value" label="赛事状态" />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" md="6">
+              <v-select v-model="registrationMode" :items="registrationModeOptions" item-title="title" item-value="value" label="报名模式" />
             </v-col>
           </v-row>
         </v-form>

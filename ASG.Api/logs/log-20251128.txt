@@ -1,0 +1,18 @@
+2025-11-28 23:55:41.925 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-28 23:55:42.358 +08:00 [INF] WebApplication built successfully.
+2025-11-28 23:55:42.467 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-28 23:55:42.468 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-28 23:55:43.345 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-28 23:55:43.436 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-28 23:55:43.662 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-28 23:55:43.718 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=10
+2025-11-28 23:55:43.721 +08:00 [INF] Local heroes import setting: true
+2025-11-28 23:55:43.721 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-28 23:55:43.721 +08:00 [INF] Local stats import setting: true
+2025-11-28 23:55:43.722 +08:00 [INF] Local stats overwrite setting: false
+2025-11-28 23:55:43.726 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-28 23:55:44.514 +08:00 [INF] Netease heroes seeding completed: 0 added, 16 updated; total=83
+2025-11-28 23:55:44.518 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-28 23:55:49.932 +08:00 [INF] Netease stats seeding completed: 0 added; total=21780
+2025-11-28 23:55:50.059 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=5
+2025-11-28 23:55:50.096 +08:00 [INF] Starting Kestrel...

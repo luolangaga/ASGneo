@@ -36,6 +36,7 @@ namespace ASG.Api.Data
     public DbSet<EventRuleRevision> EventRuleRevisions { get; set; }
     public DbSet<EventRegistrationAnswer> EventRegistrationAnswers { get; set; }
     public DbSet<OperationLog> OperationLogs { get; set; }
+    public DbSet<PlayerEvent> PlayerEvents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -107,6 +108,11 @@ namespace ASG.Api.Data
 
                 entity.Property(e => e.HasDispute)
                     .HasDefaultValue(false);
+
+                entity.Property<bool>(nameof(Team.IsTemporary))
+                    .HasDefaultValue(false);
+
+                entity.Property<Guid?>(nameof(Team.TemporaryEventId));
 
                 entity.HasOne(t => t.Owner)
                     .WithOne(u => u.OwnedTeam)
@@ -227,6 +233,11 @@ namespace ASG.Api.Data
                     .HasConversion<string>()
                     .IsRequired();
 
+                entity.Property(e => e.RegistrationMode)
+                    .HasConversion<string>()
+                    .HasDefaultValue(RegistrationMode.Team)
+                    .IsRequired();
+
                 entity.Property(e => e.CreatedAt)
                     .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -273,6 +284,31 @@ namespace ASG.Api.Data
                     .OnDelete(DeleteBehavior.Cascade);
                 entity.HasIndex(e => new { e.EventId, e.TeamId }).IsUnique();
                 entity.ToTable("EventRegistrationAnswers");
+            });
+
+            // Configure PlayerEvent entity (solo registrations)
+            builder.Entity<PlayerEvent>(entity =>
+            {
+                entity.HasKey(pe => new { pe.PlayerId, pe.EventId });
+                entity.Property(pe => pe.Status)
+                    .HasConversion<string>()
+                    .IsRequired();
+                entity.Property(pe => pe.Notes)
+                    .HasMaxLength(500);
+                entity.Property(pe => pe.RegistrationTime)
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasOne(pe => pe.Player)
+                    .WithMany()
+                    .HasForeignKey(pe => pe.PlayerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(pe => pe.Event)
+                    .WithMany()
+                    .HasForeignKey(pe => pe.EventId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.ToTable("PlayerEvents");
             });
 
             // Configure OperationLog entity

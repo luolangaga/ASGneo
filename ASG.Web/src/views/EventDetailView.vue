@@ -3,8 +3,8 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { renderMarkdown } from '../utils/markdown'
 import { getArticles } from '../services/articles'
 import { useRoute, useRouter } from 'vue-router'
-import { getEvent, getEventRegistrations, exportEventRegistrationsCsv, exportEventTeamLogosZip, registerTeamToEvent, uploadEventLogo, updateTeamRegistrationStatus, setEventChampion, getEventAdmins, addEventAdmin, removeEventAdmin, getRuleRevisions, publishRuleRevision, createRuleRevision, updateRegistrationFormSchema, getRegistrationFormSchema, submitRegistrationAnswers, getRegistrationAnswers } from '../services/events'
-import { getTeam, uploadTeamLogo, generateInvite, setTeamDispute } from '../services/teams'
+import { getEvent, getEventRegistrations, exportEventRegistrationsCsv, exportEventTeamLogosZip, registerTeamToEvent, uploadEventLogo, updateTeamRegistrationStatus, setEventChampion, getEventAdmins, addEventAdmin, removeEventAdmin, getRuleRevisions, publishRuleRevision, createRuleRevision, updateRegistrationFormSchema, getRegistrationFormSchema, submitRegistrationAnswers, getRegistrationAnswers, registerPlayerToEvent, getEventPlayerRegistrations, createSoloTemporaryTeam } from '../services/events'
+import { getTeam, uploadTeamLogo, generateInvite, setTeamDispute, getMyPlayer, upsertMyPlayer } from '../services/teams'
 import { getMatches } from '../services/matches'
 import { getUser } from '../services/user'
 import { currentUser, isAuthenticated } from '../stores/auth'
@@ -606,6 +606,12 @@ const shareLink = computed(() => {
 })
 
 const heroTitle = computed(() => ev.value?.name || '赛事详情')
+const isSoloEvent = computed(() => {
+  const rm = ev.value?.registrationMode ?? ev.value?.RegistrationMode
+  if (rm == null) return false
+  if (typeof rm === 'string') return rm.toLowerCase() === 'solo'
+  return Number(rm) === 1
+})
 
 const canManageEvent = computed(() => {
   if (!isAuthenticated.value || !ev.value) return false
@@ -727,6 +733,14 @@ async function load() {
   } finally {
     loadingRegs.value = false
   }
+    try {
+      if (isSoloEvent.value) {
+        playerRegsLoading.value = true
+        playerRegistrations.value = await getEventPlayerRegistrations(eventId)
+      }
+    } catch (e) {
+      playerRegsError.value = e?.payload?.message || e?.message || '加载玩家报名失败'
+    } finally { playerRegsLoading.value = false }
     try {
       loadingAdmins.value = true
       adminList.value = await getEventAdmins(eventId)
@@ -1083,14 +1097,19 @@ const countdownSegments = computed(() => {
   if (!ev.value) return null
   try {
     const now = nowMs.value
-    const start = new Date(ev.value.registrationStartTime).getTime()
-    const end = new Date(ev.value.registrationEndTime).getTime()
+    const regStart = new Date(ev.value.registrationStartTime).getTime()
+    const compStart = new Date(ev.value.competitionStartTime).getTime()
     let diff = 0
-    let type = 'start'
-    const s = registrationStatus()
-    if (s === 'not_started') { diff = start - now; type = 'start' }
-    else if (s === 'ongoing') { diff = end - now; type = 'end' }
-    else { return null }
+    let type = 'registration_start'
+    if (now < regStart) {
+      diff = regStart - now
+      type = 'registration_start'
+    } else if (now < compStart) {
+      diff = compStart - now
+      type = 'competition_start'
+    } else {
+      return null
+    }
     const sec = Math.max(0, Math.floor(diff / 1000))
     const days = Math.floor(sec / 86400)
     const hours = Math.floor((sec % 86400) / 3600)
@@ -1098,6 +1117,13 @@ const countdownSegments = computed(() => {
     const seconds = sec % 60
     return { days, hours, minutes, seconds, type }
   } catch { return null }
+})
+
+const countdownLabel = computed(() => {
+  const t = countdownSegments.value?.type
+  if (t === 'registration_start') return '报名开始倒计时'
+  if (t === 'competition_start') return '比赛开始倒计时'
+  return ''
 })
 
 async function onRegister() {
@@ -1169,12 +1195,102 @@ async function onRegister() {
     registering.value = false
   }
 }
+const soloRegistering = ref(false)
+const soloError = ref('')
+const soloSuccessMsg = ref('')
+const soloShowSuccess = ref(false)
+const playerDialogOpen = ref(false)
+const playerForm = ref({ name: '', gameId: '', gameRank: '', description: '', playerType: 2 })
+const upsertingPlayer = ref(false)
+
+async function ensureMyPlayer() {
+  try {
+    const p = await getMyPlayer()
+    if (p && (p.id || p.Id)) return p
+    playerDialogOpen.value = true
+    return null
+  } catch {
+    playerDialogOpen.value = true
+    return null
+  }
+}
+
+async function onConfirmUpsertPlayer() {
+  soloError.value = ''
+  upsertingPlayer.value = true
+  try {
+    const dto = {
+      name: playerForm.value.name,
+      gameId: playerForm.value.gameId || null,
+      gameRank: playerForm.value.gameRank || null,
+      description: playerForm.value.description || null,
+      playerType: Number(playerForm.value.playerType || 2)
+    }
+    await upsertMyPlayer(dto)
+    playerDialogOpen.value = false
+  } catch (e) {
+    soloError.value = e?.payload?.message || e?.message || '保存玩家信息失败'
+  } finally { upsertingPlayer.value = false }
+}
+
+async function onSoloRegister() {
+  soloError.value = ''
+  soloSuccessMsg.value = ''
+  if (!isAuthenticated.value) { router.push('/login'); return }
+  if (!registrationOpen()) { soloError.value = '当前不在报名时间范围内'; return }
+  const my = await ensureMyPlayer()
+  if (!my) return
+  soloRegistering.value = true
+  try {
+    const pid = my.id || my.Id
+    await registerPlayerToEvent(eventId, { playerId: pid })
+    soloSuccessMsg.value = '报名成功，请等待审核'
+    soloShowSuccess.value = true
+    if (canManageEvent.value) {
+      playerRegistrations.value = await getEventPlayerRegistrations(eventId)
+    }
+  } catch (e) {
+    soloError.value = e?.payload?.message || e?.message || '报名失败'
+  } finally { soloRegistering.value = false }
+}
 
 // 已批准的报名列表（仅可设置为已批准的队伍）
 const approvedRegistrations = computed(() => {
   const list = registrations.value || []
   return list.filter(r => normalizeStatus(r.status || r.Status) === 'Approved')
 })
+const playerRegistrations = ref([])
+const playerRegsLoading = ref(false)
+const playerRegsError = ref('')
+const tempTeamName = ref('')
+const tempTeamApprove = ref(true)
+const selectedSoloPlayerIds = ref([])
+const selectedSoloSet = computed(() => new Set(selectedSoloPlayerIds.value.map(id => String(id))))
+function toggleSelectSoloPlayer(pe) {
+  const id = pe.playerId || pe.PlayerId
+  const set = new Set(selectedSoloSet.value)
+  const sid = String(id)
+  if (set.has(sid)) set.delete(sid)
+  else set.add(sid)
+  selectedSoloPlayerIds.value = Array.from(set)
+}
+const creatingTempTeam = ref(false)
+const createTempTeamError = ref('')
+async function onCreateSoloTemporaryTeam() {
+  createTempTeamError.value = ''
+  if (!canManageEvent.value) return
+  if (!selectedSoloPlayerIds.value.length) { createTempTeamError.value = '请至少选择一名玩家'; return }
+  creatingTempTeam.value = true
+  try {
+    await createSoloTemporaryTeam(eventId, { name: (tempTeamName.value || '').trim(), playerIds: [...selectedSoloPlayerIds.value], approveRegistration: !!tempTeamApprove.value })
+    selectedSoloPlayerIds.value = []
+    tempTeamName.value = ''
+    tempTeamApprove.value = true
+    registrations.value = await getEventRegistrations(eventId)
+  } catch (e) {
+    createTempTeamError.value = e?.payload?.message || e?.message || '创建临时战队失败'
+  } finally { creatingTempTeam.value = false }
+}
 
 function openChampionDialog() {
   championError.value = ''
@@ -1391,25 +1507,41 @@ const analytics = computed(() => {
       >赛程图</v-btn>
       <v-chip :color="registrationStatusColor" class="mb-3 mr-2" size="small">报名状态：{{ registrationStatusLabel }}</v-chip>
       <template v-if="registrationOpen()">
-        <v-btn
-          color="white"
-          prepend-icon="check_circle"
-          :loading="registering"
-          class="mb-3 px-6 py-3 text-h6 font-weight-bold"
-          size="large"
-          elevation="3"
-          rounded="lg"
-          @click="onRegister"
-        >
-          报名参赛
-        </v-btn>
-        <v-btn
-          color="white"
-          prepend-icon="link"
-          :loading="generatingInvite"
-          class="mb-3"
-          @click="onGenerateTeamInvite"
-        >邀请队员加入我的战队</v-btn>
+        <template v-if="!isSoloEvent">
+          <v-btn
+            color="white"
+            prepend-icon="check_circle"
+            :loading="registering"
+            class="mb-3 px-6 py-3 text-h6 font-weight-bold"
+            size="large"
+            elevation="3"
+            rounded="lg"
+            @click="onRegister"
+          >
+            报名参赛
+          </v-btn>
+          <v-btn
+            color="white"
+            prepend-icon="link"
+            :loading="generatingInvite"
+            class="mb-3"
+            @click="onGenerateTeamInvite"
+          >邀请队员加入我的战队</v-btn>
+        </template>
+        <template v-else>
+          <v-btn
+            color="white"
+            prepend-icon="person"
+            :loading="soloRegistering"
+            class="mb-3 px-6 py-3 text-h6 font-weight-bold"
+            size="large"
+            elevation="3"
+            rounded="lg"
+            @click="onSoloRegister"
+          >
+            单人报名
+          </v-btn>
+        </template>
       </template>
       <template v-if="eventQqGroup">
         <v-btn color="white" variant="tonal" class="mb-3 ml-2" prepend-icon="group" @click="joinQqGroup">加入QQ群</v-btn>
@@ -1447,10 +1579,19 @@ const analytics = computed(() => {
         <v-card-text>
           <div class="d-flex align-center text-h6 font-weight-bold mb-2">
             <v-icon icon="workspace_premium" size="large" color="primary" class="mr-2" />
-            创建者：{{ creatorDisplay }}
+            <span>创建者：</span>
+            <template v-if="creatorUserId">
+              <router-link :to="{ name: 'user-home', params: { id: creatorUserId } }" class="text-decoration-none font-weight-medium text-primary">
+                {{ creatorDisplay }}
+              </router-link>
+            </template>
+            <template v-else>
+              <span>{{ creatorDisplay }}</span>
+            </template>
           </div>
           <!-- 倒计时（简洁版） -->
-          <v-card v-if="registrationStatus() !== 'ended' && countdownSegments" class="pa-4 mb-4 countdown-simple-card" rounded>
+          <v-card v-if="countdownSegments" class="pa-4 mb-4 countdown-simple-card" rounded>
+            <div class="text-caption text-center mb-2">{{ countdownLabel }}</div>
             <div class="countdown-simple">
               <template v-if="countdownSegments.days > 0">
                 <span class="countdown-num">{{ countdownSegments.days }}</span>
@@ -1615,7 +1756,17 @@ const analytics = computed(() => {
         </v-card-title>
         <v-card-text>
           <v-alert v-if="adminError" type="error" :text="adminError" class="mb-3" />
-          <div class="text-body-2 mb-2">创建者：{{ creatorDisplay }}</div>
+          <div class="text-body-2 mb-2">
+            创建者：
+            <template v-if="creatorUserId">
+              <router-link :to="{ name: 'user-home', params: { id: creatorUserId } }" class="text-decoration-none font-weight-medium text-primary">
+                {{ creatorDisplay }}
+              </router-link>
+            </template>
+            <template v-else>
+              <span>{{ creatorDisplay }}</span>
+            </template>
+          </div>
           <div class="text-body-2 text-medium-emphasis mb-2">已添加的管理员：</div>
           <v-progress-linear v-if="loadingAdmins" indeterminate color="primary" />
           <template v-else>
@@ -1828,6 +1979,53 @@ const analytics = computed(() => {
           </template>
         </v-card-text>
       </v-card>
+      <v-card v-if="isSoloEvent && canManageEvent" class="mt-6">
+        <v-card-title>已报名玩家</v-card-title>
+        <v-card-text>
+          <v-alert v-if="playerRegsError" type="error" :text="playerRegsError" class="mb-4" />
+          <v-progress-linear v-if="playerRegsLoading" indeterminate color="primary" />
+          <v-list v-else density="compact">
+            <v-list-item v-for="pe in playerRegistrations" :key="pe.playerId || pe.PlayerId">
+              <template #prepend>
+                <v-checkbox-btn :model-value="selectedSoloSet.has(String(pe.playerId || pe.PlayerId))" @update:model-value="() => toggleSelectSoloPlayer(pe)" />
+              </template>
+              <v-list-item-title>{{ pe.playerName || pe.PlayerName }}</v-list-item-title>
+              <v-list-item-subtitle>
+                <v-chip size="x-small" :color="statusColor(pe.status || pe.Status)">{{ statusLabel(pe.status || pe.Status) }}</v-chip>
+                <span class="ml-2 text-medium-emphasis">报名时间：{{ new Date(pe.registrationTime || pe.RegistrationTime).toLocaleString() }}</span>
+              </v-list-item-subtitle>
+            </v-list-item>
+            <div v-if="!playerRegistrations || playerRegistrations.length === 0" class="text-body-2">暂无玩家报名</div>
+          </v-list>
+          <div class="d-flex align-center mt-3">
+            <v-text-field v-model="tempTeamName" label="临时战队名称（可选）" class="mr-3" style="max-width: 320px" />
+            <v-switch v-model="tempTeamApprove" label="创建后直接批准" class="mr-3" />
+            <v-btn color="primary" :loading="creatingTempTeam" @click="onCreateSoloTemporaryTeam">创建临时战队</v-btn>
+          </div>
+          <v-alert v-if="createTempTeamError" type="error" :text="createTempTeamError" class="mt-2" />
+        </v-card-text>
+      </v-card>
+      <v-dialog v-model="playerDialogOpen" max-width="520">
+        <v-card>
+          <v-card-title>完善我的玩家信息</v-card-title>
+          <v-card-text>
+            <v-text-field v-model="playerForm.name" label="玩家昵称" prepend-icon="person" />
+            <div class="d-flex">
+              <v-text-field class="mr-2" v-model="playerForm.gameId" label="游戏ID" prepend-icon="sports_esports" />
+              <v-text-field v-model="playerForm.gameRank" label="段位" prepend-icon="military_tech" />
+            </div>
+            <v-select v-model="playerForm.playerType" :items="[{ title: '监管者', value: 1 }, { title: '求生者', value: 2 }]" label="角色类型" />
+            <v-textarea v-model="playerForm.description" label="简介" rows="3" />
+            <v-alert v-if="soloError" type="error" :text="soloError" class="mt-3" />
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn variant="text" @click="playerDialogOpen = false">取消</v-btn>
+            <v-btn color="primary" :loading="upsertingPlayer" @click="onConfirmUpsertPlayer">保存</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <ResultDialog v-model="soloShowSuccess" :text="soloSuccessMsg" />
       <v-dialog v-model="shareDialog" max-width="520">
         <v-card>
           <v-card-title>分享赛事</v-card-title>

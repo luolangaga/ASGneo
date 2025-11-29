@@ -211,5 +211,10 @@ namespace ASG.Api.Services
         Task<bool> UpdateTournamentConfigAsync(Guid eventId, UpdateTournamentConfigDto dto, string userId);
 
         Task<IEnumerable<TeamEventDto>> GenerateTestRegistrationsAsync(Guid eventId, int count, string userId, string? namePrefix = null, bool approve = true);
+
+        // Solo mode
+        Task<PlayerEventDto> RegisterPlayerToEventAsync(Guid eventId, RegisterPlayerToEventDto dto, string userId);
+        Task<IEnumerable<PlayerEventDto>> GetEventPlayerRegistrationsAsync(Guid eventId);
+        Task<TeamEventDto> CreateSoloTemporaryTeamAsync(Guid eventId, CreateSoloTempTeamDto dto, string userId);
     }
 }

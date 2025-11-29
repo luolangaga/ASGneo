@@ -395,178 +395,192 @@ const filteredHistoryEvents = computed(() => {
     <v-alert v-if="errorMsg" type="error" :text="errorMsg" class="mb-4" />
     <ResultDialog v-model="resultOpen" :type="resultType" :message="resultMessage" :details="resultDetails" />
 
-    <v-card class="mb-8">
-      <v-card-title>正在报名的赛事</v-card-title>
-      <v-card-text>
-        <v-progress-linear v-if="loadingActive" indeterminate color="primary" />
-        <div class="d-flex justify-space-between text-medium-emphasis mb-2" v-if="!loadingActive">
-          <div>共 {{ activeTotalCount }} 条</div>
-          <div>第 {{ activePage }} 页 / 每页 {{ activePageSize }} 条</div>
-        </div>
-        <v-row v-if="!loadingActive">
+    <div class="mb-12">
+      <div class="d-flex align-center mb-6">
+        <v-icon icon="local_fire_department" color="error" size="large" class="mr-3" />
+        <h2 class="text-h5 font-weight-bold tracking-tight">正在报名的赛事</h2>
+        <v-chip class="ml-4" color="error" size="small" variant="tonal" label>{{ activeTotalCount }}</v-chip>
+      </div>
+
+      <v-progress-linear v-if="loadingActive" indeterminate color="primary" rounded class="mb-4" />
+      
+      <div v-if="!loadingActive">
+        <v-row>
           <v-col v-for="ev in filteredActiveEvents" :key="ev.id" cols="12" sm="6" md="4" lg="3">
-            <v-card class="event-card h-100">
-              <v-card-title class="d-flex align-center">
-                <v-avatar size="36" class="mr-2">
-                  <v-img v-if="ev.logoUrl || ev.LogoUrl" :src="ev.logoUrl || ev.LogoUrl" alt="event logo" cover>
-                    <template #placeholder>
-                      <div class="d-flex align-center justify-center" style="width:100%;height:100%">
-                        <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:64px;height:64px"></lottie-player>
-                      </div>
-                    </template>
-                  </v-img>
-                  <v-icon v-else icon="emoji_events" size="28" />
-                </v-avatar>
-                <span class="text-truncate">{{ ev.name }}</span>
-              </v-card-title>
-              <v-card-subtitle>
-                报名截止：{{ new Date(ev.registrationEndTime).toLocaleString() }}
-              </v-card-subtitle>
-              <v-card-text>
+            <v-card class="event-card h-100 hover-elevate d-flex flex-column" variant="flat" border rounded="xl">
+              <v-card-item class="flex-grow-0">
+                <div class="d-flex align-center">
+                  <v-avatar size="48" class="mr-3" rounded="lg" color="surface-variant">
+                    <v-img v-if="ev.logoUrl || ev.LogoUrl" :src="ev.logoUrl || ev.LogoUrl" alt="event logo" cover>
+                      <template #placeholder>
+                        <div class="d-flex align-center justify-center" style="width:100%;height:100%">
+                          <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:32px;height:32px"></lottie-player>
+                        </div>
+                      </template>
+                    </v-img>
+                    <v-icon v-else icon="emoji_events" color="primary" />
+                  </v-avatar>
+                  <div style="min-width: 0">
+                    <div class="text-subtitle-1 font-weight-bold text-truncate">{{ ev.name }}</div>
+                    <div class="text-caption text-medium-emphasis text-truncate">
+                      截止: {{ new Date(ev.registrationEndTime).toLocaleDateString() }}
+                    </div>
+                  </div>
+                </div>
+              </v-card-item>
+              
+              <v-divider class="mx-4 opacity-20" />
+              
+              <v-card-text class="flex-grow-1 pt-3">
                 <div v-if="ev.description" :class="['md-content', { 'md-truncate': !isExpanded(ev.id) }]" v-html="toMd(ev.description)"></div>
-                <div v-else class="text-medium-emphasis">暂无赛事描述</div>
-                <div v-if="(ev.description?.length || 0) > 220" class="mt-1">
-                  <v-btn size="x-small" variant="text" @click="toggleExpanded(ev.id)">{{ isExpanded(ev.id) ? '收起' : '展开' }}</v-btn>
+                <div v-else class="text-caption text-medium-emphasis font-italic">暂无赛事描述</div>
+                <div v-if="(ev.description?.length || 0) > 220" class="mt-2">
+                  <v-btn size="small" variant="text" density="compact" color="primary" @click="toggleExpanded(ev.id)">{{ isExpanded(ev.id) ? '收起' : '展开' }}</v-btn>
                 </div>
               </v-card-text>
-              <v-card-actions>
-                <v-btn :loading="registering" color="primary" @click="onRegister(ev.id)" prepend-icon="task_alt">报名</v-btn>
-                <v-spacer />
+
+              <v-card-actions class="px-4 pb-4 pt-0">
+                <v-btn :loading="registering" color="primary" variant="flat" class="flex-grow-1" @click="onRegister(ev.id)" prepend-icon="how_to_reg">报名</v-btn>
+                <v-btn color="secondary" variant="tonal" icon="visibility" :to="`/events/${ev.id}`" class="ml-2" title="查看详情"></v-btn>
                 <v-btn
-                  v-if="(ev.createdByUserId || ev.CreatedByUserId) && smAndDown"
+                  v-if="ev.createdByUserId || ev.CreatedByUserId"
                   variant="text"
-                  color="secondary"
-                  :to="`/messages/${ev.createdByUserId || ev.CreatedByUserId}`"
-                  prepend-icon="chat"
-                >联系主办方</v-btn>
-                <v-btn
-                  v-if="(ev.createdByUserId || ev.CreatedByUserId) && !smAndDown"
                   icon="chat"
-                  variant="text"
-                  color="secondary"
+                  color="medium-emphasis"
                   :to="`/messages/${ev.createdByUserId || ev.CreatedByUserId}`"
-                  aria-label="联系主办方"
+                  title="联系主办方"
                 />
-                <v-btn color="default" variant="text" :to="`/events/${ev.id}`" prepend-icon="visibility">查看详情</v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
         </v-row>
-        <div class="d-flex justify-center mt-4" v-if="activeTotalCount > activePageSize">
-          <v-pagination v-model="activePage" :length="activeMaxPage" total-visible="7" @update:modelValue="loadActive" />
+        <div class="d-flex justify-center mt-6" v-if="activeTotalCount > activePageSize">
+          <v-pagination v-model="activePage" :length="activeMaxPage" total-visible="7" @update:modelValue="loadActive" density="comfortable" rounded="circle" />
         </div>
-      </v-card-text>
-    </v-card>
+      </div>
+    </div>
 
-    <v-card class="mb-8">
-      <v-card-title>即将报名的赛事</v-card-title>
-      <v-card-text>
-        <v-progress-linear v-if="loadingUpcomingReg" indeterminate color="primary" />
-        <div class="text-medium-emphasis mb-2" v-if="!loadingUpcomingReg">共 {{ upcomingRegTotalCount }} 条</div>
-        <v-row v-if="!loadingUpcomingReg">
+    <div class="mb-12">
+      <div class="d-flex align-center mb-6">
+        <v-icon icon="upcoming" color="primary" size="large" class="mr-3" />
+        <h2 class="text-h5 font-weight-bold tracking-tight">即将报名的赛事</h2>
+        <v-chip class="ml-4" color="primary" size="small" variant="tonal" label>{{ upcomingRegTotalCount }}</v-chip>
+      </div>
+      
+      <v-progress-linear v-if="loadingUpcomingReg" indeterminate color="primary" rounded class="mb-4" />
+      
+      <div v-if="!loadingUpcomingReg">
+        <v-row>
           <v-col v-for="ev in filteredUpcomingRegEvents" :key="ev.id" cols="12" sm="6" md="4" lg="3">
-            <v-card class="event-card h-100">
-              <v-card-title class="d-flex align-center">
-                <v-avatar size="36" class="mr-2">
-                  <v-img v-if="ev.logoUrl || ev.LogoUrl" :src="ev.logoUrl || ev.LogoUrl" alt="event logo" cover>
-                    <template #placeholder>
-                      <div class="d-flex align-center justify-center" style="width:100%;height:100%">
-                        <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:64px;height:64px"></lottie-player>
-                      </div>
-                    </template>
-                  </v-img>
-                  <v-icon v-else icon="emoji_events" size="28" />
-                </v-avatar>
-                <span class="text-truncate">{{ ev.name }}</span>
-              </v-card-title>
-              <v-card-subtitle>
-                报名开始：{{ new Date(ev.registrationStartTime).toLocaleString() }}
-              </v-card-subtitle>
-              <v-card-text>
+            <v-card class="event-card h-100 hover-elevate d-flex flex-column" variant="flat" border rounded="xl">
+              <v-card-item class="flex-grow-0">
+                <div class="d-flex align-center">
+                  <v-avatar size="48" class="mr-3" rounded="lg" color="surface-variant">
+                    <v-img v-if="ev.logoUrl || ev.LogoUrl" :src="ev.logoUrl || ev.LogoUrl" alt="event logo" cover>
+                      <template #placeholder>
+                        <div class="d-flex align-center justify-center" style="width:100%;height:100%">
+                          <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:32px;height:32px"></lottie-player>
+                        </div>
+                      </template>
+                    </v-img>
+                    <v-icon v-else icon="emoji_events" color="primary" />
+                  </v-avatar>
+                  <div style="min-width: 0">
+                    <div class="text-subtitle-1 font-weight-bold text-truncate">{{ ev.name }}</div>
+                    <div class="text-caption text-medium-emphasis text-truncate">
+                      开始: {{ new Date(ev.registrationStartTime).toLocaleDateString() }}
+                    </div>
+                  </div>
+                </div>
+              </v-card-item>
+              
+              <v-divider class="mx-4 opacity-20" />
+              
+              <v-card-text class="flex-grow-1 pt-3">
                 <div v-if="ev.description" :class="['md-content', { 'md-truncate': !isExpanded(ev.id) }]" v-html="toMd(ev.description)"></div>
-                <div v-else class="text-medium-emphasis">暂无赛事描述</div>
-                <div v-if="(ev.description?.length || 0) > 220" class="mt-1">
-                  <v-btn size="x-small" variant="text" @click="toggleExpanded(ev.id)">{{ isExpanded(ev.id) ? '收起' : '展开' }}</v-btn>
+                <div v-else class="text-caption text-medium-emphasis font-italic">暂无赛事描述</div>
+                <div v-if="(ev.description?.length || 0) > 220" class="mt-2">
+                  <v-btn size="small" variant="text" density="compact" color="primary" @click="toggleExpanded(ev.id)">{{ isExpanded(ev.id) ? '收起' : '展开' }}</v-btn>
                 </div>
               </v-card-text>
-              <v-card-actions>
-                <v-btn
-                  v-if="(ev.createdByUserId || ev.CreatedByUserId) && smAndDown"
+              
+              <v-card-actions class="px-4 pb-4 pt-0">
+                 <v-btn color="default" variant="tonal" class="flex-grow-1" :to="`/events/${ev.id}`" prepend-icon="visibility">查看详情</v-btn>
+                 <v-btn
+                  v-if="ev.createdByUserId || ev.CreatedByUserId"
                   variant="text"
-                  color="secondary"
-                  :to="`/messages/${ev.createdByUserId || ev.CreatedByUserId}`"
-                  prepend-icon="chat"
-                >联系主办方</v-btn>
-                <v-btn
-                  v-if="(ev.createdByUserId || ev.CreatedByUserId) && !smAndDown"
                   icon="chat"
-                  variant="text"
-                  color="secondary"
+                  color="medium-emphasis"
                   :to="`/messages/${ev.createdByUserId || ev.CreatedByUserId}`"
-                  aria-label="联系主办方"
+                  title="联系主办方"
                 />
-                <v-btn color="default" variant="text" :to="`/events/${ev.id}`" prepend-icon="visibility">查看详情</v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
         </v-row>
-      </v-card-text>
-    </v-card>
+      </div>
+    </div>
 
-    <v-card>
-      <v-card-title>历史赛事</v-card-title>
-      <v-card-text>
-        <v-progress-linear v-if="loadingHistory" indeterminate color="primary" />
-        <div class="text-medium-emphasis mb-2" v-if="!loadingHistory">共 {{ historyTotalCount }} 条</div>
-        <v-row v-if="!loadingHistory">
+    <div class="mb-12">
+      <div class="d-flex align-center mb-6">
+        <v-icon icon="history" color="medium-emphasis" size="large" class="mr-3" />
+        <h2 class="text-h5 font-weight-bold tracking-tight text-medium-emphasis">历史赛事</h2>
+        <v-chip class="ml-4" color="medium-emphasis" size="small" variant="tonal" label>{{ historyTotalCount }}</v-chip>
+      </div>
+      
+      <v-progress-linear v-if="loadingHistory" indeterminate color="primary" rounded class="mb-4" />
+      
+      <div v-if="!loadingHistory">
+        <v-row>
           <v-col v-for="ev in filteredHistoryEvents" :key="ev.id" cols="12" sm="6" md="4" lg="3">
-            <v-card class="event-card h-100">
-              <v-card-title class="d-flex align-center">
-                <v-avatar size="36" class="mr-2">
-                  <v-img v-if="ev.logoUrl || ev.LogoUrl" :src="ev.logoUrl || ev.LogoUrl" alt="event logo" cover>
-                    <template #placeholder>
-                      <div class="d-flex align-center justify-center" style="width:100%;height:100%">
-                        <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:64px;height:64px"></lottie-player>
-                      </div>
-                    </template>
-                  </v-img>
-                  <v-icon v-else icon="emoji_events" size="28" />
-                </v-avatar>
-                <span class="text-truncate">{{ ev.name }}</span>
-              </v-card-title>
-              <v-card-subtitle>
-                结束时间：{{ new Date(ev.competitionEndTime || ev.competitionStartTime).toLocaleString() }}
-              </v-card-subtitle>
-              <v-card-text>
-                <div v-if="ev.description" :class="['md-content', { 'md-truncate': !isExpanded(ev.id) }]" v-html="toMd(ev.description)"></div>
-                <div v-else class="text-medium-emphasis">暂无赛事描述</div>
-                <div v-if="(ev.description?.length || 0) > 220" class="mt-1">
-                  <v-btn size="x-small" variant="text" @click="toggleExpanded(ev.id)">{{ isExpanded(ev.id) ? '收起' : '展开' }}</v-btn>
+            <v-card class="event-card h-100 hover-elevate d-flex flex-column" variant="flat" border rounded="xl">
+              <v-card-item class="flex-grow-0">
+                <div class="d-flex align-center">
+                  <v-avatar size="48" class="mr-3" rounded="lg" color="surface-variant">
+                    <v-img v-if="ev.logoUrl || ev.LogoUrl" :src="ev.logoUrl || ev.LogoUrl" alt="event logo" cover>
+                      <template #placeholder>
+                        <div class="d-flex align-center justify-center" style="width:100%;height:100%">
+                          <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:32px;height:32px"></lottie-player>
+                        </div>
+                      </template>
+                    </v-img>
+                    <v-icon v-else icon="emoji_events" color="medium-emphasis" />
+                  </v-avatar>
+                  <div style="min-width: 0">
+                    <div class="text-subtitle-1 font-weight-bold text-truncate text-medium-emphasis">{{ ev.name }}</div>
+                    <div class="text-caption text-medium-emphasis text-truncate">
+                      结束: {{ new Date(ev.competitionEndTime || ev.competitionStartTime).toLocaleDateString() }}
+                    </div>
+                  </div>
+                </div>
+              </v-card-item>
+              
+              <v-divider class="mx-4 opacity-20" />
+              
+              <v-card-text class="flex-grow-1 pt-3">
+                <div v-if="ev.description" :class="['md-content', { 'md-truncate': !isExpanded(ev.id) }]" v-html="toMd(ev.description)" style="opacity: 0.7"></div>
+                <div v-else class="text-caption text-medium-emphasis font-italic">暂无赛事描述</div>
+                <div v-if="(ev.description?.length || 0) > 220" class="mt-2">
+                  <v-btn size="small" variant="text" density="compact" color="medium-emphasis" @click="toggleExpanded(ev.id)">{{ isExpanded(ev.id) ? '收起' : '展开' }}</v-btn>
                 </div>
               </v-card-text>
-              <v-card-actions>
-                <v-btn
-                  v-if="(ev.createdByUserId || ev.CreatedByUserId) && smAndDown"
+              
+              <v-card-actions class="px-4 pb-4 pt-0">
+                 <v-btn color="medium-emphasis" variant="outlined" class="flex-grow-1" :to="`/events/${ev.id}`" prepend-icon="visibility">查看详情</v-btn>
+                 <v-btn
+                  v-if="ev.createdByUserId || ev.CreatedByUserId"
                   variant="text"
-                  color="secondary"
-                  :to="`/messages/${ev.createdByUserId || ev.CreatedByUserId}`"
-                  prepend-icon="chat"
-                >联系主办方</v-btn>
-                <v-btn
-                  v-if="(ev.createdByUserId || ev.CreatedByUserId) && !smAndDown"
                   icon="chat"
-                  variant="text"
-                  color="secondary"
+                  color="medium-emphasis"
                   :to="`/messages/${ev.createdByUserId || ev.CreatedByUserId}`"
-                  aria-label="联系主办方"
+                  title="联系主办方"
                 />
-                <v-btn color="default" variant="text" :to="`/events/${ev.id}`" prepend-icon="visibility">查看详情</v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
         </v-row>
-      </v-card-text>
-    </v-card>
+      </div>
+    </div>
   </v-container>
   
   <!-- 报名前上传队伍Logo -->

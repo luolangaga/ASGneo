@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /profile
+Disallow: /events/manage
+Disallow: /events/create
+Disallow: /articles/create
+Disallow: /teams/create
+Disallow: /teams/edit
+
+# Sitemap
+Sitemap: /sitemap.xml
+

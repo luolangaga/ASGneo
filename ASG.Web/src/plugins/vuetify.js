@@ -8,39 +8,41 @@ import { aliases as mdAliases } from 'vuetify/iconsets/md'
 const md3Light = {
   dark: false,
   colors: {
-    // 主色改为蓝色（更稳重且通用）：#3B82F6
+    // Standard Blue: Professional and clean
     primary: '#3B82F6',
-    // 中性灰：用于次要操作与文字强调
-    secondary: '#6B7280',
-    // 低饱和青色：用于第三色，适度点缀
-    tertiary: '#2AB3A7',
-    // 更柔和的浅表面与背景
-    surface: '#FCFCFE',
-    background: '#F8F9FB',
-    surfaceVariant: '#E5E7EB',
-    outline: '#8F95A1',
-    error: '#B00020',
-    info: '#1E88E5',
-    success: '#2E7D32',
-    warning: '#FBBC05',
+    // Cool Gray: For secondary text and icons
+    secondary: '#64748B',
+    // Teal: For refreshing accents
+    tertiary: '#14B8A6',
+    // Pure White: Cleanest surface
+    surface: '#FFFFFF',
+    // Very Light Cool Gray: subtle contrast against white surfaces
+    background: '#F3F4F6',
+    surfaceVariant: '#F1F5F9',
+    outline: '#CBD5E1',
+    error: '#EF4444',
+    info: '#3B82F6',
+    success: '#10B981',
+    warning: '#F59E0B',
   },
 }
 
 const md3Dark = {
   dark: true,
   colors: {
-    // 深色主题主色同样采用蓝色以保持一致
-    primary: '#3B82F6',
-    secondary: '#C9D1D9',
-    tertiary: '#A5EDE3',
-    surface: '#1B2028',
-    background: '#151922',
-    surfaceVariant: '#2B313B',
-    outline: '#9DA4AE',
-    error: '#CF6679',
-    info: '#90CAF9',
-    success: '#81C784',
-    warning: '#FFD54F',
+    // Lighter Blue for dark mode visibility
+    primary: '#60A5FA',
+    secondary: '#94A3B8',
+    tertiary: '#2DD4BF',
+    // Deep Blue-Gray: Modern dark theme background (not pure black)
+    surface: '#1E293B',
+    background: '#0F172A',
+    surfaceVariant: '#334155',
+    outline: '#475569',
+    error: '#F87171',
+    info: '#60A5FA',
+    success: '#34D399',
+    warning: '#FBBF24',
   },
 }
 
@@ -64,34 +66,72 @@ const tapeFuturism = {
 // Global component defaults to align with M3
 const defaults = {
   VBtn: {
-    variant: 'tonal',
-    rounded: 'lg',
-    class: 'text-none',
+    variant: 'flat', // Flatter, more modern look
+    rounded: 'lg', // Slightly rounded, professional
+    class: 'text-none font-weight-medium letter-spacing-normal', // Remove uppercase, better weight
+    elevation: 0,
   },
   VCard: {
-    rounded: 'lg',
-    elevation: 1,
+    rounded: 'lg', // Consistent rounded corners
+    elevation: 0, // Flat design
+    border: true, // Subtle border for definition
+    flat: true,
   },
   VTextField: {
     variant: 'outlined',
     density: 'comfortable',
+    color: 'primary',
+    bgColor: 'surface',
   },
   VSelect: {
     variant: 'outlined',
     density: 'comfortable',
+    color: 'primary',
+    bgColor: 'surface',
+  },
+  VAutocomplete: {
+    variant: 'outlined',
+    density: 'comfortable',
+    color: 'primary',
+    bgColor: 'surface',
+  },
+  VTextarea: {
+    variant: 'outlined',
+    density: 'comfortable',
+    color: 'primary',
+    bgColor: 'surface',
   },
   VAppBar: {
     flat: true,
     elevation: 0,
-    color: 'surface',
+    color: 'background', // Blend with background
     density: 'comfortable',
+    border: true, // Subtle separator
+  },
+  VNavigationDrawer: {
+    elevation: 0,
+    color: 'surface',
+    border: 'e', // Right border
   },
   VChip: {
-    variant: 'elevated',
+    variant: 'tonal', // Tonal is softer than elevated
+    rounded: 'lg',
   },
   VAvatar: {
     variant: 'tonal',
   },
+  VDialog: {
+    cardProps: {
+      elevation: 5, // Popups should have elevation
+      rounded: 'xl',
+    }
+  },
+  VMenu: {
+    cardProps: {
+      elevation: 3,
+      rounded: 'lg',
+    }
+  }
 }
 
 export const vuetify = createVuetify({

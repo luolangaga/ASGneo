@@ -29,6 +29,7 @@ namespace ASG.Api.DTOs
         public List<TeamEventDto>? RegisteredTeams { get; set; }
         public List<string>? AdminUserIds { get; set; }
         public string? CustomData { get; set; }
+        public RegistrationMode RegistrationMode { get; set; }
     }
 
     /// <summary>
@@ -61,6 +62,7 @@ namespace ASG.Api.DTOs
 
         [Range(1, 1000, ErrorMessage = "最大参赛队伍数量必须在1-1000之间")]
         public int? MaxTeams { get; set; }
+        public RegistrationMode RegistrationMode { get; set; } = RegistrationMode.Team;
     }
 
     /// <summary>
@@ -95,6 +97,7 @@ namespace ASG.Api.DTOs
         public int? MaxTeams { get; set; }
 
         public EventStatus Status { get; set; }
+        public RegistrationMode RegistrationMode { get; set; } = RegistrationMode.Team;
     }
 
     /// <summary>
@@ -117,6 +120,33 @@ namespace ASG.Api.DTOs
         public Guid? TeamCommunityPostId { get; set; }
         public double TeamRatingAverage { get; set; }
         public int TeamRatingCount { get; set; }
+    }
+
+    public class PlayerEventDto
+    {
+        public Guid PlayerId { get; set; }
+        public Guid EventId { get; set; }
+        public string PlayerName { get; set; } = string.Empty;
+        public DateTime RegistrationTime { get; set; }
+        public RegistrationStatus Status { get; set; }
+        public string? Notes { get; set; }
+        public string? RegisteredByUserId { get; set; }
+    }
+
+    public class RegisterPlayerToEventDto
+    {
+        public Guid? PlayerId { get; set; }
+        [StringLength(500)]
+        public string? Notes { get; set; }
+    }
+
+    public class CreateSoloTempTeamDto
+    {
+        [StringLength(100)]
+        public string? Name { get; set; }
+        [Required]
+        public List<Guid> PlayerIds { get; set; } = new List<Guid>();
+        public bool ApproveRegistration { get; set; } = true;
     }
 
     /// <summary>
