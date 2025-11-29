@@ -347,6 +347,21 @@ else
         )");
         context.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_EventRegistrationAnswers_TeamId"" ON ""EventRegistrationAnswers""(""TeamId"")");
         context.Database.ExecuteSqlRaw(@"CREATE UNIQUE INDEX IF NOT EXISTS ""IX_EventRegistrationAnswers_EventId_TeamId"" ON ""EventRegistrationAnswers""(""EventId"", ""TeamId"")");
+
+        // 赛事规则版本表（缺失时补建）
+        context.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS ""EventRuleRevisions"" (
+            ""Id"" uuid PRIMARY KEY,
+            ""EventId"" uuid NOT NULL,
+            ""Version"" integer NOT NULL,
+            ""ContentMarkdown"" text NOT NULL,
+            ""ChangeNotes"" character varying(500) NULL,
+            ""CreatedByUserId"" text NULL,
+            ""CreatedAt"" timestamp with time zone NOT NULL DEFAULT now(),
+            ""IsPublished"" boolean NOT NULL DEFAULT false,
+            ""PublishedAt"" timestamp with time zone NULL,
+            CONSTRAINT ""FK_EventRuleRevisions_Events_EventId"" FOREIGN KEY (""EventId"") REFERENCES ""Events""(""Id"") ON DELETE CASCADE
+        )");
+        context.Database.ExecuteSqlRaw(@"CREATE UNIQUE INDEX IF NOT EXISTS ""IX_EventRuleRevisions_EventId_Version"" ON ""EventRuleRevisions""(""EventId"", ""Version"")");
         context.Database.ExecuteSqlRaw("ALTER TABLE \"Players\" ADD COLUMN IF NOT EXISTS \"PlayerType\" integer NOT NULL DEFAULT 2");
         context.Database.ExecuteSqlRaw("ALTER TABLE \"Teams\" ADD COLUMN IF NOT EXISTS \"HasDispute\" boolean NOT NULL DEFAULT false");
         context.Database.ExecuteSqlRaw("ALTER TABLE \"Teams\" ADD COLUMN IF NOT EXISTS \"DisputeDetail\" text NULL");

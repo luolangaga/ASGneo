@@ -56,6 +56,7 @@ namespace ASG.Api.Services
             using var scope = _scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             // Schema is managed by EF Core migrations
+            _logger.LogInformation("Hero stats ingest started");
 
             var client = _httpClientFactory.CreateClient("netease");
             var response = await client.GetAsync("/w/epro/wechatuser/gameRole/herouse_week", ct);
@@ -69,6 +70,10 @@ namespace ASG.Api.Services
             };
             var payload = await JsonSerializer.DeserializeAsync<ApiResponse>(stream, options, ct);
             if (payload == null || payload.Data == null) return;
+
+            var addedHeroes = 0;
+            var updatedHeroes = 0;
+            var addedStats = 0;
 
             foreach (var item in payload.Data)
             {
@@ -93,13 +98,14 @@ namespace ASG.Api.Services
                         UpdatedAt = DateTime.UtcNow
                     };
                     context.NeteaseHeroes.Add(hero);
+                    addedHeroes++;
                 }
                 else
                 {
                     var changed = false;
                     if (!string.Equals(hero.Name, name, StringComparison.Ordinal)) { hero.Name = name; changed = true; }
                     if (hero.CampId != campId) { hero.CampId = campId; changed = true; }
-                    if (changed) hero.UpdatedAt = DateTime.UtcNow;
+                    if (changed) { hero.UpdatedAt = DateTime.UtcNow; updatedHeroes++; }
                 }
 
                 var exists = await context.NeteaseHeroStats.AnyAsync(e =>
@@ -134,10 +140,12 @@ namespace ASG.Api.Services
                         FetchedAt = DateTime.UtcNow
                     };
                     context.NeteaseHeroStats.Add(stat);
+                    addedStats++;
                 }
             }
 
             await context.SaveChangesAsync(ct);
+            _logger.LogInformation("Hero stats ingest completed: HeroesAdded={HeroesAdded}, HeroesUpdated={HeroesUpdated}, StatsAdded={StatsAdded}", addedHeroes, updatedHeroes, addedStats);
         }
 
         private static int ParseInt(string? s)

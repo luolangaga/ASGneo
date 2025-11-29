@@ -231,11 +231,11 @@ async function submitMissing(i) {
 
 <template>
   <v-app>
-    <v-app-bar app flat :density="smAndDown ? 'compact' : 'comfortable'" class="glass-effect" style="background-color: transparent !important;">
-      <v-toolbar-title class="app-title">
-           <router-link to="/">
-        <img src="/logo.svg" alt="平台Logo" class="app-logo" />
-          <span>第五人格统一赛事平台</span>
+    <v-app-bar app flat :density="smAndDown ? 'compact' : 'comfortable'" class="glass-effect border-b">
+      <v-toolbar-title class="app-title font-weight-bold">
+           <router-link to="/" class="d-flex align-center text-decoration-none text-high-emphasis">
+        <img src="/logo.svg" alt="平台Logo" class="app-logo mr-2" style="height: 32px; width: 32px;" />
+          <span class="text-h6 font-weight-bold tracking-tight">第五人格统一赛事平台</span>
          </router-link>
       </v-toolbar-title>
       <v-spacer></v-spacer>
@@ -267,14 +267,14 @@ async function submitMissing(i) {
       <!-- 移动端：导航抽屉触发 -->
       <v-app-bar-nav-icon class="d-sm-none" @click="drawer = true" />
       <!-- 桌面端：顶部菜单 -->
-      <div class="d-none d-sm-flex align-center">
-        <v-btn to="/" variant="text">首页</v-btn>
+      <div class="d-none d-sm-flex align-center gap-1">
+        <v-btn to="/" variant="text" rounded="pill">首页</v-btn>
         <!-- 关于页面已移除 -->
-        <v-menu>
+        <v-menu open-on-hover>
           <template #activator="{ props }">
-            <v-btn v-bind="props" variant="text" prepend-icon="group">参赛者</v-btn>
+            <v-btn v-bind="props" variant="text" rounded="pill" prepend-icon="group" append-icon="expand_more">参赛者</v-btn>
           </template>
-          <v-list>
+          <v-list density="comfortable" elevation="3" rounded="lg" class="mt-2">
             <v-list-item link :to="'/events'" prepend-icon="grid_view" title="赛事看板" />
             <v-list-item link :to="'/teams/create'" prepend-icon="person_add" title="创建战队" />
             <v-list-item v-if="loggedIn" link :to="'/teams/edit'" prepend-icon="edit" title="编辑我的战队" />
@@ -283,11 +283,11 @@ async function submitMissing(i) {
             <v-list-item link :to="'/teams/search'" prepend-icon="search" title="全站搜索" />
           </v-list>
         </v-menu>
-        <v-menu>
+        <v-menu open-on-hover>
           <template #activator="{ props }">
-            <v-btn v-bind="props" variant="text" prepend-icon="article">社区</v-btn>
+            <v-btn v-bind="props" variant="text" rounded="pill" prepend-icon="article" append-icon="expand_more">社区</v-btn>
           </template>
-          <v-list>
+          <v-list density="comfortable" elevation="3" rounded="lg" class="mt-2">
             <v-list-item link :to="'/articles'" prepend-icon="list_alt" title="帖子列表" />
             <template v-if="loggedIn">
               <v-list-item link :to="'/articles/create'" prepend-icon="edit" title="发布帖子" />
@@ -295,36 +295,48 @@ async function submitMissing(i) {
           </v-list>
         </v-menu>
         <template v-if="loggedIn">
-          <v-menu>
+          <v-menu open-on-hover>
             <template #activator="{ props }">
-              <v-btn v-bind="props" variant="text" prepend-icon="badge">赛事主办方</v-btn>
+              <v-btn v-bind="props" variant="text" rounded="pill" prepend-icon="badge" append-icon="expand_more">赛事主办方</v-btn>
             </template>
-            <v-list>
+            <v-list density="comfortable" elevation="3" rounded="lg" class="mt-2">
               <v-list-item link :to="'/events/create'" prepend-icon="add" title="创建赛事" />
               <v-list-item link :to="'/events/manage'" prepend-icon="settings" title="我的赛事" />
             </v-list>
           </v-menu>
-          <router-link to="/messages" class="ml-1">
-            <v-badge :content="messagesUnread" color="error" v-if="messagesUnread > 0 && !realtimeDisabled">
-              <v-btn variant="text" prepend-icon="chat">信息</v-btn>
-            </v-badge>
-            <v-btn v-else variant="text" prepend-icon="chat">信息</v-btn>
-          </router-link>
+          
+          <v-btn to="/messages" variant="text" rounded="pill" prepend-icon="chat" class="ml-1">
+             信息
+             <v-badge v-if="messagesUnread > 0 && !realtimeDisabled" :content="messagesUnread" color="error" inline></v-badge>
+          </v-btn>
         </template>
+        
+        <v-divider vertical class="mx-2 my-auto" style="height: 24px" />
+        
         <template v-if="!loggedIn">
-          <v-btn to="/login" variant="text">登录</v-btn>
-          <v-btn to="/register" variant="text">注册</v-btn>
+          <v-btn to="/login" variant="text" rounded="pill">登录</v-btn>
+          <v-btn to="/register" color="primary" variant="flat" rounded="pill" class="ml-2">注册</v-btn>
         </template>
         <template v-else>
-          <v-btn to="/profile" variant="text" prepend-icon="person" :title="'ID: ' + (userId || '')">{{ userName }}</v-btn>
-          <v-btn @click="onLogout" variant="text">退出</v-btn>
+          <v-menu open-on-hover>
+             <template #activator="{ props }">
+              <v-btn v-bind="props" variant="text" rounded="pill" prepend-icon="account_circle" :to="'/users/' + userId">
+                 {{ userName }}
+              </v-btn>
+             </template>
+             <v-list density="comfortable" elevation="3" rounded="lg" class="mt-2">
+               <v-list-item link to="/profile" prepend-icon="person" title="个人资料" />
+               <v-divider class="my-1" />
+               <v-list-item @click="onLogout" prepend-icon="logout" title="退出登录" color="error" />
+             </v-list>
+          </v-menu>
         </template>
 
         <v-menu>
           <template #activator="{ props }">
-            <v-btn v-bind="props" class="ml-1" icon="palette" variant="text" aria-label="主题" />
+            <v-btn v-bind="props" class="ml-1" icon="palette" variant="text" density="comfortable" aria-label="主题" />
           </template>
-          <v-list density="compact">
+          <v-list density="compact" elevation="3" rounded="lg" class="mt-2">
             <v-list-item @click="setTheme('md3Light')" title="亮色" prepend-icon="light_mode" />
             <v-list-item @click="setTheme('md3Dark')" title="暗色" prepend-icon="dark_mode" />
             <v-list-item @click="setTheme('tapeFuturism')" title="磁带未来主义" prepend-icon="auto_awesome" />
@@ -333,9 +345,9 @@ async function submitMissing(i) {
       </div>
     </v-app-bar>
     <!-- 移动端导航抽屉 -->
-    <v-navigation-drawer v-model="drawer" temporary class="glass-effect" style="background-color: transparent !important;">
-      <v-toolbar flat density="compact">
-        <v-toolbar-title class="drawer-title">
+    <v-navigation-drawer v-model="drawer" temporary class="glass-effect border-e" color="transparent">
+      <v-toolbar flat density="compact" color="transparent">
+        <v-toolbar-title class="drawer-title font-weight-bold">
           <img src="/logo.svg" alt="平台Logo" class="drawer-logo" />
           <span>赛事平台</span>
         </v-toolbar-title>
@@ -384,7 +396,11 @@ async function submitMissing(i) {
       </v-list>
     </v-navigation-drawer>
     <v-main :class="{ 'ads-disabled': isHome }">
-      <router-view />
+      <router-view v-slot="{ Component }">
+        <transition name="fade">
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </v-main>
     <!-- 全局提示条：用于Token过期等系统级提醒 -->
     <v-snackbar v-model="notifyOpen" :timeout="notifyTimeout" :color="notifyColor" location="bottom right">
@@ -393,20 +409,19 @@ async function submitMissing(i) {
         {{ notifyText }}
       </div>
     </v-snackbar>
-    <v-btn icon="smart_toy" color="primary" @click="aiOpen = true" :style="{ position: 'fixed', right: '24px', top: aiTop, zIndex: 1000 }" />
+    <v-btn icon="smart_toy" color="primary" elevation="4" @click="aiOpen = true" :style="{ position: 'fixed', right: '24px', top: aiTop, zIndex: 1000 }" class="glass-effect" />
     <v-dialog v-model="aiOpen" max-width="720">
-      <v-card>
-        <v-card-title class="d-flex align-center">
-          <v-icon class="mr-2" icon="smart_toy" />
-          <span>AI 助手</span>
+      <v-card rounded="xl" elevation="10" class="glass-effect">
+        <v-card-title class="d-flex align-center pa-4">
+          <v-icon class="mr-2" icon="smart_toy" color="primary" />
+          <span class="font-weight-bold">AI 助手</span>
           <v-spacer />
           <v-btn icon="close" variant="text" @click="aiOpen = false" />
         </v-card-title>
-        <v-card-text>
-          <v-textarea v-model="aiCommand" label="一句话指令" rows="3" auto-grow :disabled="aiRunning" />
-          <div class="mt-2 d-flex align-center">
-            <v-btn color="primary" :loading="aiRunning" @click="runAI">执行</v-btn>
-            <v-spacer />
+        <v-card-text class="pa-4">
+          <v-textarea v-model="aiCommand" label="一句话指令" rows="3" auto-grow :disabled="aiRunning" variant="outlined" hide-details="auto" class="mb-4" placeholder="例如：帮我查找XX战队..." />
+          <div class="d-flex align-center">
+            <v-btn color="primary" size="large" :loading="aiRunning" @click="runAI" prepend-icon="send" class="flex-grow-1">执行</v-btn>
           </div>
             <div class="mt-4">
               <div v-if="aiResults && aiResults.length">
@@ -447,7 +462,7 @@ async function submitMissing(i) {
                       </div>
                       <div v-else-if="r.action === 'search_teams' && (get(r.data||{}, ['items','Items']) || []).length">
                         <v-list density="compact">
-                          <v-list-item v-for="t in get(r.data||{}, ['items','Items'])" :key="get(t,['id','Id'])">
+                          <v-list-item v-for="t in get(r.data||{}, ['items','Items'])" :key="get(t,['id','Id'])" :to="'/teams/' + get(t,['id','Id'])">
                             <template #prepend>
                               <v-avatar v-if="get(t,['logoUrl','LogoUrl'])" size="28">
                                 <v-img :src="get(t,['logoUrl','LogoUrl'])" cover>
@@ -469,7 +484,7 @@ async function submitMissing(i) {
                       </div>
                       <div v-else-if="(r.action === 'search_events' || r.action === 'list_active_events' || r.action === 'list_upcoming_events') && (get(r.data||{}, ['items','Items']) || []).length">
                         <v-list density="compact">
-                          <v-list-item v-for="e in get(r.data||{}, ['items','Items'])" :key="get(e,['id','Id'])">
+                          <v-list-item v-for="e in get(r.data||{}, ['items','Items'])" :key="get(e,['id','Id'])" :to="'/events/' + get(e,['id','Id'])">
                             <template #prepend>
                               <v-avatar v-if="get(e,['logoUrl','LogoUrl'])" size="28">
                                 <v-img :src="get(e,['logoUrl','LogoUrl'])" cover>
@@ -601,8 +616,11 @@ async function submitMissing(i) {
       </v-card>
     </v-dialog>
     <LoadingDialog />
-    <v-footer app class="px-4 py-2">
+    <v-footer app class="px-4 py-3 text-center d-flex flex-column" color="transparent" border="t">
       <div class="text-caption text-medium-emphasis">
+        &copy; {{ new Date().getFullYear() }} 第五人格统一赛事平台. All rights reserved.
+      </div>
+      <div class="text-caption text-disabled mt-1">
         免责声明：几乎所有赛事都是来自民间玩家自己举办，请各位侦探注意辨别，以防被骗！
       </div>
     </v-footer>

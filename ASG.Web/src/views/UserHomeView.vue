@@ -5,6 +5,7 @@ import PageHero from '../components/PageHero.vue'
 import { getUser } from '../services/user'
 import { getTeam, getTeamHonors } from '../services/teams'
 import { renderMarkdown } from '../utils/markdown'
+import { getEventsByCreator } from '../services/events'
 
 const route = useRoute()
 const router = useRouter()
@@ -20,6 +21,9 @@ const teamError = ref('')
 const honors = ref([])
 const honorsLoading = ref(false)
 const honorsError = ref('')
+const eventsLoading = ref(false)
+const eventsError = ref('')
+const createdEvents = ref([])
 
 const heroTitle = computed(() => {
   const name = user.value?.fullName || user.value?.FullName || ''
@@ -34,6 +38,15 @@ async function load() {
   try {
     const u = await getUser(userId.value)
     user.value = u
+    eventsLoading.value = true
+    eventsError.value = ''
+    try {
+      createdEvents.value = await getEventsByCreator(String(userId.value))
+    } catch (e) {
+      eventsError.value = e?.payload?.message || e?.message || '加载创建的赛事失败'
+    } finally {
+      eventsLoading.value = false
+    }
     const tId = u?.teamId || u?.TeamId
     if (tId) {
       teamLoading.value = true
@@ -162,6 +175,42 @@ onMounted(load)
         </template>
         <template v-else>
           <v-alert type="info" text="该用户暂无战队" />
+        </template>
+      </v-card-text>
+    </v-card>
+
+    <v-card class="mt-6">
+      <v-card-title>TA创建的赛事</v-card-title>
+      <v-card-text>
+        <template v-if="eventsLoading">
+          <v-progress-linear indeterminate color="primary" />
+        </template>
+        <v-alert v-if="eventsError" type="error" :text="eventsError" class="mb-3" />
+        <template v-if="(createdEvents || []).length">
+          <v-list density="comfortable">
+            <v-list-item v-for="e in createdEvents" :key="e.id || e.Id" :to="{ name: 'event-detail', params: { id: e.id || e.Id } }" link>
+              <template #prepend>
+                <v-avatar size="40" rounded>
+                  <template v-if="e.logoUrl || e.LogoUrl">
+                    <v-img :src="e.logoUrl || e.LogoUrl" alt="event logo" cover />
+                  </template>
+                  <template v-else>
+                    <v-icon icon="emoji_events" />
+                  </template>
+                </v-avatar>
+              </template>
+              <v-list-item-title class="text-subtitle-1">{{ e.name || e.Name }}</v-list-item-title>
+              <v-list-item-subtitle class="text-caption text-medium-emphasis">
+                报名：{{ new Date(e.registrationStartTime || e.RegistrationStartTime).toLocaleDateString() }} — {{ new Date(e.registrationEndTime || e.RegistrationEndTime).toLocaleDateString() }}
+              </v-list-item-subtitle>
+              <template #append>
+                <v-btn size="small" variant="text" prepend-icon="chevron_right">查看</v-btn>
+              </template>
+            </v-list-item>
+          </v-list>
+        </template>
+        <template v-else-if="!eventsLoading && !eventsError">
+          <v-alert type="info" density="compact" text="暂无创建的赛事" />
         </template>
       </v-card-text>
     </v-card>

@@ -232,6 +232,11 @@ namespace ASG.Api.Repositories
             return await _context.Players.FirstOrDefaultAsync(p => p.UserId == userId);
         }
 
+        public async Task<Player?> GetPlayerByIdAsync(Guid playerId)
+        {
+            return await _context.Players.FirstOrDefaultAsync(p => p.Id == playerId);
+        }
+
         public async Task<Player> UpdatePlayerAsync(Player player)
         {
             _context.Players.Update(player);

@@ -152,35 +152,42 @@ const vTilt = {
 </script>
 
 <template>
-  <v-container class="py-0 page-container">
+  <div class="home-view">
     <!-- Hero -->
-    <v-sheet class="hero pa-12">
-      <v-container class="page-container">
+    <v-sheet class="hero d-flex align-center position-relative overflow-hidden">
+      <div class="hero-bg"></div>
+      <v-container class="page-container position-relative" style="z-index: 2;">
         <v-row align="center">
           <v-col cols="12" md="7">
-            <div class="text-h4 text-md-h3 font-weight-bold mb-3">第五人格赛事统一管理平台</div>
-            <div class="text-subtitle-1 text-medium-emphasis mb-6">
-              面向所有主办方的赛事创建、报名审核、赛程管理一体化平台。
+            <div class="text-h3 text-md-h2 font-weight-bold mb-4 text-primary tracking-tight">
+              第五人格<br>赛事统一管理平台
             </div>
-            <div class="d-flex flex-wrap">
-              <v-btn color="primary" class="mr-3 mb-3" variant="elevated" @click="goCreateEvent" prepend-icon="add">创建赛事</v-btn>
-              <v-btn color="tertiary" class="mr-3 mb-3" to="/events" variant="tonal" prepend-icon="grid_view">浏览赛事</v-btn>
-              <v-btn class="mr-3 mb-3" @click="goCreateTeam" color="tertiary" variant="tonal" prepend-icon="person_add">创建战队</v-btn>
-              <v-btn class="mb-3" to="/teams/search" variant="text" prepend-icon="search">搜索战队</v-btn>
+            <div class="text-h6 text-medium-emphasis mb-8 font-weight-regular" style="max-width: 600px; line-height: 1.6;">
+              面向所有主办方的赛事创建、报名审核、赛程管理一体化平台。<br class="d-none d-md-block">
+              降低运营成本，提升参赛体验，让每一场比赛更精彩。
             </div>
-            <div class="text-caption mt-2 text-medium-emphasis">
-              主办方登录后可创建并管理赛事；参赛者可创建/绑定战队并报名。
+            <div class="d-flex flex-wrap gap-3">
+              <v-btn color="white" size="x-large" class="px-8 text-primary" elevation="4" @click="goCreateEvent" prepend-icon="add">创建赛事</v-btn>
+              <v-btn variant="outlined" size="x-large" class="px-8 ml-3" to="/events" prepend-icon="grid_view">浏览赛事</v-btn>
+            </div>
+            <div class="d-flex align-center mt-8 text-caption text-medium-emphasis">
+              <v-icon icon="check_circle" color="success" size="small" class="mr-1"></v-icon>
+              <span class="mr-4">免费使用</span>
+              <v-icon icon="check_circle" color="success" size="small" class="mr-1"></v-icon>
+              <span class="mr-4">一键报名</span>
+              <v-icon icon="check_circle" color="success" size="small" class="mr-1"></v-icon>
+              <span>高效管理</span>
             </div>
           </v-col>
-          <v-col cols="12" md="5" class="d-none d-md-flex justify-center">
-            <img src="/logo.svg" alt="ASG Logo" style="width:220px;height:220px">
+          <v-col cols="12" md="5" class="d-none d-md-flex justify-center position-relative">
+            <img src="/logo.svg" alt="ASG Logo" class="hero-logo" style="width:260px;height:260px; z-index: 2;">
           </v-col>
         </v-row>
       </v-container>
     </v-sheet>
 
     <!-- Features for Organizers -->
-    <v-container class="py-10 page-container">
+    <v-container class="py-16 page-container">
       <v-row class="mb-6">
         <v-col cols="12" class="text-center">
           <div class="text-h5 font-weight-bold mb-2">为主办方而生的关键能力</div>
@@ -396,7 +403,7 @@ const vTilt = {
         </v-col>
       </v-row>
     </v-container>
-  </v-container>
+  </div>
 </template>
 
 <style scoped>
@@ -406,13 +413,45 @@ const vTilt = {
 }
 
 .hero {
-  background: radial-gradient(circle at 50% 0, rgba(var(--v-theme-primary), 0.1), transparent 70%);
+  min-height: 500px;
+  padding-top: 64px; /* Header height */
+}
+
+.hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 0, rgba(var(--v-theme-primary), 0.12), transparent 70%),
+              radial-gradient(circle at 85% 30%, rgba(var(--v-theme-tertiary), 0.08), transparent 50%);
+  z-index: 1;
+}
+
+.blob {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.3), rgba(var(--v-theme-tertiary), 0.3));
+  border-radius: 50%;
+  filter: blur(80px);
+  animation: float 6s ease-in-out infinite;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.1); }
 }
 
 .feature-card {
-  transition: all 0.2s ease-out;
+  transition: all 0.3s ease-out;
   position: relative;
   overflow: hidden;
+  height: 100%;
 }
 
 .feature-card::before {

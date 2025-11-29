@@ -61,15 +61,36 @@ namespace ASG.Api.Controllers
                 case "all":
                 default:
                 {
-                    var teamsTask = _teamService.SearchTeamsByNameAsync(query, page, pageSize);
-                    var eventsTask = _eventService.SearchEventsAsync(query, page, pageSize);
-                    var articlesTask = _articleService.SearchArticlesAsync(query, page, pageSize);
+                    PagedResult<TeamDto> teams;
+                    PagedResult<EventDto> events;
+                    PagedResult<ArticleDto> articles;
 
-                    await Task.WhenAll(teamsTask, eventsTask, articlesTask);
+                    try
+                    {
+                        teams = await _teamService.SearchTeamsByNameAsync(query, page, pageSize);
+                    }
+                    catch
+                    {
+                        teams = new PagedResult<TeamDto> { Items = Array.Empty<TeamDto>(), TotalCount = 0, Page = page, PageSize = pageSize };
+                    }
 
-                    var teams = teamsTask.Result;
-                    var events = eventsTask.Result;
-                    var articles = articlesTask.Result;
+                    try
+                    {
+                        events = await _eventService.SearchEventsAsync(query, page, pageSize);
+                    }
+                    catch
+                    {
+                        events = new PagedResult<EventDto> { Items = Array.Empty<EventDto>(), TotalCount = 0, Page = page, PageSize = pageSize };
+                    }
+
+                    try
+                    {
+                        articles = await _articleService.SearchArticlesAsync(query, page, pageSize);
+                    }
+                    catch
+                    {
+                        articles = new PagedResult<ArticleDto> { Items = Array.Empty<ArticleDto>(), TotalCount = 0, Page = page, PageSize = pageSize };
+                    }
 
                     foreach (var t in teams.Items)
                     {

@@ -1,0 +1,24 @@
+2025-11-27 22:12:39.428 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-27 22:12:39.522 +08:00 [INF] WebApplication built successfully.
+2025-11-27 22:12:39.618 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-27 22:12:39.619 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-27 22:12:40.481 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-27 22:12:40.570 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-27 22:12:40.780 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-27 22:12:40.823 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=10
+2025-11-27 22:12:40.825 +08:00 [INF] Local heroes import setting: true
+2025-11-27 22:12:40.826 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-27 22:12:40.826 +08:00 [INF] Local stats import setting: true
+2025-11-27 22:12:40.826 +08:00 [INF] Local stats overwrite setting: false
+2025-11-27 22:12:40.828 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-27 22:12:41.389 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-27 22:12:41.391 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-27 22:12:46.979 +08:00 [INF] Netease stats seeding completed: 0 added; total=20286
+2025-11-27 22:12:47.174 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=5
+2025-11-27 22:12:47.209 +08:00 [INF] Starting Kestrel...
+2025-11-27 22:12:47.274 +08:00 [INF] Hero stats ingest started
+2025-11-27 22:12:47.286 +08:00 [INF] Start processing HTTP request GET https://h55.s3.game.163.com/w/epro/wechatuser/gameRole/herouse_week
+2025-11-27 22:12:47.288 +08:00 [INF] Sending HTTP request GET https://h55.s3.game.163.com/w/epro/wechatuser/gameRole/herouse_week
+2025-11-27 22:12:50.811 +08:00 [INF] Received HTTP response headers after 3521.2346ms - 200
+2025-11-27 22:12:50.817 +08:00 [INF] End processing HTTP request after 3535.4392ms - 200
+2025-11-27 22:13:06.778 +08:00 [INF] Hero stats ingest completed: HeroesAdded=0, HeroesUpdated=16, StatsAdded=1494

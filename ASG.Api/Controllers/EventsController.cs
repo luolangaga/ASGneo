@@ -392,6 +392,49 @@ namespace ASG.Api.Controllers
             catch (Exception ex) { return StatusCode(500, new { message = "生成测试报名失败", error = ex.Message }); }
         }
 
+        [HttpPost("{id}/register-player")]
+        [Authorize]
+        public async Task<ActionResult<PlayerEventDto>> RegisterPlayerToEvent(Guid id, [FromBody] RegisterPlayerToEventDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized(new { message = "用户未登录" });
+                var result = await _eventService.RegisterPlayerToEventAsync(id, dto, userId);
+                return Ok(result);
+            }
+            catch (UnauthorizedAccessException ex) { return Forbid(ex.Message); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { message = "玩家报名失败", error = ex.Message }); }
+        }
+
+        [HttpGet("{id}/player-registrations")]
+        public async Task<ActionResult<IEnumerable<PlayerEventDto>>> GetEventPlayerRegistrations(Guid id)
+        {
+            try
+            {
+                var list = await _eventService.GetEventPlayerRegistrationsAsync(id);
+                return Ok(list);
+            }
+            catch (Exception ex) { return StatusCode(500, new { message = "获取玩家报名列表失败", error = ex.Message }); }
+        }
+
+        [HttpPost("{id}/solo-teams")]
+        [Authorize]
+        public async Task<ActionResult<TeamEventDto>> CreateSoloTemporaryTeam(Guid id, [FromBody] CreateSoloTempTeamDto dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized(new { message = "用户未登录" });
+                var te = await _eventService.CreateSoloTemporaryTeamAsync(id, dto, userId);
+                return Ok(te);
+            }
+            catch (UnauthorizedAccessException ex) { return StatusCode(403, new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { message = "创建临时战队失败", error = ex.Message }); }
+        }
+
         /// <summary>
         /// 战队报名赛事（需要登录）
         /// </summary>
@@ -754,6 +797,33 @@ namespace ASG.Api.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "获取我的赛事失败", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// 获取指定用户创建的赛事（公开）
+        /// </summary>
+        /// <param name="userId">用户ID</param>
+        /// <returns>该用户创建的赛事列表</returns>
+        [HttpGet("created-by/{userId}")]
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetEventsByCreator(string userId)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    return BadRequest(new { message = "用户ID不能为空" });
+                }
+                var events = await _eventService.GetEventsByCreatorAsync(userId);
+                foreach (var e in events)
+                {
+                    e.LogoUrl = GetEventLogoUrl(e.Id);
+                }
+                return Ok(events);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "获取用户创建的赛事失败", error = ex.Message });
             }
         }
 

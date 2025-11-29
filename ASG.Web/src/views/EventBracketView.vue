@@ -1007,9 +1007,14 @@ async function exportCanvasImage() {
                       </span>
                     </template>
                   </v-avatar>
-                  <span class="text-body-2">
-                    {{ nodes[id]?.type === 'team' ? (teamNameById[teamIdForNode(id)] || ('#'+teamIdForNode(id))) : (getWinnerLabel(nodes[id]) ) }}
-                  </span>
+                  <template v-if="nodes[id]?.type === 'team'">
+                    <router-link :to="{ name: 'team-detail', params: { id: teamIdForNode(id) } }" class="text-body-2 text-decoration-none" @click.stop>
+                      {{ teamNameById[teamIdForNode(id)] || ('#'+teamIdForNode(id)) }}
+                    </router-link>
+                  </template>
+                  <template v-else>
+                    <span class="text-body-2">{{ getWinnerLabel(nodes[id]) }}</span>
+                  </template>
                 </div>
                 <div class="node-tools">
                   <v-btn size="x-small" variant="text" icon="chevron_left" @click.stop="setNodeRound(id, -1)" />
@@ -1045,6 +1050,7 @@ async function exportCanvasImage() {
               </div>
               <div class="match-main d-flex align-center">
                 <div class="team-slot">
+                  <router-link :to="{ name: 'team-detail', params: { id: m.homeTeamId || m.HomeTeamId } }" class="d-inline-flex align-center text-decoration-none">
                   <v-avatar size="44" color="primary" variant="tonal">
                     <template v-if="teamDetails[m.homeTeamId || m.HomeTeamId]?.logoUrl || teamDetails[m.homeTeamId || m.HomeTeamId]?.LogoUrl">
                       <v-img :src="teamDetails[m.homeTeamId || m.HomeTeamId].logoUrl || teamDetails[m.homeTeamId || m.HomeTeamId].LogoUrl" cover />
@@ -1053,10 +1059,14 @@ async function exportCanvasImage() {
                       <span class="text-subtitle-2">{{ getAvatarLetter(m.homeTeamName || m.HomeTeamName) }}</span>
                     </template>
                   </v-avatar>
-                  <div class="team-name">{{ m.homeTeamName || m.HomeTeamName }}</div>
+                  </router-link>
+                  <router-link :to="{ name: 'team-detail', params: { id: m.homeTeamId || m.HomeTeamId } }" class="team-name-link text-decoration-none">
+                    <div class="team-name">{{ m.homeTeamName || m.HomeTeamName }}</div>
+                  </router-link>
                 </div>
                 <v-icon class="mx-2" icon="sports_martial_arts" />
                 <div class="team-slot">
+                  <router-link :to="{ name: 'team-detail', params: { id: m.awayTeamId || m.AwayTeamId } }" class="d-inline-flex align-center text-decoration-none">
                   <v-avatar size="44" color="secondary" variant="tonal">
                     <template v-if="teamDetails[m.awayTeamId || m.AwayTeamId]?.logoUrl || teamDetails[m.awayTeamId || m.AwayTeamId]?.LogoUrl">
                       <v-img :src="teamDetails[m.awayTeamId || m.AwayTeamId].logoUrl || teamDetails[m.awayTeamId || m.AwayTeamId].LogoUrl" cover />
@@ -1065,7 +1075,10 @@ async function exportCanvasImage() {
                       <span class="text-subtitle-2">{{ getAvatarLetter(m.awayTeamName || m.AwayTeamName) }}</span>
                     </template>
                   </v-avatar>
-                  <div class="team-name">{{ m.awayTeamName || m.AwayTeamName }}</div>
+                  </router-link>
+                  <router-link :to="{ name: 'team-detail', params: { id: m.awayTeamId || m.AwayTeamId } }" class="team-name-link text-decoration-none">
+                    <div class="team-name">{{ m.awayTeamName || m.AwayTeamName }}</div>
+                  </router-link>
                 </div>
               </div>
             </v-card>
@@ -1132,6 +1145,7 @@ async function exportCanvasImage() {
               </div>
               <div class="match-main d-flex align-center">
                 <div class="team-slot">
+                  <router-link :to="{ name: 'team-detail', params: { id: m.homeTeamId || m.HomeTeamId } }" class="d-inline-flex align-center text-decoration-none">
                   <v-avatar size="44" color="primary" variant="tonal">
                     <template v-if="teamDetails[m.homeTeamId || m.HomeTeamId]?.logoUrl || teamDetails[m.homeTeamId || m.HomeTeamId]?.LogoUrl">
                       <v-img :src="teamDetails[m.homeTeamId || m.HomeTeamId].logoUrl || teamDetails[m.homeTeamId || m.HomeTeamId].LogoUrl" cover />
@@ -1140,10 +1154,14 @@ async function exportCanvasImage() {
                       <span class="text-subtitle-2">{{ getAvatarLetter(m.homeTeamName || m.HomeTeamName) }}</span>
                     </template>
                   </v-avatar>
-                  <div class="team-name">{{ m.homeTeamName || m.HomeTeamName }}</div>
+                  </router-link>
+                  <router-link :to="{ name: 'team-detail', params: { id: m.homeTeamId || m.HomeTeamId } }" class="team-name-link text-decoration-none">
+                    <div class="team-name">{{ m.homeTeamName || m.HomeTeamName }}</div>
+                  </router-link>
                 </div>
                 <v-icon class="mx-2" icon="sports_martial_arts" />
                 <div class="team-slot">
+                  <router-link :to="{ name: 'team-detail', params: { id: m.awayTeamId || m.AwayTeamId } }" class="d-inline-flex align-center text-decoration-none">
                   <v-avatar size="44" color="secondary" variant="tonal">
                     <template v-if="teamDetails[m.awayTeamId || m.AwayTeamId]?.logoUrl || teamDetails[m.awayTeamId || m.AwayTeamId]?.LogoUrl">
                       <v-img :src="teamDetails[m.awayTeamId || m.AwayTeamId].logoUrl || teamDetails[m.awayTeamId || m.AwayTeamId].LogoUrl" cover />
@@ -1152,7 +1170,10 @@ async function exportCanvasImage() {
                       <span class="text-subtitle-2">{{ getAvatarLetter(m.awayTeamName || m.AwayTeamName) }}</span>
                     </template>
                   </v-avatar>
-                  <div class="team-name">{{ m.awayTeamName || m.AwayTeamName }}</div>
+                  </router-link>
+                  <router-link :to="{ name: 'team-detail', params: { id: m.awayTeamId || m.AwayTeamId } }" class="team-name-link text-decoration-none">
+                    <div class="team-name">{{ m.awayTeamName || m.AwayTeamName }}</div>
+                  </router-link>
                 </div>
               </div>
             </v-card>
@@ -1216,6 +1237,7 @@ async function exportCanvasImage() {
               </div>
               <div class="match-main d-flex align-center">
                 <div class="team-slot">
+                  <router-link :to="{ name: 'team-detail', params: { id: m.homeTeamId || m.HomeTeamId } }" class="d-inline-flex align-center text-decoration-none">
                   <v-avatar size="44" color="primary" variant="tonal">
                     <template v-if="teamDetails[m.homeTeamId || m.HomeTeamId]?.logoUrl || teamDetails[m.homeTeamId || m.HomeTeamId]?.LogoUrl">
                       <v-img :src="teamDetails[m.homeTeamId || m.HomeTeamId].logoUrl || teamDetails[m.homeTeamId || m.HomeTeamId].LogoUrl" cover />
@@ -1224,10 +1246,14 @@ async function exportCanvasImage() {
                       <span class="text-subtitle-2">{{ getAvatarLetter(m.homeTeamName || m.HomeTeamName) }}</span>
                     </template>
                   </v-avatar>
-                  <div class="team-name">{{ m.homeTeamName || m.HomeTeamName }}</div>
+                  </router-link>
+                  <router-link :to="{ name: 'team-detail', params: { id: m.homeTeamId || m.HomeTeamId } }" class="team-name-link text-decoration-none">
+                    <div class="team-name">{{ m.homeTeamName || m.HomeTeamName }}</div>
+                  </router-link>
                 </div>
                 <v-icon class="mx-2" icon="sports_martial_arts" />
                 <div class="team-slot">
+                  <router-link :to="{ name: 'team-detail', params: { id: m.awayTeamId || m.AwayTeamId } }" class="d-inline-flex align-center text-decoration-none">
                   <v-avatar size="44" color="secondary" variant="tonal">
                     <template v-if="teamDetails[m.awayTeamId || m.AwayTeamId]?.logoUrl || teamDetails[m.awayTeamId || m.AwayTeamId]?.LogoUrl">
                       <v-img :src="teamDetails[m.awayTeamId || m.AwayTeamId].logoUrl || teamDetails[m.awayTeamId || m.AwayTeamId].LogoUrl" cover />
@@ -1236,7 +1262,10 @@ async function exportCanvasImage() {
                       <span class="text-subtitle-2">{{ getAvatarLetter(m.awayTeamName || m.AwayTeamName) }}</span>
                     </template>
                   </v-avatar>
-                  <div class="team-name">{{ m.awayTeamName || m.AwayTeamName }}</div>
+                  </router-link>
+                  <router-link :to="{ name: 'team-detail', params: { id: m.awayTeamId || m.AwayTeamId } }" class="team-name-link text-decoration-none">
+                    <div class="team-name">{{ m.awayTeamName || m.AwayTeamName }}</div>
+                  </router-link>
                 </div>
               </div>
             </v-card>

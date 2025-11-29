@@ -309,15 +309,19 @@ async function onSavePlayer() {
     </template>
   </PageHero>
   <v-container class="py-8 narrow-container">
-    <v-card>
-      <v-card-title>个人资料</v-card-title>
-      <v-card-text>
-        <v-alert v-if="errorMsg" type="error" :text="errorMsg" class="mb-4" />
+    <div class="mb-8">
+      <div class="d-flex align-center mb-4">
+        <v-icon icon="person" color="primary" class="mr-2" />
+        <h3 class="text-h6 font-weight-bold">基本资料</h3>
+      </div>
+      
+      <v-card variant="flat" border rounded="xl" class="pa-6">
+        <v-alert v-if="errorMsg" type="error" :text="errorMsg" class="mb-6" variant="tonal" />
 
         <v-row>
           <v-col cols="12" md="4">
             <div class="d-flex flex-column align-center">
-              <v-avatar size="120" class="mb-3">
+              <v-avatar size="120" class="mb-4" color="surface-variant" rounded="circle" elevation="2">
                 <v-img :src="localPreview || avatarUrl" alt="avatar" cover>
                   <template #placeholder>
                     <div class="d-flex align-center justify-center" style="width:100%;height:100%">
@@ -331,93 +335,127 @@ async function onSavePlayer() {
                 accept="image/png, image/jpeg, image/jpg, image/webp"
                 prepend-inner-icon="image"
                 :loading="uploading"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
                 @update:modelValue="onFileChange"
               />
             </div>
           </v-col>
           <v-col cols="12" md="8">
             <v-form @submit.prevent="onSaveProfile">
-              <v-text-field v-model="email" label="邮箱" prepend-inner-icon="mail" readonly />
-              <div class="d-flex align-center">
-                <v-text-field :model-value="userId" label="用户ID" prepend-inner-icon="badge" readonly class="flex-grow-1" />
-                <v-btn variant="text" class="ml-2" prepend-icon="content_copy" @click="copyUserId">复制</v-btn>
-              </div>
-              <v-text-field v-model="fullName" label="姓名" prepend-inner-icon="person" required />
-              <v-text-field v-model="roleName" label="角色" prepend-inner-icon="shield_person" readonly />
-              <div class="d-flex align-center gap-2 mt-2">
+              <v-row dense>
+                <v-col cols="12">
+                   <v-text-field v-model="email" label="邮箱" prepend-inner-icon="mail" readonly variant="outlined" density="comfortable" />
+                </v-col>
+                <v-col cols="12">
+                   <div class="d-flex align-center">
+                    <v-text-field :model-value="userId" label="用户ID" prepend-inner-icon="badge" readonly class="flex-grow-1" variant="outlined" density="comfortable" />
+                    <v-btn variant="text" class="ml-2" icon="content_copy" @click="copyUserId" title="复制ID"></v-btn>
+                  </div>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field v-model="fullName" label="姓名" prepend-inner-icon="person" required variant="outlined" density="comfortable" />
+                </v-col>
+                <v-col cols="12">
+                   <v-text-field v-model="roleName" label="角色" prepend-inner-icon="shield_person" readonly variant="outlined" density="comfortable" />
+                </v-col>
+              </v-row>
+             
+              <div class="d-flex align-center gap-2 mt-4">
                 <v-chip color="primary" variant="tonal" prepend-icon="mail">邮件积分：{{ emailCredits }}</v-chip>
                 <span class="text-caption text-medium-emphasis">用于邮件通知与提醒</span>
-              </div>
-              <div class="d-flex align-center justify-end">
-                <v-btn :loading="saving" type="submit" color="primary">保存</v-btn>
+                <v-spacer />
+                <v-btn :loading="saving" type="submit" color="primary" variant="flat" class="px-6">保存修改</v-btn>
               </div>
             </v-form>
           </v-col>
         </v-row>
-      </v-card-text>
-    </v-card>
+      </v-card>
+    </div>
   </v-container>
+  
   <v-progress-linear v-if="loading" indeterminate color="primary" />
-  <div class="text-center mt-2" v-if="loading">正在加载资料...</div>
   
   <!-- 我的战队 -->
   <v-container class="py-6 narrow-container">
-    <v-card>
-      <v-card-title>我的战队</v-card-title>
-      <v-card-text>
-        <template v-if="teamLoading">
-          <v-progress-linear indeterminate color="primary" />
-        </template>
-        <v-alert v-if="teamError" type="error" :text="teamError" class="mb-3" />
+    <div class="mb-8">
+      <div class="d-flex align-center mb-4">
+        <v-icon icon="groups" color="primary" class="mr-2" />
+        <h3 class="text-h6 font-weight-bold">我的战队</h3>
+      </div>
 
-        <template v-if="((currentUser?.displayTeamId || currentUser?.DisplayTeamId || currentUser?.ownedTeamId || currentUser?.OwnedTeamId || currentUser?.teamId || currentUser?.TeamId) && team)">
+      <template v-if="teamLoading">
+        <v-skeleton-loader type="card" rounded="xl" />
+      </template>
+      
+      <v-alert v-if="teamError" type="error" :text="teamError" class="mb-4" variant="tonal" />
+
+      <v-card v-if="((currentUser?.displayTeamId || currentUser?.DisplayTeamId || currentUser?.ownedTeamId || currentUser?.OwnedTeamId || currentUser?.teamId || currentUser?.TeamId) && team)" variant="flat" border rounded="xl" class="pa-6">
           <v-row>
             <v-col cols="12" md="4">
               <div class="d-flex flex-column align-center">
-                <v-avatar size="120" class="mb-3" v-if="team.logoUrl || team.LogoUrl">
-                  <v-img :src="team.logoUrl || team.LogoUrl" alt="team logo" cover>
+                <v-avatar size="120" class="mb-4" rounded="lg" color="surface-variant">
+                  <v-img v-if="team.logoUrl || team.LogoUrl" :src="team.logoUrl || team.LogoUrl" alt="team logo" cover>
                     <template #placeholder>
                       <div class="d-flex align-center justify-center" style="width:100%;height:100%">
                         <lottie-player src="/animations/loading.json" background="transparent" speed="1" loop autoplay style="width:96px;height:96px"></lottie-player>
                       </div>
                     </template>
                   </v-img>
+                  <v-icon v-else icon="groups" size="48" color="medium-emphasis" />
                 </v-avatar>
                 <v-file-input
                   label="上传战队徽标"
                   accept="image/png, image/jpeg, image/jpg, image/webp"
                   prepend-inner-icon="image"
                   :loading="logoUploading"
+                  variant="outlined"
+                  density="compact"
+                  hide-details="auto"
                   @update:modelValue="onTeamLogoChange"
                 />
               </div>
             </v-col>
             <v-col cols="12" md="8">
-              <div class="text-subtitle-1 mb-2">{{ team.name || team.Name }}</div>
-              <div class="text-body-2 mb-2 md-content" v-if="team.description || team.Description" v-html="toMd(team.description || team.Description)"></div>
-              <div class="text-subtitle-2 mb-2">队员</div>
-              <v-list density="compact" lines="two">
+              <div class="d-flex align-center mb-2">
+                <div class="text-h5 font-weight-bold">{{ team.name || team.Name }}</div>
+                <v-chip size="small" color="primary" class="ml-3" variant="tonal">ID: {{ team.id || team.Id }}</v-chip>
+              </div>
+              
+              <div class="text-body-2 mb-4 md-content text-medium-emphasis" v-if="team.description || team.Description" v-html="toMd(team.description || team.Description)"></div>
+              <div v-else class="text-body-2 mb-4 text-medium-emphasis font-italic">暂无简介</div>
+              
+              <div class="text-subtitle-2 mb-2 font-weight-bold">队员列表</div>
+              <v-card variant="outlined" rounded="lg" class="mb-4">
+              <v-list density="compact" lines="two" class="bg-transparent">
                 <v-list-item v-for="p in (team.players || team.Players || [])" :key="p.id || p.Id || p.name || p.Name">
-                  <v-list-item-title>{{ p.name || p.Name }}</v-list-item-title>
-                  <v-list-item-subtitle>
-                    <span v-if="p.gameId || p.GameId">ID: {{ p.gameId || p.GameId }} </span>
-                    <span v-if="p.gameRank || p.GameRank" class="ml-2">段位: {{ p.gameRank || p.GameRank }}</span>
-                    <span v-if="(p.playerType ?? p.PlayerType) != null" class="ml-2">角色类型: {{ playerTypeName(p.playerType ?? p.PlayerType) }}</span>
-                  </v-list-item-subtitle>
-                </v-list-item>
-              </v-list>
-
-              <v-divider class="my-4" />
-              <div class="text-subtitle-2 mb-2">战队荣誉</div>
-              <template v-if="honorsLoading">
-                <v-progress-linear indeterminate color="primary" />
-              </template>
-              <v-alert v-if="honorsError" type="error" :text="honorsError" class="mb-2" />
-              <template v-if="(honors || []).length">
-                <v-list density="compact">
-                  <v-list-item v-for="e in honors" :key="e.id || e.Id">
                     <template #prepend>
-                      <v-avatar size="32" v-if="e.logoUrl || e.LogoUrl">
+                      <v-avatar size="32" color="primary-lighten-4" class="mr-2">
+                        <v-icon icon="person" color="primary" size="small" />
+                      </v-avatar>
+                    </template>
+                    <v-list-item-title class="font-weight-medium">{{ p.name || p.Name }}</v-list-item-title>
+                    <v-list-item-subtitle>
+                      <span v-if="p.gameId || p.GameId">ID: {{ p.gameId || p.GameId }} </span>
+                      <span v-if="p.gameRank || p.GameRank" class="ml-2">段位: {{ p.gameRank || p.GameRank }}</span>
+                      <span v-if="(p.playerType ?? p.PlayerType) != null" class="ml-2">角色: {{ playerTypeName(p.playerType ?? p.PlayerType) }}</span>
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                </v-list>
+              </v-card>
+
+              <div class="text-subtitle-2 mb-2 font-weight-bold">战队荣誉</div>
+              <template v-if="honorsLoading">
+                <v-progress-linear indeterminate color="primary" rounded class="mb-2" />
+              </template>
+              <v-alert v-if="honorsError" type="error" :text="honorsError" class="mb-2" variant="tonal" />
+              
+              <template v-if="(honors || []).length">
+                <v-list density="compact" class="bg-transparent mb-4">
+                  <v-list-item v-for="e in honors" :key="e.id || e.Id" rounded="lg" class="mb-1">
+                    <template #prepend>
+                      <v-avatar size="32" v-if="e.logoUrl || e.LogoUrl" rounded>
                         <v-img :src="e.logoUrl || e.LogoUrl" alt="event logo" cover>
                           <template #placeholder>
                             <div class="d-flex align-center justify-center" style="width:100%;height:100%">
@@ -426,17 +464,18 @@ async function onSavePlayer() {
                           </template>
                         </v-img>
                       </v-avatar>
+                      <v-icon v-else icon="emoji_events" color="warning" />
                     </template>
                     <v-list-item-title>{{ e.name || e.Name }}</v-list-item-title>
-                    <v-list-item-subtitle>冠军</v-list-item-subtitle>
+                    <v-list-item-subtitle class="text-warning font-weight-bold">冠军</v-list-item-subtitle>
                   </v-list-item>
                 </v-list>
               </template>
               <template v-else-if="!honorsLoading && !honorsError">
-                <v-alert type="info" text="暂无荣誉" density="compact" />
+                <div class="text-caption text-medium-emphasis mb-4 font-italic">暂无荣誉记录</div>
               </template>
-              <v-divider class="my-4" />
-              <div class="d-flex justify-end align-center gap-2">
+
+              <div class="d-flex justify-end align-center flex-wrap gap-2 mt-4">
                 <v-btn color="primary" variant="tonal" to="/teams/edit" prepend-icon="edit">编辑信息</v-btn>
                 <v-btn v-if="(currentUser?.displayTeamId || currentUser?.DisplayTeamId)" color="error" variant="text" :loading="unbinding" prepend-icon="logout" @click="onUnbindTeam">退出战队</v-btn>
                 <v-btn v-else color="error" variant="text" to="/teams/edit" prepend-icon="manage_accounts">管理战队</v-btn>
@@ -444,102 +483,147 @@ async function onSavePlayer() {
               </div>
             </v-col>
           </v-row>
-        </template>
-        <template v-else>
-          <v-alert type="info" text="你还没有战队，创建或绑定一个战队以报名赛事。" class="mb-3" />
-          <div class="d-flex flex-wrap gap-2 mb-4">
-            <v-btn color="primary" to="/teams/create" prepend-icon="group">去创建战队</v-btn>
-            <v-btn color="secondary" prepend-icon="link" @click="showBind = true">绑定已有战队</v-btn>
-          </div>
-
-          <v-expand-transition>
-            <div v-if="showBind">
+      </v-card>
+      
+      <template v-else>
+        <v-card variant="outlined" border rounded="xl" class="pa-8 text-center">
+           <v-icon icon="group_off" size="64" color="medium-emphasis" class="mb-4" />
+           <div class="text-h6 mb-2">你还没有战队</div>
+           <div class="text-body-2 text-medium-emphasis mb-6" style="max-width: 400px; margin: 0 auto;">
+             创建或绑定一个战队以报名赛事，与队友一起征战赛场。
+           </div>
+           
+           <div class="d-flex justify-center gap-4 mb-6">
+            <v-btn color="primary" to="/teams/create" prepend-icon="group_add" size="large" elevation="2">创建战队</v-btn>
+            <v-btn color="secondary" variant="tonal" prepend-icon="link" @click="showBind = true" size="large">绑定战队</v-btn>
+           </div>
+           
+           <v-expand-transition>
+            <div v-if="showBind" class="text-left mx-auto" style="max-width: 400px;">
+              <v-divider class="mb-6" />
+              <div class="text-subtitle-1 font-weight-bold mb-4">绑定已有战队</div>
               <v-form @submit.prevent="onBindTeamByName">
-                <v-text-field v-model="bindName" label="战队名称" prepend-inner-icon="group" required />
-                <v-text-field v-model="bindPassword" label="战队密码" type="password" prepend-inner-icon="lock" required />
+                <v-text-field v-model="bindName" label="战队名称" prepend-inner-icon="group" required variant="outlined" density="comfortable" class="mb-2" />
+                <v-text-field v-model="bindPassword" label="战队密码" type="password" prepend-inner-icon="lock" required variant="outlined" density="comfortable" class="mb-4" />
                 <div class="d-flex align-center justify-end">
-                  <v-btn type="submit" color="secondary" :loading="binding" prepend-icon="link">绑定战队</v-btn>
+                  <v-btn variant="text" @click="showBind = false" class="mr-2">取消</v-btn>
+                  <v-btn type="submit" color="secondary" :loading="binding" prepend-icon="link">确认绑定</v-btn>
                 </div>
               </v-form>
-              <v-alert v-if="bindError" type="error" :text="bindError" class="mt-3" />
+              <v-alert v-if="bindError" type="error" :text="bindError" class="mt-4" variant="tonal" />
             </div>
           </v-expand-transition>
-        </template>
-      </v-card-text>
-    </v-card>
+        </v-card>
+      </template>
+    </div>
   </v-container>
 
   <v-container class="py-6 narrow-container">
-    <v-card>
-      <v-card-title>我的玩家</v-card-title>
-      <v-card-text ref="playerSectionEl">
-        <v-alert v-if="playerError" type="error" :text="playerError" class="mb-4" />
+    <div class="mb-8">
+      <div class="d-flex align-center mb-4">
+        <v-icon icon="sports_esports" color="primary" class="mr-2" />
+        <h3 class="text-h6 font-weight-bold">我的玩家信息</h3>
+      </div>
+      
+      <v-card variant="flat" border rounded="xl" class="pa-6" ref="playerSectionEl">
+        <v-alert v-if="playerError" type="error" :text="playerError" class="mb-4" variant="tonal" />
+        
         <template v-if="(currentUser?.teamId || currentUser?.TeamId)">
-          <v-alert v-if="!hasPlayer && !playerLoading" type="info" text="你还没有玩家，填写下面的信息创建一个玩家并加入你的战队" class="mb-2" />
+          <v-alert v-if="!hasPlayer && !playerLoading" type="info" text="你还没有玩家档案，请填写下方信息创建玩家并自动加入战队。" class="mb-6" variant="tonal" border="start" icon="info" />
+          
           <v-form @submit.prevent="onSavePlayer">
-            <v-text-field v-model="myPlayer.name" label="玩家昵称" prepend-inner-icon="person" required />
+            <v-text-field v-model="myPlayer.name" label="玩家昵称" prepend-inner-icon="person" required variant="outlined" density="comfortable" />
             <v-row>
               <v-col cols="12" md="6">
-                <v-text-field v-model="myPlayer.gameId" label="游戏ID" prepend-inner-icon="sports_esports" />
+                <v-text-field v-model="myPlayer.gameId" label="游戏ID" prepend-inner-icon="sports_esports" variant="outlined" density="comfortable" />
               </v-col>
               <v-col cols="12" md="6">
-                <v-text-field v-model="myPlayer.gameRank" label="段位/等级" prepend-inner-icon="star" />
+                <v-text-field v-model="myPlayer.gameRank" label="段位/等级" prepend-inner-icon="star" variant="outlined" density="comfortable" />
               </v-col>
             </v-row>
-            <v-textarea v-model="myPlayer.description" label="简介" prepend-inner-icon="text_fields" />
-            <div class="d-flex justify-end">
-              <v-btn :loading="playerSaving" color="primary" type="submit" prepend-icon="save">保存玩家</v-btn>
+            <v-textarea v-model="myPlayer.description" label="简介" prepend-inner-icon="text_fields" variant="outlined" density="comfortable" rows="3" auto-grow />
+            
+            <div class="d-flex justify-end mt-4">
+              <v-btn :loading="playerSaving" color="primary" type="submit" prepend-icon="save" variant="flat" class="px-6">保存玩家档案</v-btn>
             </div>
           </v-form>
         </template>
         <template v-else>
-          <v-alert type="info" text="请先绑定或创建战队，再创建玩家" />
-          <div class="d-flex justify-end mt-2">
-
+          <div class="text-center py-8">
+             <v-icon icon="lock" color="medium-emphasis" size="48" class="mb-2" />
+             <div class="text-body-1 text-medium-emphasis">请先绑定或创建战队，再管理玩家档案</div>
           </div>
         </template>
-      </v-card-text>
-    </v-card>
+      </v-card>
+    </div>
   </v-container>
 
   <v-dialog v-model="showPlayerPrompt" max-width="520">
-    <v-card>
-      <v-card-title class="text-h6">添加你的玩家</v-card-title>
-      <v-card-text>
+    <v-card rounded="xl">
+      <v-card-title class="text-h6 pa-4">
+        <v-icon icon="person_add" color="primary" class="mr-2" />
+        添加你的玩家
+      </v-card-title>
+      <v-card-text class="px-4 pb-2">
         你已绑定战队，但还没有“我的玩家”。现在去创建一个玩家并自动加入你的战队吗？
       </v-card-text>
-      <v-card-actions class="justify-end">
+      <v-card-actions class="justify-end pa-4">
         <v-btn variant="text" @click="showPlayerPrompt=false">稍后再说</v-btn>
-        <v-btn color="primary" prepend-icon="person_add" @click="goToPlayerSection">去添加玩家</v-btn>
+        <v-btn color="primary" prepend-icon="arrow_forward" @click="goToPlayerSection" variant="flat">去添加玩家</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
   <v-dialog v-model="inviteDialog" max-width="640">
-    <v-card>
-      <v-card-title>绑定Token</v-card-title>
-      <v-card-text>
-        <v-alert v-if="inviteError" type="error" :text="inviteError" class="mb-3" />
-        <div class="d-flex align-center gap-2 mb-3">
-          <div class="text-subtitle-2">有效期(天)</div>
-          <v-text-field v-model="inviteValidDays" type="number" density="compact" style="max-width: 120px" />
-          <v-btn color="primary" :loading="inviteLoading" @click="onGenerateInvite">重新生成</v-btn>
+    <v-card rounded="xl">
+      <v-card-title class="d-flex align-center pa-4">
+        <v-icon icon="key" color="primary" class="mr-2" />
+        <span class="text-h6">绑定 Token</span>
+      </v-card-title>
+      <v-card-text class="px-4">
+        <v-alert v-if="inviteError" type="error" :text="inviteError" class="mb-4" variant="tonal" />
+        
+        <div class="d-flex align-center gap-4 mb-6">
+          <v-text-field 
+            v-model="inviteValidDays" 
+            type="number" 
+            label="有效期(天)" 
+            variant="outlined" 
+            density="compact" 
+            hide-details
+            style="max-width: 120px" 
+          />
+          <v-btn color="primary" variant="tonal" :loading="inviteLoading" @click="onGenerateInvite" prepend-icon="refresh">重新生成</v-btn>
         </div>
-        <div class="mb-2">战队：{{ inviteDto?.TeamName || inviteDto?.teamName || team?.name || team?.Name }}</div>
-        <div class="mb-2">Token：<code>{{ inviteDto?.Token || inviteDto?.token }}</code> <v-btn size="x-small" class="ml-2" prepend-icon="content_copy" @click="copyInviteToken">复制</v-btn></div>
-        <div class="mb-2">过期时间：{{ (inviteDto?.ExpiresAt || inviteDto?.expiresAt) ? new Date(inviteDto?.ExpiresAt || inviteDto?.expiresAt).toLocaleString() : '' }}</div>
-        <v-divider class="my-3" />
-        <div>在QQ群发送命令：<code>绑定战队 Token</code></div>
-        <div>绑定成功后，Token 立即失效。</div>
+        
+        <v-card variant="tonal" color="surface-variant" class="pa-4 mb-4 border-dashed">
+          <div class="d-flex justify-space-between mb-2">
+             <span class="text-medium-emphasis">战队</span>
+             <span class="font-weight-bold">{{ inviteDto?.TeamName || inviteDto?.teamName || team?.name || team?.Name }}</span>
+          </div>
+           <div class="d-flex justify-space-between mb-2 align-center">
+             <span class="text-medium-emphasis">Token</span>
+             <div class="d-flex align-center">
+                <code class="bg-surface pa-1 rounded mr-2">{{ inviteDto?.Token || inviteDto?.token || '---' }}</code>
+                <v-btn size="small" variant="text" icon="content_copy" @click="copyInviteToken" title="复制"></v-btn>
+             </div>
+          </div>
+          <div class="d-flex justify-space-between">
+             <span class="text-medium-emphasis">过期时间</span>
+             <span>{{ (inviteDto?.ExpiresAt || inviteDto?.expiresAt) ? new Date(inviteDto?.ExpiresAt || inviteDto?.expiresAt).toLocaleString() : '---' }}</span>
+          </div>
+        </v-card>
+
+        <div class="text-body-2 text-medium-emphasis">
+          <div class="mb-1">👉 在 QQ 群发送命令：<code class="bg-surface pa-1 rounded">绑定战队 [Token]</code></div>
+          <div>⚠️ 绑定成功后，Token 将立即失效。</div>
+        </div>
       </v-card-text>
-      <v-card-actions>
+      <v-card-actions class="pa-4">
         <v-spacer></v-spacer>
         <v-btn variant="text" @click="inviteDialog=false">关闭</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
-  
-  
-  
 </template>
 
 <style scoped>
