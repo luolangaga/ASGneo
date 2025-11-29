@@ -97,62 +97,35 @@ jobs:
           name: backend-publish
           path: ./artifacts/backend
       - name: Copy frontend to server (key auth)
-        if: ${{ secrets.SSH_PRIVATE_KEY != '' }}
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
+          port: ${{ secrets.DEPLOY_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "artifacts/frontend/**"
-          target: "/www/wwwroot/idvevent.cn"
-          overwrite: true
-      - name: Copy frontend to server (password auth)
-        if: ${{ secrets.SSH_PRIVATE_KEY == '' && secrets.DEPLOY_PASSWORD != '' }}
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
           source: "artifacts/frontend/**"
           target: "/www/wwwroot/idvevent.cn"
           overwrite: true
-      - name: Copy backend dll to server (key auth)
-        if: ${{ secrets.SSH_PRIVATE_KEY != '' }}
+          strip_components: 2
+      - name: Copy backend dll to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
+          port: ${{ secrets.DEPLOY_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "artifacts/backend/ASG.Api.dll"
-          target: "/www/wwwroot/backend/"
-          overwrite: true
-      - name: Copy backend dll to server (password auth)
-        if: ${{ secrets.SSH_PRIVATE_KEY == '' && secrets.DEPLOY_PASSWORD != '' }}
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
           source: "artifacts/backend/ASG.Api.dll"
           target: "/www/wwwroot/backend/"
           overwrite: true
-      - name: Restart backend program (key auth)
-        if: ${{ secrets.SSH_PRIVATE_KEY != '' }}
+      - name: Restart backend program
         uses: appleboy/ssh-action@v1.1.0
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
+          port: ${{ secrets.DEPLOY_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            set -e
-            pkill -f "dotnet .*ASG.Api.dll" || true
-            nohup /root/.dotnet/dotnet /www/wwwroot/backend/ASG.Api.dll > /www/wwwroot/backend/api.log 2>&1 &
-      - name: Restart backend program (password auth)
-        if: ${{ secrets.SSH_PRIVATE_KEY == '' && secrets.DEPLOY_PASSWORD != '' }}
-        uses: appleboy/ssh-action@v1.1.0
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
           script: |
             set -e
