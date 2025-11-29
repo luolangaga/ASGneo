@@ -96,6 +96,20 @@ jobs:
         with:
           name: backend-publish
           path: ./artifacts/backend
+      - name: Prepare remote directories
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          port: ${{ secrets.DEPLOY_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.DEPLOY_PASSWORD }}
+          timeout: 2m
+          command_timeout: 2m
+          script: |
+            set -e
+            mkdir -p /www/wwwroot/idvevent.cn
+            mkdir -p /www/wwwroot/backend
       - name: Copy frontend to server (key auth)
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -118,7 +132,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
           debug: true
-          source: "artifacts/backend/ASG.Api.dll"
+          source: "artifacts/backend/**"
           target: "/www/wwwroot/backend/"
           overwrite: true
       - name: Restart backend program
@@ -150,6 +164,7 @@ jobs:
               echo "dotnet runtime not found" >&2
               exit 1
             fi
-            nohup "$DOTNET_BIN" /www/wwwroot/backend/ASG.Api.dll > /www/wwwroot/backend/api.log 2>&1 &
-            sleep 2
-            ps aux | grep -v grep | grep "ASG.Api.dll" || { echo "ASG.Api.dll not running" >&2; exit 1; }
+            cd /www/wwwroot/backend
+            nohup "$DOTNET_BIN" ./ASG.Api.dll > ./api.log 2>&1 &
+            sleep 3
+            pgrep -f "ASG.Api.dll" >/dev/null || { echo "ASG.Api.dll not running" >&2; exit 1; }
