@@ -127,7 +127,8 @@ jobs:
           port: ${{ secrets.DEPLOY_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
+          timeout: 300
           script: |
             set -e
-            pkill -f "dotnet .*ASG.Api.dll" || true
+            pkill -x dotnet || true
             nohup /root/.dotnet/dotnet /www/wwwroot/backend/ASG.Api.dll > /www/wwwroot/backend/api.log 2>&1 &
