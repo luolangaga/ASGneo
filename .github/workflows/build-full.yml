@@ -96,16 +96,18 @@ jobs:
         with:
           name: backend-publish
           path: ./artifacts/backend
-      - name: Copy frontend to server
+      - name: Copy frontend to server (key auth)
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           port: ${{ secrets.DEPLOY_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.DEPLOY_PASSWORD }}
           source: "artifacts/frontend/**"
           target: "/www/wwwroot/idvevent.cn"
           overwrite: true
+          strip_components: 2
       - name: Copy backend dll to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -113,6 +115,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           port: ${{ secrets.DEPLOY_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.DEPLOY_PASSWORD }}
           source: "artifacts/backend/ASG.Api.dll"
           target: "/www/wwwroot/backend/"
           overwrite: true
@@ -123,6 +126,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           port: ${{ secrets.DEPLOY_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.DEPLOY_PASSWORD }}
           script: |
             set -e
             pkill -f "dotnet .*ASG.Api.dll" || true
