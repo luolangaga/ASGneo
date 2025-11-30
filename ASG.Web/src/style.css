@@ -128,6 +128,22 @@ body {
   height: 96px;
 }
 
+.md-content .md-bili,
+.md-preview .md-bili {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin: 0.8em 0;
+}
+.md-content .md-bili iframe,
+.md-preview .md-bili iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.1);
+}
+
 @media (prefers-color-scheme: dark) {
   .md-content :not(pre) > code { background: rgba(255,255,255,0.08); }
   .md-content pre { background: rgba(255,255,255,0.08); }

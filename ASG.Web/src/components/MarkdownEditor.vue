@@ -16,6 +16,8 @@ const tab = ref('edit')
 const inputRef = ref(null)
 const fileInputRef = ref(null)
 const uploadingImg = ref(false)
+const biliDialogOpen = ref(false)
+const biliInput = ref('')
 const value = computed({
   get: () => props.modelValue || '',
   set: v => emit('update:modelValue', v),
@@ -88,6 +90,23 @@ async function onUploadImage(e) {
     try { e.target.value = '' } catch {}
   }
 }
+
+function openBiliDialog() {
+  biliDialogOpen.value = true
+}
+
+function insertBiliFromInput() {
+  const raw = String(biliInput.value || '').trim()
+  if (!raw) { biliDialogOpen.value = false; return }
+  let url = raw
+  const bv = raw.match(/\b(BV[0-9A-Za-z]+)/i)
+  const av = raw.match(/\bav(\d+)/i)
+  if (bv) url = `https://www.bilibili.com/video/${bv[1]}`
+  else if (av) url = `https://www.bilibili.com/video/av${av[1]}`
+  insertAtCursor(`\n${url}\n`)
+  biliDialogOpen.value = false
+  biliInput.value = ''
+}
 </script>
 
 <template>
@@ -106,6 +125,7 @@ async function onUploadImage(e) {
         <v-btn size="small" variant="tonal" prepend-icon="title" @click="insertHeading(2)">标题</v-btn>
         <v-btn size="small" variant="tonal" prepend-icon="link" @click="insertLink">链接</v-btn>
         <v-btn size="small" variant="tonal" prepend-icon="image" @click="insertImage">图片</v-btn>
+        <v-btn size="small" variant="tonal" prepend-icon="smart_display" @click="openBiliDialog">哔哩哔哩视频</v-btn>
         <v-btn size="small" color="primary" variant="tonal" :loading="uploadingImg" prepend-icon="file_upload" @click="triggerUpload">上传图片</v-btn>
         <input ref="fileInputRef" type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif" @change="onUploadImage" style="display:none" />
       </div>
@@ -125,6 +145,19 @@ async function onUploadImage(e) {
       当前字数：{{ length }}<template v-if="limit">（上限 {{ limit }}）</template>
     </div>
   </div>
+  <v-dialog v-model="biliDialogOpen" max-width="480">
+    <v-card>
+      <v-card-title>插入哔哩哔哩视频</v-card-title>
+      <v-card-text>
+        <v-text-field v-model="biliInput" label="BV号或视频链接" prepend-inner-icon="smart_display" placeholder="例如：BV1xx411c7uA 或 https://www.bilibili.com/video/BV..." @keyup.enter="insertBiliFromInput" />
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn variant="text" @click="biliDialogOpen = false">取消</v-btn>
+        <v-btn color="primary" prepend-icon="add_link" @click="insertBiliFromInput">插入</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
   
 </template>
 
