@@ -108,62 +108,64 @@ function onLogoSelected(files) {
 </script>
 
 <template>
-  <PageHero title="创建赛事" subtitle="填写基本信息并上传赛事Logo" icon="add_box">
-    <template #actions>
-      <v-btn color="white" variant="text" class="mr-3 mb-3" to="/events" prepend-icon="grid_view">返回看板</v-btn>
-      <v-btn color="white" variant="text" class="mb-3" to="/events/manage" prepend-icon="settings">我的赛事</v-btn>
-    </template>
-  </PageHero>
-  <v-container class="py-8" style="max-width: 860px">
-    <v-card>
-      <v-card-title>创建赛事</v-card-title>
-      <v-card-text>
-        <v-alert v-if="errorMsg" type="error" :text="errorMsg" class="mb-4" />
-        <v-form @submit.prevent="onSubmit">
-          <v-text-field v-model="name" label="赛事名称" prepend-inner-icon="text_fields" required />
-          <MarkdownEditor v-model="description" label="赛事描述" :rows="8" :maxLength="999" />
-          <div class="d-flex justify-end mt-2">
-            <v-btn :loading="polishing" variant="tonal" color="primary" prepend-icon="auto_awesome" @click="onPolishDescription">AI润色</v-btn>
-          </div>
-          <div class="mb-2">
-            <div class="text-caption mb-2">赛事Logo（必填，png/jpg/webp，≤5MB）：</div>
-            <v-file-input
-              prepend-icon="add_photo_alternate"
-              density="comfortable"
-              accept="image/png, image/jpeg, image/jpg, image/webp"
-              show-size
-              required
-              @update:modelValue="onLogoSelected"
-              label="选择图片文件"
-            />
-            <v-alert v-if="logoError" type="error" :text="logoError" class="mt-2" />
-          </div>
-          <v-row>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="registrationStartTime" label="报名开始时间" type="datetime-local" prepend-inner-icon="calendar_month" required />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="registrationEndTime" label="报名结束时间" type="datetime-local" prepend-inner-icon="calendar_month" required />
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="competitionStartTime" label="比赛开始时间" type="datetime-local" prepend-inner-icon="calendar_month" required />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="competitionEndTime" label="比赛结束时间" type="datetime-local" prepend-inner-icon="calendar_month" />
-            </v-col>
-          </v-row>
-          <v-text-field v-model="qqGroup" label="QQ群（可选，群号或邀请链接）" prepend-inner-icon="groups" />
-          <MarkdownEditor v-model="rulesMarkdown" label="赛事规则（Markdown，可选）" :rows="10" :maxLength="0" />
-          <v-text-field v-model="maxTeams" label="最大队伍数" type="number" min="1" max="1000" prepend-inner-icon="group" />
-          <div class="d-flex justify-end">
-            <v-btn :loading="saving" color="primary" type="submit" prepend-icon="save">创建</v-btn>
-          </div>
-        </v-form>
-      </v-card-text>
-    </v-card>
-  </v-container>
+  <div>
+    <PageHero title="创建赛事" subtitle="填写基本信息并上传赛事Logo" icon="add_box">
+      <template #actions>
+        <v-btn color="white" variant="text" class="mr-3 mb-3" to="/events" prepend-icon="grid_view">返回看板</v-btn>
+        <v-btn color="white" variant="text" class="mb-3" to="/events/manage" prepend-icon="settings">我的赛事</v-btn>
+      </template>
+    </PageHero>
+    <v-container class="py-8" style="max-width: 860px">
+      <v-card>
+        <v-card-title>创建赛事</v-card-title>
+        <v-card-text>
+          <v-alert v-if="errorMsg" type="error" :text="errorMsg" class="mb-4" />
+          <v-form @submit.prevent="onSubmit">
+            <v-text-field v-model="name" label="赛事名称" prepend-inner-icon="text_fields" required />
+            <MarkdownEditor v-model="description" label="赛事描述" :rows="8" :maxLength="999" />
+            <div class="d-flex justify-end mt-2">
+              <v-btn :loading="polishing" variant="tonal" color="primary" prepend-icon="auto_awesome" @click="onPolishDescription">AI润色</v-btn>
+            </div>
+            <div class="mb-2">
+              <div class="text-caption mb-2">赛事Logo（必填，png/jpg/webp，≤5MB）：</div>
+              <v-file-input
+                prepend-icon="add_photo_alternate"
+                density="comfortable"
+                accept="image/png, image/jpeg, image/jpg, image/webp"
+                show-size
+                required
+                @update:modelValue="onLogoSelected"
+                label="选择图片文件"
+              />
+              <v-alert v-if="logoError" type="error" :text="logoError" class="mt-2" />
+            </div>
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-text-field v-model="registrationStartTime" label="报名开始时间" type="datetime-local" prepend-inner-icon="calendar_month" required />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field v-model="registrationEndTime" label="报名结束时间" type="datetime-local" prepend-inner-icon="calendar_month" required />
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-text-field v-model="competitionStartTime" label="比赛开始时间" type="datetime-local" prepend-inner-icon="calendar_month" required />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field v-model="competitionEndTime" label="比赛结束时间" type="datetime-local" prepend-inner-icon="calendar_month" />
+              </v-col>
+            </v-row>
+            <v-text-field v-model="qqGroup" label="QQ群（可选，群号或邀请链接）" prepend-inner-icon="groups" />
+            <MarkdownEditor v-model="rulesMarkdown" label="赛事规则（Markdown，可选）" :rows="10" :maxLength="0" />
+            <v-text-field v-model="maxTeams" label="最大队伍数" type="number" min="1" max="1000" prepend-inner-icon="group" />
+            <div class="d-flex justify-end">
+              <v-btn :loading="saving" color="primary" type="submit" prepend-icon="save">创建</v-btn>
+            </div>
+          </v-form>
+        </v-card-text>
+      </v-card>
+    </v-container>
+  </div>
 </template>
 
 <style scoped>

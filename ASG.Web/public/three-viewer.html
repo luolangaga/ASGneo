@@ -1,0 +1,301 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3D Viewer</title>
+<style>
+  html,body{margin:0;height:100%;background:transparent;color:#fff;overflow:hidden}
+  #c{display:block;width:100%;height:100%}
+  .err{position:absolute;left:0;right:0;top:0;padding:8px 12px;background:#c00;color:#fff;font:12px/1.4 system-ui;z-index:10}
+  #loader{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;background:transparent;z-index:20}
+  #loader lottie-player{width:140px;height:140px}
+</style>
+<!-- Dynamic Import Map Injector -->
+<script>
+(async function() {
+  const cdns = [
+    'https://fastly.jsdelivr.net/npm/',
+    'https://cdn.jsdelivr.net/npm/',
+    'https://unpkg.com/'
+  ];
+
+  function log(msg) {
+    
+  }
+
+  async function findFastestCDN() {
+    log('Checking CDNs...');
+    for (const cdn of cdns) {
+      try {
+        // Check three.js main module
+        const testUrl = cdn + 'three@0.161.0/build/three.module.js';
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), 2000); // 2s timeout
+        const res = await fetch(testUrl, { method: 'HEAD', signal: controller.signal });
+        clearTimeout(id);
+        if (res.ok) return cdn;
+      } catch (e) {
+        continue;
+      }
+    }
+    log('All CDNs failed or timed out, using default.');
+    return cdns[0];
+  }
+
+  const root = await findFastestCDN();
+  log('Using CDN: ' + root);
+
+  // Inject Import Map
+  const im = document.createElement('script');
+  im.type = 'importmap';
+  im.textContent = JSON.stringify({
+    imports: {
+      "three": root + "three@0.161.0/build/three.module.js",
+      "three/addons/": root + "three@0.161.0/examples/jsm/",
+      "mmd-parser": root + "mmd-parser@1.0.4/mmdparser.module.js"
+    }
+  });
+  document.head.appendChild(im);
+
+  // Activate Main Script
+  const mainScript = document.getElementById('main-script');
+  if (mainScript) {
+    const newScript = document.createElement('script');
+    newScript.type = 'module';
+    newScript.textContent = mainScript.textContent;
+    document.body.appendChild(newScript);
+  }
+})();
+</script>
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="loader"><lottie-player src="/animations/loading.json" autoplay loop></lottie-player></div>
+
+<!-- Main Logic (Lazy Loaded) -->
+<script id="main-script" type="text/plain">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
+import { TGALoader } from 'three/addons/loaders/TGALoader.js';
+import { MMDLoader } from 'three/addons/loaders/MMDLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+function log(msg) {}
+
+const p = new URLSearchParams(location.search)
+const src = p.get('src') ? decodeURIComponent(p.get('src')) : ''
+const fmt = (p.get('format') || '').toLowerCase()
+function extOf(u){const m=u.toLowerCase().match(/\.([a-z0-9]+)(?:[?#].*)?$/);return (fmt|| (m?m[1]:''))}
+
+if(!src){
+  document.body.insertAdjacentHTML('afterbegin','<div class="err">缺少模型地址</div>')
+  throw new Error('missing src')
+}
+
+log('Loading THREE...')
+const canvas = document.getElementById('c')
+const renderer = new THREE.WebGLRenderer({canvas,antialias:true,alpha:true})
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2))
+renderer.setSize(window.innerWidth,window.innerHeight)
+renderer.outputColorSpace = THREE.SRGBColorSpace
+renderer.shadowMap.enabled = true
+renderer.shadowMap.type = THREE.PCFSoftShadowMap
+renderer.useLegacyLights = false
+renderer.toneMapping = THREE.ACESFilmicToneMapping
+renderer.toneMappingExposure = 1.0
+renderer.setClearColor(0x000000, 0)
+
+const scene = new THREE.Scene()
+scene.background = null
+
+const camera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,10000)
+camera.position.set(5,5,5)
+
+const controls = new OrbitControls(camera,canvas)
+controls.enableDamping = true
+controls.target.set(0,0,0)
+
+// Lighting Setup
+const ambient = new THREE.AmbientLight(0xffffff, 1.5)
+scene.add(ambient)
+
+const hemi = new THREE.HemisphereLight(0xffffff,0x444444, 1.0)
+scene.add(hemi)
+
+const dir = new THREE.DirectionalLight(0xffffff, 2.0)
+dir.position.set(5,10,7)
+dir.castShadow = true
+scene.add(dir)
+
+// Environment
+const pmrem = new THREE.PMREMGenerator(renderer)
+scene.environment = pmrem.fromScene(new RoomEnvironment(),0.04).texture
+
+const manager = new THREE.LoadingManager()
+const loaderEl = document.getElementById('loader')
+function showLoader(){ if(loaderEl) loaderEl.style.display='flex' }
+function hideLoader(){ if(loaderEl) loaderEl.style.display='none' }
+showLoader()
+manager.onStart = () => showLoader()
+manager.onLoad = () => hideLoader()
+manager.onProgress = () => {}
+manager.onError = () => { hideLoader() }
+
+try { manager.addHandler(/\.tga$/i, new TGALoader(manager)) } catch {}
+
+let object=null
+function basePath(u){try{const i=u.lastIndexOf('/');return i>=0?u.slice(0,i+1):''}catch{return ''}}
+const base = basePath(src)
+
+function fixMaterials(o){
+  log('Fixing materials...')
+  let count = 0
+  o.traverse(n=>{
+    if(n && n.isMesh){
+      n.castShadow = true
+      n.receiveShadow = true
+      if(n.material){
+        const mats = Array.isArray(n.material)? n.material : [n.material]
+        for(const m of mats){
+          count++
+          if(!m.map && (!m.color || (m.color.r===0 && m.color.g===0 && m.color.b===0))) {
+            m.color = new THREE.Color(0xdddddd)
+          }
+          m.side = THREE.DoubleSide
+          m.needsUpdate = true
+        }
+      }
+      if(n.geometry && !n.geometry.attributes.normal){
+         n.geometry.computeVertexNormals()
+      }
+    }
+  })
+  log(`Processed ${count} materials`)
+}
+
+function centerAndFit(o){
+  log('Centering camera...')
+  const box = new THREE.Box3().setFromObject(o)
+  const size = box.getSize(new THREE.Vector3())
+  const center = box.getCenter(new THREE.Vector3())
+  
+  log(`Bounds: ${JSON.stringify(size)}, Center: ${JSON.stringify(center)}`)
+  
+  if(size.lengthSq() < 0.0001) {
+     log('Warning: Model bounding box is empty/zero!')
+     size.set(1,1,1)
+  }
+
+  o.position.sub(center)
+  
+  const maxSize = Math.max(size.x,size.y,size.z)
+  const dist = maxSize * 2.0
+  
+  camera.near = maxSize / 1000
+  camera.far = maxSize * 100
+  camera.updateProjectionMatrix()
+  
+  camera.position.set(dist, dist * 0.5, dist)
+  controls.target.set(0,0,0)
+  controls.update()
+}
+
+function add(o){
+  object=o
+  scene.add(o)
+  fixMaterials(o)
+  centerAndFit(o)
+  hideLoader()
+}
+
+async function load(){
+  const e = extOf(src)
+  const file = src.startsWith(base) ? src.slice(base.length) : src;
+  log(`Loading format: ${e} from ${src}`)
+  try{
+    if(e==='gltf' || e==='glb'){
+      const l=new GLTFLoader(manager);l.setResourcePath(base);l.setPath(base);
+      const d=await l.loadAsync(file);add(d.scene||d.scenes?.[0]||d)
+    }
+    else if(e==='obj'){
+      const objL=new OBJLoader(manager);objL.setPath(base);objL.setResourcePath(base);
+      try{
+        const mtlL=new MTLLoader(manager);mtlL.setPath(base);mtlL.setResourcePath(base);
+        const mtlUrl=file.replace(/\.obj(?:[?#].*)?$/i,'.mtl');
+        log(`Attempting MTL: ${mtlUrl}`)
+        const mat=await mtlL.loadAsync(mtlUrl);
+        try{
+           const orig=mat.loadTexture?.bind(mat);
+           if(orig){
+             mat.loadTexture=function(url,opts){
+               log(`Loading texture: ${url}`)
+               if(/\.tga(?:[?#].*)?$/i.test(url)){
+                 const tl=new TGALoader(manager);tl.setPath(base);tl.setResourcePath(base);
+                 const tex=tl.load(url);
+                 if(opts?.side!==undefined) tex.side=opts.side;
+                 return tex
+               }
+               return orig(url,opts)
+             }
+           }
+        }catch(err){ log('MTL texture hack failed: '+err) }
+        mat.preload();
+        objL.setMaterials(mat);
+      }catch(err){ log('MTL load skipped: '+err) }
+      const d=await objL.loadAsync(file);add(d)
+    }
+    else if(e==='fbx'){
+      const l=new FBXLoader(manager);l.setPath(base);l.setResourcePath(base);
+      const d=await l.loadAsync(file);add(d)
+    }
+    else if(e==='pmx' || e==='pmd'){
+        log('Using MMDLoader')
+        const l=new MMDLoader(manager);l.setPath(base);l.setResourcePath(base);
+        const d=await l.loadAsync(file);add(d)
+    }
+    else if(e==='stl'){
+      const l=new STLLoader();const geo=await l.loadAsync(src);
+      const mat=new THREE.MeshStandardMaterial({color:0xcccccc,metalness:0.1,roughness:0.8});
+      add(new THREE.Mesh(geo,mat))
+    }
+    else if(e==='ply'){
+      const l=new PLYLoader();const geo=await l.loadAsync(src);geo.computeVertexNormals();
+      const mat=new THREE.MeshStandardMaterial({color:0xcccccc,metalness:0.1,roughness:0.8});
+      add(new THREE.Mesh(geo,mat))
+    }
+    else{
+      const l=new GLTFLoader(manager);l.setResourcePath(base);l.setPath(base);
+      const d=await l.loadAsync(file);add(d.scene||d)
+    }
+  }catch(err){
+    hideLoader()
+    document.body.insertAdjacentHTML('afterbegin',`<div class="err">模型加载失败: ${err.message}</div>`)
+    throw err
+  }
+}
+
+function animate(){
+  requestAnimationFrame(animate)
+  controls.update()
+  renderer.render(scene,camera)
+}
+
+window.addEventListener('resize',()=>{
+  renderer.setSize(window.innerWidth,window.innerHeight)
+  camera.aspect=window.innerWidth/window.innerHeight
+  camera.updateProjectionMatrix()
+})
+
+load()
+animate()
+</script>
+</body>
+</html>

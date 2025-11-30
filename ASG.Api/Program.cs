@@ -19,9 +19,11 @@ using ASG.Api.Repositories;
 using ASG.Api.Middleware;
 using ASG.Api.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.AspNetCore.StaticFiles;
 
 // 应用启动入口：配置日志、端口、服务、认证与授权、数据库、路由以及数据导入开关
 var builder = WebApplication.CreateBuilder(args);
@@ -62,6 +64,10 @@ var configuredUrls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS")
                     ?? builder.Configuration["Urls"]
                     ?? "http://localhost:5250";
 builder.WebHost.UseUrls(configuredUrls);
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 200L * 1024 * 1024;
+});
 Log.Information("Using URLs: {Urls}", configuredUrls);
 
 // 控制器与模型验证：将默认英文错误替换为中文提示
@@ -141,6 +147,11 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 200L * 1024 * 1024;
+});
+
 // 数据库：PostgreSQL 连接与上下文池
 builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
     options
@@ -217,8 +228,6 @@ builder.Services.AddScoped<IPayrollService, PayrollService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IExternalAuthService, ExternalAuthService>();
 builder.Services.AddHttpClient();
-builder.Services.Configure<ASG.Api.Services.BotOptions>(builder.Configuration.GetSection("Bot"));
-builder.Services.AddHostedService<ASG.Api.Services.QqBotHostedService>();
 // 远端数据抓取 HttpClient：网易接口（自动解压 gzip/deflate/br）
 builder.Services.AddHttpClient("netease", c =>
 {
@@ -280,7 +289,19 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 app.UseCors("DevCors");
-app.UseStaticFiles();
+var contentTypeProvider = new FileExtensionContentTypeProvider();
+contentTypeProvider.Mappings[".glb"] = "model/gltf-binary";
+contentTypeProvider.Mappings[".gltf"] = "model/gltf+json";
+contentTypeProvider.Mappings[".obj"] = "text/plain";
+contentTypeProvider.Mappings[".fbx"] = "application/octet-stream";
+contentTypeProvider.Mappings[".stl"] = "model/stl";
+contentTypeProvider.Mappings[".ply"] = "text/plain";
+contentTypeProvider.Mappings[".bin"] = "application/octet-stream";
+contentTypeProvider.Mappings[".mtl"] = "text/plain";
+contentTypeProvider.Mappings[".tga"] = "image/x-tga";
+contentTypeProvider.Mappings[".pmx"] = "application/octet-stream";
+contentTypeProvider.Mappings[".pmd"] = "application/octet-stream";
+app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = contentTypeProvider });
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, nextTick } from 'vue'
 import { renderMarkdown } from '../utils/markdown'
-import { uploadImage } from '../services/files'
+import { uploadImage, uploadModelBundle } from '../services/files'
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
@@ -18,6 +18,10 @@ const fileInputRef = ref(null)
 const uploadingImg = ref(false)
 const biliDialogOpen = ref(false)
 const biliInput = ref('')
+const modelDialogOpen = ref(false)
+const modelInput = ref('')
+const modelFilesInputRef = ref(null)
+const uploadingModel = ref(false)
 const value = computed({
   get: () => props.modelValue || '',
   set: v => emit('update:modelValue', v),
@@ -107,6 +111,39 @@ function insertBiliFromInput() {
   biliDialogOpen.value = false
   biliInput.value = ''
 }
+
+function openModelDialog() {
+  modelDialogOpen.value = true
+}
+
+function insertModelFromInput() {
+  const raw = String(modelInput.value || '').trim()
+  if (!raw) { modelDialogOpen.value = false; return }
+  insertAtCursor(`\n${raw}\n`)
+  modelDialogOpen.value = false
+  modelInput.value = ''
+}
+
+async function onUploadModelFiles(e) {
+  const files = Array.from(e?.target?.files || []).filter(Boolean)
+  if (!files.length) return
+  const maxTotal = 200 * 1024 * 1024
+  const total = files.reduce((s, f) => s + (f?.size || 0), 0)
+  if (total > maxTotal) { console.error('文件总大小超过限制'); try { e.target.value = '' } catch {}; return }
+  uploadingModel.value = true
+  try {
+    const res = await uploadModelBundle(files, { mainName: files[0]?.name })
+    const url = res?.mainUrl || res?.url || res?.Url
+    if (!url) throw new Error('上传成功，但未返回主模型URL')
+    insertAtCursor(`\n${url}\n`)
+    modelDialogOpen.value = false
+  } catch (err) {
+    console.error('上传模型失败', err)
+  } finally {
+    uploadingModel.value = false
+    try { e.target.value = '' } catch {}
+  }
+}
 </script>
 
 <template>
@@ -126,6 +163,7 @@ function insertBiliFromInput() {
         <v-btn size="small" variant="tonal" prepend-icon="link" @click="insertLink">链接</v-btn>
         <v-btn size="small" variant="tonal" prepend-icon="image" @click="insertImage">图片</v-btn>
         <v-btn size="small" variant="tonal" prepend-icon="smart_display" @click="openBiliDialog">哔哩哔哩视频</v-btn>
+        <v-btn size="small" variant="tonal" prepend-icon="view_in_ar" @click="openModelDialog">插入3D模型</v-btn>
         <v-btn size="small" color="primary" variant="tonal" :loading="uploadingImg" prepend-icon="file_upload" @click="triggerUpload">上传图片</v-btn>
         <input ref="fileInputRef" type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif" @change="onUploadImage" style="display:none" />
       </div>
@@ -155,6 +193,24 @@ function insertBiliFromInput() {
         <v-spacer />
         <v-btn variant="text" @click="biliDialogOpen = false">取消</v-btn>
         <v-btn color="primary" prepend-icon="add_link" @click="insertBiliFromInput">插入</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+  <v-dialog v-model="modelDialogOpen" max-width="480">
+    <v-card>
+      <v-card-title>插入3D模型</v-card-title>
+      <v-card-text>
+        <v-text-field v-model="modelInput" label="模型链接（glb/gltf/obj/fbx/stl/ply）" prepend-inner-icon="view_in_ar" placeholder="例如：https://example.com/model.glb" @keyup.enter="insertModelFromInput" />
+        <div class="d-flex align-center mt-2">
+          <v-btn size="small" variant="tonal" prepend-icon="file_upload" :loading="uploadingModel" @click="modelFilesInputRef && modelFilesInputRef.click()">上传模型/纹理（多文件）</v-btn>
+          <input ref="modelFilesInputRef" type="file" multiple accept=".glb,.gltf,.obj,.fbx,.stl,.ply,.mtl,.bin,.tga,.pmx,.pmd,image/png,image/jpeg,image/jpg,image/webp" @change="onUploadModelFiles" style="display:none" />
+          <div class="text-caption text-medium-emphasis ml-3">将模型与材质/纹理一并上传，系统会生成主模型链接并插入。</div>
+        </div>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn variant="text" @click="modelDialogOpen = false">取消</v-btn>
+        <v-btn color="primary" prepend-icon="add_link" @click="insertModelFromInput">插入</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

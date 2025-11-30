@@ -62,6 +62,44 @@ md.core.ruler.after('inline', 'bili-embed', function (state) {
   }
 })
 
+function parseModel(url) {
+  if (!url || typeof url !== 'string') return null
+  const u = url.trim()
+  const m = u.match(/\.(glb|gltf|obj|fbx|stl|ply)(?:[?#].*)?$/i)
+  if (!m) return null
+  return { type: 'model', format: m[1].toLowerCase(), src: u }
+}
+
+function toThreeEmbed(info) {
+  if (!info || info.type !== 'model') return ''
+  const src = encodeURIComponent(info.src)
+  const fmt = encodeURIComponent(info.format || '')
+  const iframeSrc = `/three-viewer.html?src=${src}&format=${fmt}`
+  return `<div class="md-3d"><iframe src="${iframeSrc}" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts"></iframe></div>`
+}
+
+md.core.ruler.after('inline', 'three-embed', function (state) {
+  for (let i = 0; i < state.tokens.length; i++) {
+    const tok = state.tokens[i]
+    if (tok.type !== 'inline' || !Array.isArray(tok.children)) continue
+    const children = tok.children
+    for (let j = 0; j < children.length; j++) {
+      const t = children[j]
+      if (t.type !== 'link_open') continue
+      const href = t.attrGet('href') || ''
+      const info = parseModel(href)
+      if (!info) continue
+      let k = j + 1
+      while (k < children.length && children[k].type !== 'link_close') k++
+      const html = toThreeEmbed(info)
+      children[j].type = 'html_inline'
+      children[j].tag = ''
+      children[j].content = html
+      children.splice(j + 1, Math.max(0, k - j))
+    }
+  }
+})
+
 export function renderMarkdown(text) {
   if (!text || typeof text !== 'string') return ''
   return md.render(text)

@@ -1,0 +1,135 @@
+2025-11-30 22:38:14.096 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-30 22:38:14.201 +08:00 [INF] WebApplication built successfully.
+2025-11-30 22:38:14.307 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-30 22:38:14.308 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-30 22:38:15.059 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-30 22:38:15.158 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-30 22:38:15.374 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-30 22:38:15.415 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=11
+2025-11-30 22:38:15.416 +08:00 [INF] Local heroes import setting: true
+2025-11-30 22:38:15.417 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-30 22:38:15.417 +08:00 [INF] Local stats import setting: true
+2025-11-30 22:38:15.417 +08:00 [INF] Local stats overwrite setting: false
+2025-11-30 22:38:15.419 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-30 22:38:15.946 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-30 22:38:15.949 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-30 22:38:20.476 +08:00 [INF] Netease stats seeding completed: 0 added; total=21780
+2025-11-30 22:38:20.593 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=5
+2025-11-30 22:38:20.618 +08:00 [INF] Starting Kestrel...
+2025-11-30 22:40:15.492 +08:00 [INF] User logged in successfully: luolan12323@outlook.com
+2025-11-30 22:46:35.396 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-30 22:47:08.343 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-30 22:47:08.397 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-30 22:47:08.397 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-30 22:47:48.071 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-30 22:52:37.704 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-30 22:52:37.796 +08:00 [INF] WebApplication built successfully.
+2025-11-30 22:52:37.897 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-30 22:52:37.897 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-30 22:52:38.415 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-30 22:52:38.493 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-30 22:52:38.611 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-30 22:52:38.644 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=11
+2025-11-30 22:52:38.646 +08:00 [INF] Local heroes import setting: true
+2025-11-30 22:52:38.646 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-30 22:52:38.646 +08:00 [INF] Local stats import setting: true
+2025-11-30 22:52:38.646 +08:00 [INF] Local stats overwrite setting: false
+2025-11-30 22:52:38.648 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-30 22:52:39.160 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-30 22:52:39.163 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-30 22:52:43.785 +08:00 [INF] Netease stats seeding completed: 0 added; total=21780
+2025-11-30 22:52:43.900 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=5
+2025-11-30 22:52:43.920 +08:00 [INF] Starting Kestrel...
+2025-11-30 22:57:38.430 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-30 22:57:38.519 +08:00 [INF] WebApplication built successfully.
+2025-11-30 22:57:38.617 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-30 22:57:38.617 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-30 22:57:39.117 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-30 22:57:39.197 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-30 22:57:39.317 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-30 22:57:39.349 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=11
+2025-11-30 22:57:39.351 +08:00 [INF] Local heroes import setting: true
+2025-11-30 22:57:39.351 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-30 22:57:39.351 +08:00 [INF] Local stats import setting: true
+2025-11-30 22:57:39.351 +08:00 [INF] Local stats overwrite setting: false
+2025-11-30 22:57:39.353 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-30 22:57:39.827 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-30 22:57:39.830 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-30 22:57:44.397 +08:00 [INF] Netease stats seeding completed: 0 added; total=21780
+2025-11-30 22:57:44.506 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=5
+2025-11-30 22:57:44.527 +08:00 [INF] Starting Kestrel...
+2025-11-30 23:00:17.000 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-30 23:00:17.091 +08:00 [INF] WebApplication built successfully.
+2025-11-30 23:00:17.197 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-30 23:00:17.197 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-30 23:00:17.705 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-30 23:00:17.789 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-30 23:00:17.915 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-30 23:00:17.949 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=11
+2025-11-30 23:00:17.952 +08:00 [INF] Local heroes import setting: true
+2025-11-30 23:00:17.952 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-30 23:00:17.952 +08:00 [INF] Local stats import setting: true
+2025-11-30 23:00:17.952 +08:00 [INF] Local stats overwrite setting: false
+2025-11-30 23:00:17.954 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-30 23:00:18.453 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-30 23:00:18.456 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-30 23:00:22.995 +08:00 [INF] Netease stats seeding completed: 0 added; total=21780
+2025-11-30 23:00:23.116 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=5
+2025-11-30 23:00:23.140 +08:00 [INF] Starting Kestrel...
+2025-11-30 23:02:00.272 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-30 23:18:53.601 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-30 23:18:53.688 +08:00 [INF] WebApplication built successfully.
+2025-11-30 23:18:53.787 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-30 23:18:53.787 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-30 23:18:54.290 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-30 23:18:54.370 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-30 23:18:54.593 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-30 23:18:54.629 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=11
+2025-11-30 23:18:54.631 +08:00 [INF] Local heroes import setting: true
+2025-11-30 23:18:54.631 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-30 23:18:54.631 +08:00 [INF] Local stats import setting: true
+2025-11-30 23:18:54.631 +08:00 [INF] Local stats overwrite setting: false
+2025-11-30 23:18:54.633 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-30 23:18:55.111 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-30 23:18:55.113 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-30 23:18:59.926 +08:00 [INF] Netease stats seeding completed: 0 added; total=21780
+2025-11-30 23:19:00.037 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=5
+2025-11-30 23:19:00.057 +08:00 [INF] Starting Kestrel...
+2025-11-30 23:20:36.653 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+2025-11-30 23:39:42.128 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-30 23:39:42.217 +08:00 [INF] WebApplication built successfully.
+2025-11-30 23:39:42.315 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-30 23:39:42.316 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-30 23:39:42.822 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-30 23:39:42.902 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-30 23:39:43.025 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-30 23:39:43.060 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=11
+2025-11-30 23:39:43.062 +08:00 [INF] Local heroes import setting: true
+2025-11-30 23:39:43.063 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-30 23:39:43.063 +08:00 [INF] Local stats import setting: true
+2025-11-30 23:39:43.063 +08:00 [INF] Local stats overwrite setting: false
+2025-11-30 23:39:43.065 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-30 23:39:43.563 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-30 23:39:43.565 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-30 23:39:48.025 +08:00 [INF] Netease stats seeding completed: 0 added; total=21780
+2025-11-30 23:39:48.144 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=5
+2025-11-30 23:39:48.168 +08:00 [INF] Starting Kestrel...
+2025-11-30 23:40:51.346 +08:00 [INF] Using URLs: http://localhost:5250
+2025-11-30 23:40:51.432 +08:00 [INF] WebApplication built successfully.
+2025-11-30 23:40:51.527 +08:00 [INF] SignalR hub mapped: Path=/hubs/app, AuthScheme=JWT Bearer, QueryToken=access_token for '/hubs/*'
+2025-11-30 23:40:51.527 +08:00 [INF] CORS policy 'DevCors' applied: AllowAnyOrigin/AnyHeader/AnyMethod (Development)
+2025-11-30 23:40:52.021 +08:00 [WRN] The foreign key property 'NeteaseHeroStat.HeroId1' was created in shadow state because a conflicting property with the simple name 'HeroId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+2025-11-30 23:40:52.099 +08:00 [INF] EF provider: Npgsql.EntityFrameworkCore.PostgreSQL, database: idvevent
+2025-11-30 23:40:52.218 +08:00 [INF] Applied schema patch for Events.CustomData, Teams.HidePlayers, Teams.HasDispute, and Users.DisplayTeamId.
+2025-11-30 23:40:52.250 +08:00 [INF] EF Migrations (normal path): Pending=0, Applied=11
+2025-11-30 23:40:52.252 +08:00 [INF] Local heroes import setting: true
+2025-11-30 23:40:52.252 +08:00 [INF] Local heroes overwrite setting: false
+2025-11-30 23:40:52.252 +08:00 [INF] Local stats import setting: true
+2025-11-30 23:40:52.253 +08:00 [INF] Local stats overwrite setting: false
+2025-11-30 23:40:52.254 +08:00 [INF] Found 12 NeteaseJ files in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-30 23:40:52.716 +08:00 [INF] Netease heroes seeding completed: 0 added, 0 updated; total=83
+2025-11-30 23:40:52.718 +08:00 [INF] Found 12 NeteaseJ files for stats in C:\Users\luolan\ASG\ASG.Api\bin\Debug\net10.0\NeteaseJ
+2025-11-30 23:40:57.249 +08:00 [INF] Netease stats seeding completed: 0 added; total=21780
+2025-11-30 23:40:57.371 +08:00 [INF] Synchronized Identity roles with Users table roles: Count=5
+2025-11-30 23:40:57.393 +08:00 [INF] Starting Kestrel...
+2025-11-30 23:41:04.651 +08:00 [WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.

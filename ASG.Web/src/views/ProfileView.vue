@@ -303,6 +303,7 @@ async function onSavePlayer() {
 </script>
 
 <template>
+  <div>
   <PageHero title="个人资料" subtitle="头像、姓名与战队管理" icon="person">
     <template #actions>
       <v-btn variant="text" class="mb-3" to="/" prepend-icon="home">返回首页</v-btn>
@@ -624,6 +625,7 @@ async function onSavePlayer() {
       </v-card-actions>
     </v-card>
   </v-dialog>
+  </div>
 </template>
 
 <style scoped>
